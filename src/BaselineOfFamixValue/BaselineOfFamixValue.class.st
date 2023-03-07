@@ -12,7 +12,7 @@ BaselineOfFamixValue >> baseline: spec [
 		spec
 			package: 'Famix-Value-Entities';
 			package: 'Famix-Value-Entities-Extensions'
-			with: [ spec requires: #( 'Famix-OpenTelemetry-Entities' ) ];
+			with: [ spec requires: #( 'Famix-Value-Entities' ) ];
 			package: 'Famix-Value-Generator';
 			package: 'Famix-Value-Importer' ]
 ]
