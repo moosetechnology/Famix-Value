@@ -16,9 +16,7 @@ Class {
 { #category : #enumerating }
 FamixValueAbstractImporter >> detectType: block [
 
-	^ (self typeEntity isTrait
-		   ifTrue: [ linkedModel allUsing: self typeEntity ]
-		   ifFalse: [ linkedModel allWithSubTypesOf: self typeEntity ])
+	^ (linkedModel allUsing: FamixTType)
 		  detect: block
 		  ifNone: [ self newUnknownType ]
 ]
