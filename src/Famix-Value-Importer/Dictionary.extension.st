@@ -7,6 +7,6 @@ Dictionary >> asJavaJacksonValueOn: importer [
 	type := importer findTypeNamed: (self removeKey: importer typeKey).
 	self removeKey: importer idKey ifAbsent: nil.
 	^ (type isUnknownType or: [ importer isDictionary: type ])
-		  ifTrue: [ (importer importDictionary: self) type: type ]
+		  ifTrue: [ importer importDictionary: self of: type ]
 		  ifFalse: [ importer importObject: self of: type ]
 ]

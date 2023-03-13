@@ -5,5 +5,6 @@ UndefinedObject >> asJavaJacksonValueOn: importer [
 
 	^ importer newValueOfUnknownType
 		  value: self;
-		  type: importer getAnonymousUnknownType
+		  type:
+			  (importer typeInference ifNil: [ importer getDefaultUnknownType ])
 ]

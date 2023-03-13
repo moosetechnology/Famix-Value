@@ -8,7 +8,8 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'model',
-		'linkedModel'
+		'linkedModel',
+		'typeInferences'
 	],
 	#category : #'Famix-Value-Importer'
 }
@@ -18,7 +19,7 @@ FamixValueAbstractImporter >> detectType: block [
 
 	^ (linkedModel allUsing: FamixTType)
 		  detect: block
-		  ifNone: [ self newUnknownType ]
+		  ifNone: [ self typeInference ifNil: [ self newUnknownType ] ]
 ]
 
 { #category : #enumerating }
@@ -39,7 +40,7 @@ FamixValueAbstractImporter >> findTypeNamed: name [
 ]
 
 { #category : #'entity creation' }
-FamixValueAbstractImporter >> getAnonymousUnknownType [
+FamixValueAbstractImporter >> getDefaultUnknownType [
 
 	^ (self model allWithType: FamixValueUnknownType)
 		  detect: [ :type | type name = '<UnknownType>' ]
@@ -47,20 +48,20 @@ FamixValueAbstractImporter >> getAnonymousUnknownType [
 ]
 
 { #category : #importing }
-FamixValueAbstractImporter >> importCollection: rawValue [
+FamixValueAbstractImporter >> importCollection: rawValue of: type [
 
 	| value |
-	value := self newValueOfCollection.
+	value := self newValueOfCollection type: type.
 	rawValue do: [ :rawElement | 
 		value addValue: (self importValue: rawElement) ].
 	^ value
 ]
 
 { #category : #importing }
-FamixValueAbstractImporter >> importDictionary: rawValue [
+FamixValueAbstractImporter >> importDictionary: rawValue of: type [
 
 	| value |
-	value := self newValueOfDictionary.
+	value := self newValueOfDictionary type: type.
 	rawValue associationsDo: [ :rawAssoc | 
 		self newValueOfDictionaryAssociation
 			key: (self importValue: rawAssoc key);
@@ -82,12 +83,16 @@ FamixValueAbstractImporter >> importEnumValue: rawValue of: type [
 { #category : #importing }
 FamixValueAbstractImporter >> importObject: rawValue of: type [
 
-	| value |
+	| value attribute |
 	value := self newValueOfObject type: type.
 	rawValue associationsDo: [ :assoc | 
-		(self importValue: assoc value)
-			valueInObject: value;
-			typedEntity: (self findAttribute: assoc key of: type) ].
+		attribute := self findAttribute: assoc key of: type.
+		self
+			withTypeInference: (attribute ifNotNil: [ attribute declaredType ])
+			do: [ 
+				(self importValue: assoc value)
+					valueInObject: value;
+					typedEntity: attribute ] ].
 	^ value
 ]
 
@@ -182,7 +187,30 @@ FamixValueAbstractImporter >> parseValue: rawValue [
 ]
 
 { #category : #parsing }
-FamixValueAbstractImporter >> parseValues: rawValues [
+FamixValueAbstractImporter >> rawValues: rawValues do: block [
 
-	self subclassResponsibility
+	(NeoJSONReader on: rawValues readStream) parseList do: block
+]
+
+{ #category : #enumerating }
+FamixValueAbstractImporter >> typeInference [
+
+	^ self typeInferences ifEmpty: nil ifNotEmpty: [ typeInferences top ]
+]
+
+{ #category : #accessing }
+FamixValueAbstractImporter >> typeInferences [
+
+	^ typeInferences ifNil: [ typeInferences := Stack new ]
+]
+
+{ #category : #importing }
+FamixValueAbstractImporter >> withTypeInference: type do: block [
+
+	| result |
+	type = self typeInference ifTrue: [ ^ block value ].
+	typeInferences push: type.
+	result := block value.
+	typeInferences pop.
+	^ result
 ]

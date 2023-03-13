@@ -29,6 +29,14 @@ FamixValueJavaJacksonImporter >> findTypeNamed: fullyQualifiedName [
 	^ result
 ]
 
+{ #category : #'entity creation' }
+FamixValueJavaJacksonImporter >> getDefaultUnknownType [
+
+	^ (self model allWithType: FamixValueUnknownType)
+		  detect: [ :type | type name = 'Object' ]
+		  ifNone: [ self newUnknownType name: 'Object' ]
+]
+
 { #category : #accessing }
 FamixValueJavaJacksonImporter >> idKey [
 
@@ -39,6 +47,41 @@ FamixValueJavaJacksonImporter >> idKey [
 FamixValueJavaJacksonImporter >> idKey: anObject [
 
 	idKey := anObject
+]
+
+{ #category : #importing }
+FamixValueJavaJacksonImporter >> importCollection: rawCollection of: type [
+
+	"infer from type argument, e.g. List<String> => String"
+
+	^ self
+		  withTypeInference: (type isParameterizedType
+				   ifTrue: [ type arguments first ]
+				   ifFalse: nil)
+		  do: [ super importCollection: rawCollection of: type ]
+]
+
+{ #category : #importing }
+FamixValueJavaJacksonImporter >> importDictionary: rawValue of: type [
+
+	"infer from type arguments, e.g. Map<String, MyClass>"
+
+	| value keyType valueType assoc |
+	value := self newValueOfDictionary type: type.
+	(type isUnknownType not and: [ type isParameterizedType ])
+		ifTrue: [ 
+			keyType := type arguments first.
+			valueType := type arguments second ]
+		ifFalse: [ keyType := valueType := nil ].
+	rawValue associationsDo: [ :rawAssoc | 
+		assoc := self newValueOfDictionaryAssociation dictionary: value.
+		self
+			withTypeInference: keyType
+			do: [ assoc key: (self importValue: rawAssoc key) ].
+		self
+			withTypeInference: valueType
+			do: [ assoc value: (self importValue: rawAssoc value) ] ].
+	^ value
 ]
 
 { #category : #importing }
@@ -54,7 +97,7 @@ FamixValueJavaJacksonImporter >> importValue: rawValue [
 FamixValueJavaJacksonImporter >> importValueFromList: rawValue of: type [
 
 	rawValue isCollection ifTrue: [ 
-		^ (self importCollection: rawValue) type: type ].
+		^ self importCollection: rawValue of: type ].
 	type isUnknownType ifTrue: [ 
 		^ self newValueOfUnknownType
 			  value: rawValue;
@@ -97,13 +140,9 @@ FamixValueJavaJacksonImporter >> parseValue: serializedValue [
 ]
 
 { #category : #parsing }
-FamixValueJavaJacksonImporter >> parseValues: serializedValues [
+FamixValueJavaJacksonImporter >> rawValues: rawValues do: block [
 
-	"Import the elements of a serialized list.
-	The type of the containing list is ignored."
-
-	^ ((NeoJSONReader on: serializedValues readStream) parseList at: 2) 
-		  collect: [ :rawValue | self importValue: rawValue ]
+	((NeoJSONReader on: rawValues readStream) parseList at: 2) do: block
 ]
 
 { #category : #accessing }
