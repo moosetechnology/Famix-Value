@@ -8,8 +8,8 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'model',
-		'linkedModel',
-		'typeInferences'
+		'typeInferences',
+		'typeFinder'
 	],
 	#category : #'Famix-Value-Importer'
 }
@@ -99,6 +99,8 @@ FamixValueAbstractImporter >> importObject: rawValue of: type [
 { #category : #importing }
 FamixValueAbstractImporter >> importValue: rawValue [
 
+	"This method must figure out the rawValue's type and dispatch to the corresponding importing method."
+
 	self subclassResponsibility
 ]
 
@@ -187,9 +189,11 @@ FamixValueAbstractImporter >> parseValue: rawValue [
 ]
 
 { #category : #parsing }
-FamixValueAbstractImporter >> rawValues: rawValues do: block [
+FamixValueAbstractImporter >> rawValues: serializedValues do: block [
 
-	(NeoJSONReader on: rawValues readStream) parseList do: block
+	"Iterate over the raw values from a serialized list."
+
+	(NeoJSONReader on: serializedValues readStream) parseList do: block
 ]
 
 { #category : #enumerating }

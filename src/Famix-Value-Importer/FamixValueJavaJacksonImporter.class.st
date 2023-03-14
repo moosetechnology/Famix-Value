@@ -44,9 +44,9 @@ FamixValueJavaJacksonImporter >> idKey [
 ]
 
 { #category : #accessing }
-FamixValueJavaJacksonImporter >> idKey: anObject [
+FamixValueJavaJacksonImporter >> idKey: aString [
 
-	idKey := anObject
+	idKey := aString
 ]
 
 { #category : #importing }
@@ -140,9 +140,10 @@ FamixValueJavaJacksonImporter >> parseValue: serializedValue [
 ]
 
 { #category : #parsing }
-FamixValueJavaJacksonImporter >> rawValues: rawValues do: block [
+FamixValueJavaJacksonImporter >> rawValues: serializedValues do: block [
 
-	((NeoJSONReader on: rawValues readStream) parseList at: 2) do: block
+	((NeoJSONReader on: serializedValues readStream) parseList at: 2) 
+		do: block
 ]
 
 { #category : #accessing }
@@ -152,7 +153,7 @@ FamixValueJavaJacksonImporter >> typeKey [
 ]
 
 { #category : #accessing }
-FamixValueJavaJacksonImporter >> typeKey: anObject [
+FamixValueJavaJacksonImporter >> typeKey: aString [
 
-	typeKey := anObject
+	typeKey := aString
 ]
