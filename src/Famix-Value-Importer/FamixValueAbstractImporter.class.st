@@ -15,14 +15,6 @@ Class {
 }
 
 { #category : #enumerating }
-FamixValueAbstractImporter >> detectType: block [
-
-	^ (linkedModel allUsing: FamixTType)
-		  detect: block
-		  ifNone: [ self typeInference ifNil: [ self newUnknownType ] ]
-]
-
-{ #category : #enumerating }
 FamixValueAbstractImporter >> findAttribute: name of: type [
 
 	^ type attributes detect: [ :attr | attr name = name ] ifNone: [ 
@@ -34,9 +26,13 @@ FamixValueAbstractImporter >> findAttribute: name of: type [
 ]
 
 { #category : #enumerating }
-FamixValueAbstractImporter >> findTypeNamed: name [
+FamixValueAbstractImporter >> findTypeNamed: fullyQualifiedName [
 
-	^ self detectType: [ :type | type name = name ]
+	"Try to find type in model with finder, or fallback to the inferred type, or type is unknown."
+
+	^ (self typeFinder findTypeNamed: fullyQualifiedName) ifNil: [ 
+		  self typeInference ifNil: [ 
+			  self newUnknownType name: fullyQualifiedName ] ]
 ]
 
 { #category : #'entity creation' }
@@ -111,18 +107,6 @@ FamixValueAbstractImporter >> isProcedure: method [
 ]
 
 { #category : #accessing }
-FamixValueAbstractImporter >> linkedModel [
-
-	^ linkedModel
-]
-
-{ #category : #accessing }
-FamixValueAbstractImporter >> linkedModel: famixModel [
-
-	linkedModel := famixModel
-]
-
-{ #category : #accessing }
 FamixValueAbstractImporter >> model [
 
 	^ model ifNil: [ model := FamixValueModel new ]
@@ -194,6 +178,18 @@ FamixValueAbstractImporter >> rawValues: serializedValues do: block [
 	"Iterate over the raw values from a serialized list."
 
 	(NeoJSONReader on: serializedValues readStream) parseList do: block
+]
+
+{ #category : #accessing }
+FamixValueAbstractImporter >> typeFinder [
+
+	^ typeFinder ifNil: [ typeFinder := FamixTTypeFinder new ]
+]
+
+{ #category : #accessing }
+FamixValueAbstractImporter >> typeFinder: aTypeFinder [
+
+	typeFinder := aTypeFinder
 ]
 
 { #category : #enumerating }

@@ -12,23 +12,6 @@ Class {
 	#category : #'Famix-Value-Importer'
 }
 
-{ #category : #enumerating }
-FamixValueJavaJacksonImporter >> findTypeNamed: fullyQualifiedName [
-
-	| result name |
-	result := self detectType:
-		          ((fullyQualifiedName beginsWithAnyOf:
-			            #( 'java.lang.' 'java.util.' ))
-			           ifTrue: [ 
-				           name := fullyQualifiedName copyAfterLast: $..
-				           [ :type | type name = name ] ]
-			           ifFalse: [ 
-				           name := '::' join: (fullyQualifiedName splitOn: $.).
-				           [ :type | type mooseName = name ] ]).
-	result isUnknownType ifTrue: [ result name: fullyQualifiedName ].
-	^ result
-]
-
 { #category : #'entity creation' }
 FamixValueJavaJacksonImporter >> getDefaultUnknownType [
 
