@@ -22,3 +22,9 @@ FamixValueOfType >> value [
 
 	self subclassResponsibility
 ]
+
+{ #category : #'*Famix-Value-Entities-Extensions' }
+FamixValueOfType >> value: anObject [
+
+	^ self subclassResponsibility
+]

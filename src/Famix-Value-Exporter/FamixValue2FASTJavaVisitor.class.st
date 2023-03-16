@@ -18,16 +18,17 @@ Class {
 }
 
 { #category : #ast }
-FamixValue2FASTJavaVisitor >> makeClassTypeExpression: object [
+FamixValue2FASTJavaVisitor >> makeClassTypeExpression: typeName [
 
 	^ self newClassTypeExpression typeName:
-		  (self newTypeName name: object type typeName)
+		  (self newTypeName name: typeName)
 ]
 
 { #category : #ast }
 FamixValue2FASTJavaVisitor >> makeNewExpression: object [
 
-	^ self newNewExpression type: (self makeClassTypeExpression: object)
+	^ self newNewExpression type:
+		  (self makeClassTypeExpression: object type concreteTypeName)
 ]
 
 { #category : #ast }

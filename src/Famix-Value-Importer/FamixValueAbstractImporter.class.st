@@ -25,16 +25,6 @@ FamixValueAbstractImporter >> findAttribute: name of: type [
 			  ifNone: nil ]
 ]
 
-{ #category : #enumerating }
-FamixValueAbstractImporter >> findTypeNamed: fullyQualifiedName [
-
-	"Try to find type in model with finder, or fallback to the inferred type, or type is unknown."
-
-	^ (self typeFinder findTypeNamed: fullyQualifiedName) ifNil: [ 
-		  self typeInference ifNil: [ 
-			  self newUnknownType name: fullyQualifiedName ] ]
-]
-
 { #category : #'entity creation' }
 FamixValueAbstractImporter >> getDefaultUnknownType [
 
@@ -104,6 +94,16 @@ FamixValueAbstractImporter >> importValue: rawValue [
 FamixValueAbstractImporter >> isProcedure: method [
 
 	^ method declaredType isNil
+]
+
+{ #category : #enumerating }
+FamixValueAbstractImporter >> loadTypeNamed: fullyQualifiedName [
+
+	"Try to find type in model with finder, or fallback to the inferred type, or type is unknown."
+
+	^ (self typeFinder findTypeNamed: fullyQualifiedName) ifNil: [ 
+		  self typeInference ifNil: [ 
+			  self newUnknownType name: fullyQualifiedName ] ]
 ]
 
 { #category : #accessing }

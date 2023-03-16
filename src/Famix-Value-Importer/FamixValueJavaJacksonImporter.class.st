@@ -96,15 +96,15 @@ FamixValueJavaJacksonImporter >> importValueFromList: rawValue of: type [
 { #category : #'private - utility' }
 FamixValueJavaJacksonImporter >> isDictionary: type [
 
-	^ #( Map HashMap LinkedHashMap ) includes: type name
+	^ #( 'Map' 'HashMap' 'LinkedHashMap' ) includes: type name
 ]
 
 { #category : #'private - utility' }
 FamixValueJavaJacksonImporter >> isPrimitiveType: type [
 
 	^ type isPrimitiveType or: [ 
-		  #( Integer Float Double Long Short Byte Timestamp ) includes:
-			  type name ]
+		  #( 'Integer' 'Float' 'Double' 'Long' 'Short' 'Byte' 'Timestamp' ) 
+			  includes: type name ]
 ]
 
 { #category : #testing }

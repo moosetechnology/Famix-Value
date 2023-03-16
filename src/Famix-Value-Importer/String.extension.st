@@ -5,5 +5,5 @@ String >> asJavaJacksonValueOn: importer [
 
 	^ importer newValueOfPrimitiveType
 		  value: self;
-		  type: (importer findTypeNamed: 'java.lang.String')
+		  type: (importer loadTypeNamed: 'java.lang.String')
 ]

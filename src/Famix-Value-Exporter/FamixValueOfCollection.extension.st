@@ -11,9 +11,3 @@ FamixValueOfCollection >> asFASTJavaExpressionOn: visitor [
 
 	^ visitor makeNewExpression: self
 ]
-
-{ #category : #'*Famix-Value-Exporter' }
-FamixValueOfCollection >> asFASTJavaTypeExpressionOn: visitor [
-
-	^ visitor makeClassTypeExpression: self
-]

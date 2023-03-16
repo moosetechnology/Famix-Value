@@ -5,5 +5,5 @@ Integer >> asJavaJacksonValueOn: importer [
 
 	^ importer newValueOfPrimitiveType
 		  value: self;
-		  type: (importer findTypeNamed: 'int')
+		  type: (importer loadTypeNamed: 'int')
 ]

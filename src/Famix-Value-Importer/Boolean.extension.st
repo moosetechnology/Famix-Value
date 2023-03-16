@@ -5,5 +5,5 @@ Boolean >> asJavaJacksonValueOn: importer [
 
 	^ importer newValueOfPrimitiveType
 		  value: self;
-		  type: (importer findTypeNamed: 'boolean')
+		  type: (importer loadTypeNamed: 'boolean')
 ]

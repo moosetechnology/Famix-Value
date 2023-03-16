@@ -39,12 +39,13 @@ FamixValue2FASTJavaVisitorTest >> setUp [
 	collection := FamixValueOfCollection new type:
 		              (FamixJavaParameterizedType new
 			               parameterizableClass:
-				               (FamixJavaParameterizableClass new name:
-						                'ArrayList');
-			               addArgument: (FamixJavaClass new name: 'String');
-			               yourself).
+				               (FamixJavaParameterizableClass new name: 'List');
+			               arguments: { (FamixJavaClass new name: 'String') }).
 	dictionary := FamixValueOfDictionary new type:
-		              (FamixJavaClass new name: 'HashMap').
+		              (FamixJavaParameterizedType new
+			               parameterizableClass:
+				               (FamixJavaParameterizableClass new name: 'Map');
+			               arguments: { (FamixJavaClass new name: 'Object') }).
 	dictAssoc1 := FamixValueOfDictionaryAssociation new
 		              key: stringPrimitive;
 		              value: intPrimitive.
@@ -68,23 +69,23 @@ FamixValue2FASTJavaVisitorTest >> setUp [
 FamixValue2FASTJavaVisitorTest >> testVisitCollection [
 
 	self assert: collection asJavaSourceCode equals: '{
-  ArrayList<String> arrayList0 = new ArrayList<String>();
+  List<String> list0 = new ArrayList<String>();
 }'.
 
 	collection addValue: stringPrimitive.
 	self assert: collection asJavaSourceCode equals: '{
-  ArrayList<String> arrayList0 = new ArrayList<String>();
+  List<String> list0 = new ArrayList<String>();
   String string1 = "hello";
-  arrayList0.add(string1);
+  list0.add(string1);
 }'.
 
 	collection addValue: nullString.
 	self assert: collection asJavaSourceCode equals: '{
-  ArrayList<String> arrayList0 = new ArrayList<String>();
+  List<String> list0 = new ArrayList<String>();
   String string1 = "hello";
-  arrayList0.add(string1);
+  list0.add(string1);
   String string2 = null;
-  arrayList0.add(string2);
+  list0.add(string2);
 }'
 ]
 
@@ -92,15 +93,15 @@ FamixValue2FASTJavaVisitorTest >> testVisitCollection [
 FamixValue2FASTJavaVisitorTest >> testVisitDictionary [
 
 	self assert: dictionary asJavaSourceCode equals: '{
-  HashMap hashMap0 = new HashMap();
+  Map<Object, Object> map0 = new HashMap<Object, Object>();
 }'.
 
 	dictionary addValue: dictAssoc1.
 	self assert: dictionary asJavaSourceCode equals: '{
-  HashMap hashMap0 = new HashMap();
+  Map<Object, Object> map0 = new HashMap<Object, Object>();
   String string1 = "hello";
   int int2 = 1;
-  hashMap0.put(string1, int2);
+  map0.put(string1, int2);
 }'
 ]
 

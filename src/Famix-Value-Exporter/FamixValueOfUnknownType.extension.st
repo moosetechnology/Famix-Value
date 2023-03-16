@@ -11,9 +11,3 @@ FamixValueOfUnknownType >> asFASTJavaExpressionOn: visitor [
 
 	^ value asFASTJavaExpressionOn: visitor
 ]
-
-{ #category : #'*Famix-Value-Exporter' }
-FamixValueOfUnknownType >> asFASTJavaTypeExpressionOn: visitor [
-
-	^ visitor makeClassTypeExpression: self
-]

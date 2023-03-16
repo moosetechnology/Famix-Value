@@ -7,15 +7,28 @@ FamixJavaParameterizedType >> baseName [
 ]
 
 { #category : #'*Famix-Value-Exporter' }
-FamixJavaParameterizedType >> typeName [
+FamixJavaParameterizedType >> concreteTypeNameOn: stream [
 
-	^ String streamContents: [ :stream | 
-		  stream << self parameterizableClass name << $<.
-		  self arguments
-			  do: [ :argument | 
-				  stream << (argument isParameterizedType
-					   ifTrue: [ argument parameterizableClass ]
-					   ifFalse: [ argument ]) name ]
-			  separatedBy: [ stream << ', ' ].
-		  stream << $> ]
+	parameterizableClass concreteTypeNameOn: stream.
+	self typeArgumentNamesOn: stream
+]
+
+{ #category : #'*Famix-Value-Exporter' }
+FamixJavaParameterizedType >> typeArgumentNamesOn: stream [
+
+	stream << $<.
+	arguments
+		do: [ :argument | argument typeNameOn: stream ]
+		separatedBy: [ stream << ', ' ].
+	(arguments size = 1 and: [ self isDictionaryType ]) ifTrue: [ 
+		stream << ', '.
+		arguments first typeNameOn: stream ].
+	stream << $>
+]
+
+{ #category : #'*Famix-Value-Exporter' }
+FamixJavaParameterizedType >> typeNameOn: stream [
+
+	stream << parameterizableClass name.
+	self typeArgumentNamesOn: stream
 ]
