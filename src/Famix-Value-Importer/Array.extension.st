@@ -5,5 +5,5 @@ Array >> asJavaJacksonValueOn: importer [
 
 	^ importer
 		  importValueFromList: (self at: 2)
-		  of: (importer findTypeNamed: (self at: 1))
+		  of: (importer loadTypeNamed: (self at: 1))
 ]
