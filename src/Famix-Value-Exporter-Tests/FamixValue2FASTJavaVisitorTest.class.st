@@ -70,14 +70,16 @@ FamixValue2FASTJavaVisitorTest >> testVisitCollection [
 
 	self assert: collection asJavaSourceCode equals: '{
   List<String> list0 = new ArrayList<String>();
-}'.
+}
+'.
 
 	collection addValue: stringPrimitive.
 	self assert: collection asJavaSourceCode equals: '{
   List<String> list0 = new ArrayList<String>();
   String string1 = "hello";
   list0.add(string1);
-}'.
+}
+'.
 
 	collection addValue: nullString.
 	self assert: collection asJavaSourceCode equals: '{
@@ -86,7 +88,8 @@ FamixValue2FASTJavaVisitorTest >> testVisitCollection [
   list0.add(string1);
   String string2 = null;
   list0.add(string2);
-}'
+}
+'
 ]
 
 { #category : #tests }
@@ -94,7 +97,8 @@ FamixValue2FASTJavaVisitorTest >> testVisitDictionary [
 
 	self assert: dictionary asJavaSourceCode equals: '{
   Map<Object, Object> map0 = new HashMap<Object, Object>();
-}'.
+}
+'.
 
 	dictionary addValue: dictAssoc1.
 	self assert: dictionary asJavaSourceCode equals: '{
@@ -102,7 +106,8 @@ FamixValue2FASTJavaVisitorTest >> testVisitDictionary [
   String string1 = "hello";
   int int2 = 1;
   map0.put(string1, int2);
-}'
+}
+'
 ]
 
 { #category : #tests }
@@ -110,7 +115,8 @@ FamixValue2FASTJavaVisitorTest >> testVisitEnumValue [
 
 	self assert: enumValue asJavaSourceCode equals: '{
   MyEnum myEnum0 = MyEnum.ENUM_VALUE;
-}'
+}
+'
 ]
 
 { #category : #tests }
@@ -120,7 +126,8 @@ FamixValue2FASTJavaVisitorTest >> testVisitObject [
 
 	self assert: object asJavaSourceCode equals: '{
   MyClass myClass0 = new MyClass();
-}'.
+}
+'.
 
 	"with an attribute"
 	object addValue: boolPrimitive.
@@ -129,7 +136,8 @@ FamixValue2FASTJavaVisitorTest >> testVisitObject [
   MyClass myClass0 = new MyClass();
   boolean foo1 = true;
   myClass0.setFoo(foo1);
-}'
+}
+'
 ]
 
 { #category : #tests }
@@ -137,13 +145,16 @@ FamixValue2FASTJavaVisitorTest >> testVisitPrimitive [
 
 	self assert: intPrimitive asJavaSourceCode equals: '{
   int int0 = 1;
-}'.
+}
+'.
 	self assert: boolPrimitive asJavaSourceCode equals: '{
   boolean boolean0 = true;
-}'.
+}
+'.
 	self assert: stringPrimitive asJavaSourceCode equals: '{
   String string0 = "hello";
-}'
+}
+'
 ]
 
 { #category : #tests }
@@ -151,5 +162,6 @@ FamixValue2FASTJavaVisitorTest >> testVisitValueOfUnknownType [
 
 	self assert: nullString asJavaSourceCode equals: '{
   String string0 = null;
-}'
+}
+'
 ]
