@@ -48,10 +48,11 @@ FamixValueGenerator class >> submetamodels [
 { #category : #definition }
 FamixValueGenerator >> defineClasses [
 
-	value := builder
-		         newClassNamed: #OfType
-		         comment:
-		         'Abstract superclass of all ValueOf_Type_ entities.'.
+	value := (builder
+		          newClassNamed: #OfType
+		          comment:
+		          'Abstract superclass of all ValueOf_Type_ entities.')
+		         withTesting.
 	object := (builder
 		           newClassNamed: #OfObject
 		           comment: 'The value of an object.') withTesting.
@@ -113,20 +114,21 @@ FamixValueGenerator >> defineRelations [
 	*- ((self remoteTrait: #TTypedEntity withPrefix: #Famix) property:
 			 #values).
 
-	(object property: #value) -* (value property: #valueInObject).
+	(object property: #value) *-* (value property: #valueInObjects).
 
 	(enumValue property: #value)
 	*- ((self remoteTrait: #TEnumValue withPrefix: #Famix) property:
 			 #valueInstances).
 
-	(collection property: #value) -* (value property: #valueInCollection).
+	(collection property: #value)
+	*-* (value property: #valueInCollections).
 
 	(dictionary property: #value)
 	-* (dictionaryAssociation property: #dictionary).
 	(dictionaryAssociation property: #key)
-	- (value property: #keyInDictionary).
+	*- (value property: #keyInDictionaries).
 	(dictionaryAssociation property: #value)
-	- (value property: #valueInDictionary)
+	*- (value property: #valueInDictionaries)
 ]
 
 { #category : #definition }
