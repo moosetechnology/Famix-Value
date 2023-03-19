@@ -7,8 +7,7 @@ Class {
 	#superclass : #FamixValueAbstractImporter,
 	#instVars : [
 		'typeKey',
-		'idKey',
-		'objectDict'
+		'idKey'
 	],
 	#category : #'Famix-Value-Importer'
 }
@@ -50,22 +49,23 @@ FamixValueJavaJacksonImporter >> importDictionary: rawValue of: type [
 
 	"infer from type arguments, e.g. Map<String, MyClass>"
 
-	| value keyType valueType assoc |
-	value := self newValueOfDictionary type: type.
+	| dictionary keyType valueType assoc |
+	dictionary := self newValueOfDictionary type: type.
 	(type isUnknownType not and: [ type isParameterizedType ])
 		ifTrue: [ 
 			keyType := type arguments first.
 			valueType := type arguments second ]
 		ifFalse: [ keyType := valueType := nil ].
 	rawValue associationsDo: [ :rawAssoc | 
-		assoc := self newValueOfDictionaryAssociation dictionary: value.
+		assoc := self newValueOfDictionaryAssociation dictionary: dictionary.
 		self
 			withTypeInference: keyType
 			do: [ assoc key: (self importValue: rawAssoc key) ].
-		self
-			withTypeInference: valueType
-			do: [ assoc value: (self importValue: rawAssoc value) ] ].
-	^ value
+		self withTypeInference: valueType do: [ 
+			self
+				onResolved: (self importValue: rawAssoc value)
+				do: [ :value | assoc value: value ] ] ].
+	^ dictionary
 ]
 
 { #category : #importing }
@@ -81,7 +81,9 @@ FamixValueJavaJacksonImporter >> importObject: rawObject of: type [
 		          put: (super importObject: rawObject of: type).
 	"resolve references to this object"
 	objectResolutions at: objectID ifPresent: [ :resolutions | 
-		resolutions do: [ :resolution | resolution value: object ] ].
+		resolutions do: [ :resolution | resolution value: object ].
+		objectResolutions removeKey: objectID ].
+
 	^ object
 ]
 
@@ -109,14 +111,6 @@ FamixValueJavaJacksonImporter >> importValueFromList: rawValue of: type [
 				  value: rawValue;
 				  type: type ]
 		  ifFalse: [ self importEnumValue: rawValue of: type ]
-]
-
-{ #category : #initialization }
-FamixValueJavaJacksonImporter >> initialize [
-
-	super initialize.
-	objectDict := Dictionary new.
-	objectResolutions := Dictionary new
 ]
 
 { #category : #'private - utility' }

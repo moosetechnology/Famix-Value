@@ -10,7 +10,8 @@ Class {
 		'model',
 		'typeInferences',
 		'typeFinder',
-		'objectResolutions'
+		'objectResolutions',
+		'objectDict'
 	],
 	#category : #'Famix-Value-Importer'
 }
@@ -37,11 +38,13 @@ FamixValueAbstractImporter >> getDefaultUnknownType [
 { #category : #importing }
 FamixValueAbstractImporter >> importCollection: rawValue of: type [
 
-	| value |
-	value := self newValueOfCollection type: type.
+	| collection |
+	collection := self newValueOfCollection type: type.
 	rawValue do: [ :rawElement | 
-		value addValue: (self importValue: rawElement) ].
-	^ value
+		self
+			onResolved: (self importValue: rawElement)
+			do: [ :value | collection addValue: value ] ].
+	^ collection
 ]
 
 { #category : #importing }
@@ -95,7 +98,8 @@ FamixValueAbstractImporter >> importValue: rawValue [
 { #category : #initialization }
 FamixValueAbstractImporter >> initialize [
 
-	typeInferences := Stack new
+	typeInferences := Stack new.
+	self reset
 ]
 
 { #category : #testing }
@@ -183,7 +187,7 @@ FamixValueAbstractImporter >> onResolved: value do: aBlock [
 			objectResolutions
 				at: value
 				ifPresent: [ :resolutions | resolutions add: aBlock ]
-				ifAbsentPut: (OrderedCollection with: aBlock) ]
+				ifAbsentPut: [ OrderedCollection with: aBlock ] ]
 ]
 
 { #category : #parsing }
@@ -198,6 +202,15 @@ FamixValueAbstractImporter >> rawValues: serializedValues do: block [
 	"Iterate over the raw values from a serialized list."
 
 	(NeoJSONReader on: serializedValues readStream) parseList do: block
+]
+
+{ #category : #initialization }
+FamixValueAbstractImporter >> reset [
+
+	"Forget previous object references."
+
+	objectDict := Dictionary new.
+	objectResolutions := Dictionary new
 ]
 
 { #category : #accessing }
