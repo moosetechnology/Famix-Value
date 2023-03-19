@@ -64,6 +64,13 @@ FamixValueEntity >> isOfPrimitiveType [
 ]
 
 { #category : #testing }
+FamixValueEntity >> isOfType [
+
+	<generated>
+	^ false
+]
+
+{ #category : #testing }
 FamixValueEntity >> isOfUnknownType [
 
 	<generated>
