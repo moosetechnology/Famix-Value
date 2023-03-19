@@ -3,9 +3,12 @@ Extension { #name : #FamixValueOfDictionaryAssociation }
 { #category : #'*Famix-Value-Entities-Extensions' }
 FamixValueOfDictionaryAssociation >> mooseNameOn: aStream [
 
-	aStream << self key type name << $(.
+	aStream << (key ifNotNil: [ key type name ] ifNil: [ '<keyType>' ])
+	<< $(.
 	self key value printOn: aStream.
-	aStream << ')->' << self value type name << $(.
+	aStream << ')->'
+	<< (value ifNotNil: [ value type name ] ifNil: [ '<valueType>' ])
+	<< $(.
 	self value value printOn: aStream.
 	aStream << $)
 ]

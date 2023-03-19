@@ -8,7 +8,7 @@ Class {
 		'#keyInDictionaries => FMMany type: #FamixValueOfDictionaryAssociation opposite: #key',
 		'#valueInCollections => FMMany type: #FamixValueOfCollection opposite: #value',
 		'#valueInDictionaries => FMMany type: #FamixValueOfDictionaryAssociation opposite: #value',
-		'#valueInObjects => FMMany type: #FamixValueOfObject opposite: #value'
+		'#valueInObjects => FMMany type: #FamixValueOfAttribute opposite: #value'
 	],
 	#category : #'Famix-Value-Entities-Entities'
 }
@@ -134,9 +134,10 @@ FamixValueOfType >> valueInDictionaries: anObject [
 
 { #category : #accessing }
 FamixValueOfType >> valueInObjects [
-	"Relation named: #valueInObjects type: #FamixValueOfObject opposite: #value"
+	"Relation named: #valueInObjects type: #FamixValueOfAttribute opposite: #value"
 
 	<generated>
+	<derived>
 	^ valueInObjects
 ]
 

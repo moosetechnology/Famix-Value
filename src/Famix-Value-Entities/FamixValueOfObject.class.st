@@ -5,7 +5,7 @@ Class {
 	#name : #FamixValueOfObject,
 	#superclass : #FamixValueOfType,
 	#instVars : [
-		'#value => FMMany type: #FamixValueOfType opposite: #valueInObjects'
+		'#value => FMMany type: #FamixValueOfAttribute opposite: #object'
 	],
 	#category : #'Famix-Value-Entities-Entities'
 }
@@ -34,7 +34,7 @@ FamixValueOfObject >> isOfObject [
 
 { #category : #accessing }
 FamixValueOfObject >> value [
-	"Relation named: #value type: #FamixValueOfType opposite: #valueInObjects"
+	"Relation named: #value type: #FamixValueOfAttribute opposite: #object"
 
 	<generated>
 	<derived>

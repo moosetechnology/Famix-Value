@@ -58,9 +58,10 @@ FamixValueJavaJacksonImporter >> importDictionary: rawValue of: type [
 		ifFalse: [ keyType := valueType := nil ].
 	rawValue associationsDo: [ :rawAssoc | 
 		assoc := self newValueOfDictionaryAssociation dictionary: dictionary.
-		self
-			withTypeInference: keyType
-			do: [ assoc key: (self importValue: rawAssoc key) ].
+		self withTypeInference: keyType do: [ 
+			self
+				onResolved: (self importValue: rawAssoc key)
+				do: [ :value | assoc key: value ] ].
 		self withTypeInference: valueType do: [ 
 			self
 				onResolved: (self importValue: rawAssoc value)

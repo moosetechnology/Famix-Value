@@ -13,6 +13,7 @@ Class {
 		'value',
 		'primitive',
 		'object',
+		'attribute',
 		'enumValue',
 		'collection',
 		'dictionary',
@@ -56,6 +57,10 @@ FamixValueGenerator >> defineClasses [
 	object := (builder
 		           newClassNamed: #OfObject
 		           comment: 'The value of an object.') withTesting.
+	attribute := builder
+		             newClassNamed: #OfAttribute
+		             comment:
+		             'A value of an attribute, belonging to an object.'.
 	primitive := (builder
 		              newClassNamed: #OfPrimitiveType
 		              comment: 'A value of a primitive type.') withTesting.
@@ -73,7 +78,6 @@ FamixValueGenerator >> defineClasses [
 		                         newClassNamed: #OfDictionaryAssociation
 		                         comment:
 		                         'A key-value pair of values belonging to a dictionary.'.
-
 	ofUnknownType := (builder
 		                  newClassNamed: #OfUnknownType
 		                  comment: 'A value of an unknwon type.')
@@ -114,11 +118,15 @@ FamixValueGenerator >> defineRelations [
 	*- ((self remoteTrait: #TTypedEntity withPrefix: #Famix) property:
 			 #values).
 
-	(object property: #value) *-* (value property: #valueInObjects).
+	(object property: #value) -* (attribute property: #object).
+	(attribute property: #value) *- (value property: #valueInObjects).
+	(attribute property: #attribute)
+	*- ((self remoteTrait: #TAttribute withPrefix: #Famix) property:
+			 #valueInObjects).
 
 	(enumValue property: #value)
 	*- ((self remoteTrait: #TEnumValue withPrefix: #Famix) property:
-			 #valueInstances).
+			 #valueReferences).
 
 	(collection property: #value)
 	*-* (value property: #valueInCollections).

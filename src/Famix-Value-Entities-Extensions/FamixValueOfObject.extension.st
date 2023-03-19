@@ -5,7 +5,7 @@ FamixValueOfObject >> printValueOn: aStream [
 
 	aStream << ${.
 	self value
-		do: [ :attribute | attribute printValueOn: aStream ]
+		do: [ :attribute | attribute value printValueOn: aStream ]
 		separatedBy: [ aStream << $, ].
 	aStream << $}
 ]

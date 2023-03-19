@@ -201,18 +201,18 @@ FamixValue2FASTJavaVisitor >> visitCollection: collection [
 
 	self statements addStatement: (self makeVarDeclStatement: collection).
 	collection value do: [ :element | 
-		self visitCollectionElement: element ].
+		self visitCollection: collection element: element ].
 	^ statements
 ]
 
 { #category : #visiting }
-FamixValue2FASTJavaVisitor >> visitCollectionElement: element [
+FamixValue2FASTJavaVisitor >> visitCollection: collection element: element [
 
 	element accept: self.
 	self statements addStatement:
 		(self newExpressionStatement expression: (self newMethodInvocation
-				  receiver: (self newIdentifier name:
-							   (self varNameDict at: element valueInCollection));
+				  receiver:
+					  (self newIdentifier name: (self varNameDict at: collection));
 				  name: #add;
 				  addArgument:
 					  (self newVariableExpression name:
@@ -258,25 +258,26 @@ FamixValue2FASTJavaVisitor >> visitEnumValue: enumValue [
 FamixValue2FASTJavaVisitor >> visitObject: object [
 
 	self statements addStatement: (self makeVarDeclStatement: object).
-	object value do: [ :attribute | self visitObjectAttribute: attribute ].
+	object value do: [ :attribute | 
+		self visitObject: object attribute: attribute ].
 	^ statements
 ]
 
 { #category : #visiting }
-FamixValue2FASTJavaVisitor >> visitObjectAttribute: attribute [
+FamixValue2FASTJavaVisitor >> visitObject: object attribute: attribute [
 
 	| setter |
 	attribute typedEntity ifNil: [ "ignore unknown attributes" ^ self ].
 	attribute accept: self. "generate var for attribute"
-	setter := attribute valueInObject type allMethods detect: [ :method | 
+	setter := object type allMethods detect: [ :method | 
 		          method isSetter and: [ 
 			          method name
 				          endsWith: attribute typedEntity name
 				          caseSensitive: false ] ].
 	self statements addStatement:
 		(self newExpressionStatement expression: (self newMethodInvocation
-				  receiver: (self newIdentifier name:
-							   (self varNameDict at: attribute valueInObject));
+				  receiver:
+					  (self newIdentifier name: (self varNameDict at: object));
 				  name: setter name;
 				  addArgument:
 					  (self newVariableExpression name:

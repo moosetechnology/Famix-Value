@@ -25,10 +25,10 @@ FamixValueOfEnum >> isOfEnum [
 
 { #category : #accessing }
 FamixValueOfEnum >> value [
-	"Relation named: #value type: #FamixTEnumValue opposite: #valueInstances"
+	"Relation named: #value type: #FamixTEnumValue opposite: #valueReferences"
 
 	<generated>
-	<FMProperty: #value type: #FamixTEnumValue opposite: #valueInstances>
+	<FMProperty: #value type: #FamixTEnumValue opposite: #valueReferences>
 	^ self attributeAt: #value ifAbsent: [ nil ]
 ]
 
@@ -36,5 +36,5 @@ FamixValueOfEnum >> value [
 FamixValueOfEnum >> value: anObject [
 
 	<generated>
-	self attributeAt: #value put: (FMMultivalueLink on: self update: #valueInstances from: self value to: anObject).
+	self attributeAt: #value put: (FMMultivalueLink on: self update: #valueReferences from: self value to: anObject).
 ]
