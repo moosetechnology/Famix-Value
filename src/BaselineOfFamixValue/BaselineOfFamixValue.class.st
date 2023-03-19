@@ -17,10 +17,10 @@ BaselineOfFamixValue >> baseline: spec [
 { #category : #baselines }
 BaselineOfFamixValue >> defineDependencies: spec [
 
-	spec
-		baseline: 'FASTJava'
-		with: [ 
-		spec repository: 'github://moosetechnology/FAST-Java:v3/src' ]
+	spec baseline: 'FASTJava' with: [ 
+		spec
+			loads: #( 'visitor' );
+			repository: 'github://moosetechnology/FAST-Java:v3/src' ]
 ]
 
 { #category : #baselines }
