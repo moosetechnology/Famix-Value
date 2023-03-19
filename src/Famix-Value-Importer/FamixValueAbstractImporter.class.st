@@ -9,7 +9,8 @@ Class {
 	#instVars : [
 		'model',
 		'typeInferences',
-		'typeFinder'
+		'typeFinder',
+		'objectResolutions'
 	],
 	#category : #'Famix-Value-Importer'
 }
@@ -69,17 +70,18 @@ FamixValueAbstractImporter >> importEnumValue: rawValue of: type [
 { #category : #importing }
 FamixValueAbstractImporter >> importObject: rawValue of: type [
 
-	| value attribute |
-	value := self newValueOfObject type: type.
+	| object attribute |
+	object := self newValueOfObject type: type.
 	rawValue associationsDo: [ :assoc | 
 		attribute := self findAttribute: assoc key of: type.
 		self
 			withTypeInference: (attribute ifNotNil: [ attribute declaredType ])
 			do: [ 
-				(self importValue: assoc value)
-					valueInObject: value;
-					typedEntity: attribute ] ].
-	^ value
+				self onResolved: (self importValue: assoc value) do: [ :value | 
+					value
+						valueInObject: object;
+						typedEntity: attribute ] ] ].
+	^ object
 ]
 
 { #category : #importing }
@@ -88,6 +90,12 @@ FamixValueAbstractImporter >> importValue: rawValue [
 	"This method must figure out the rawValue's type and dispatch to the corresponding importing method."
 
 	self subclassResponsibility
+]
+
+{ #category : #initialization }
+FamixValueAbstractImporter >> initialize [
+
+	typeInferences := Stack new
 ]
 
 { #category : #testing }
@@ -166,6 +174,18 @@ FamixValueAbstractImporter >> newValueOfUnknownType [
 	^ self model add: FamixValueOfUnknownType new
 ]
 
+{ #category : #importing }
+FamixValueAbstractImporter >> onResolved: value do: aBlock [
+
+	value isOfType
+		ifTrue: [ aBlock value: value ]
+		ifFalse: [ 
+			objectResolutions
+				at: value
+				ifPresent: [ :resolutions | resolutions add: aBlock ]
+				ifAbsentPut: { aBlock } ]
+]
+
 { #category : #parsing }
 FamixValueAbstractImporter >> parseValue: rawValue [
 
@@ -195,13 +215,7 @@ FamixValueAbstractImporter >> typeFinder: aTypeFinder [
 { #category : #enumerating }
 FamixValueAbstractImporter >> typeInference [
 
-	^ self typeInferences ifEmpty: nil ifNotEmpty: [ typeInferences top ]
-]
-
-{ #category : #accessing }
-FamixValueAbstractImporter >> typeInferences [
-
-	^ typeInferences ifNil: [ typeInferences := Stack new ]
+	^ typeInferences ifEmpty: nil ifNotEmpty: [ typeInferences top ]
 ]
 
 { #category : #importing }

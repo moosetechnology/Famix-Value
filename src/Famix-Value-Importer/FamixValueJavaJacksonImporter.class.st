@@ -7,7 +7,8 @@ Class {
 	#superclass : #FamixValueAbstractImporter,
 	#instVars : [
 		'typeKey',
-		'idKey'
+		'idKey',
+		'objectDict'
 	],
 	#category : #'Famix-Value-Importer'
 }
@@ -68,6 +69,22 @@ FamixValueJavaJacksonImporter >> importDictionary: rawValue of: type [
 ]
 
 { #category : #importing }
+FamixValueJavaJacksonImporter >> importObject: rawObject of: type [
+
+	"Keep track of objects by using the id given by Jackson.
+	Objects with the same value are serialized by referencing this id."
+
+	| objectID object |
+	objectID := rawObject removeKey: self idKey.
+	object := objectDict
+		          at: objectID
+		          put: (super importObject: rawObject of: type).
+	"resolve references to this object"
+	objectResolutions at: objectID ifPresent: [ :resolutions | 
+		resolutions do: [ :resolution | resolution value: object ] ]
+]
+
+{ #category : #importing }
 FamixValueJavaJacksonImporter >> importValue: rawValue [
 
 	"Import a raw value, which has been parsed from JSON in Jackson format.
@@ -91,6 +108,14 @@ FamixValueJavaJacksonImporter >> importValueFromList: rawValue of: type [
 				  value: rawValue;
 				  type: type ]
 		  ifFalse: [ self importEnumValue: rawValue of: type ]
+]
+
+{ #category : #initialization }
+FamixValueJavaJacksonImporter >> initialize [
+
+	super initialize.
+	objectDict := Dictionary new.
+	objectResolutions := Dictionary new
 ]
 
 { #category : #'private - utility' }
