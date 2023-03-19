@@ -75,7 +75,6 @@ FamixValueOfType >> type [
 
 	<generated>
 	<FMProperty: #type type: #FamixTType opposite: #values>
-	<package: #'Famix-OpenTelemetry-Value-Entities'>
 	^ self attributeAt: #type ifAbsent: [ nil ]
 ]
 
@@ -92,7 +91,6 @@ FamixValueOfType >> typedEntity [
 
 	<generated>
 	<FMProperty: #typedEntity type: #FamixTTypedEntity opposite: #values>
-	<package: #'Famix-OpenTelemetry-Value-Entities'>
 	^ self attributeAt: #typedEntity ifAbsent: [ nil ]
 ]
 
