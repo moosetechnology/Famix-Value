@@ -15,7 +15,7 @@ FamixValueTWithValueProperty classSide >> annotation [
 	<FMClass: #TWithValueProperty super: #Object>
 	<package: #'Famix-Value-Entities'>
 	<generated>
-	^self
+	^ self
 ]
 
 { #category : #accessing }

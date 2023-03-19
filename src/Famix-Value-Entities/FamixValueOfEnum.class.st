@@ -13,7 +13,7 @@ FamixValueOfEnum class >> annotation [
 	<FMClass: #OfEnum super: #FamixValueOfType>
 	<package: #'Famix-Value-Entities'>
 	<generated>
-	^self
+	^ self
 ]
 
 { #category : #testing }

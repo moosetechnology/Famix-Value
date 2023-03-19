@@ -10,7 +10,15 @@ FamixValueEntity class >> annotation [
 	<FMClass: #Entity super: #MooseEntity>
 	<package: #'Famix-Value-Entities'>
 	<generated>
-	^self
+	<abstract>
+	^ self
+]
+
+{ #category : #testing }
+FamixValueEntity class >> isAbstract [
+
+	<generated>
+	^ self == FamixValueEntity
 ]
 
 { #category : #meta }

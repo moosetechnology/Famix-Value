@@ -5,7 +5,7 @@ Class {
 	#name : #FamixValueOfCollection,
 	#superclass : #FamixValueOfType,
 	#instVars : [
-		'#value => FMMany type: #FamixValueOfType opposite: #valueInCollection'
+		'#value => FMMany type: #FamixValueOfType opposite: #valueInCollections'
 	],
 	#category : #'Famix-Value-Entities-Entities'
 }
@@ -16,7 +16,7 @@ FamixValueOfCollection class >> annotation [
 	<FMClass: #OfCollection super: #FamixValueOfType>
 	<package: #'Famix-Value-Entities'>
 	<generated>
-	^self
+	^ self
 ]
 
 { #category : #adding }
@@ -34,7 +34,7 @@ FamixValueOfCollection >> isOfCollection [
 
 { #category : #accessing }
 FamixValueOfCollection >> value [
-	"Relation named: #value type: #FamixValueOfType opposite: #valueInCollection"
+	"Relation named: #value type: #FamixValueOfType opposite: #valueInCollections"
 
 	<generated>
 	<derived>

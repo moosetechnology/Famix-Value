@@ -15,7 +15,7 @@ FamixValueUnknownType class >> annotation [
 	<FMClass: #UnknownType super: #FamixValueEntity>
 	<package: #'Famix-Value-Entities'>
 	<generated>
-	^self
+	^ self
 ]
 
 { #category : #testing }

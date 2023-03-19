@@ -81,7 +81,8 @@ FamixValueJavaJacksonImporter >> importObject: rawObject of: type [
 		          put: (super importObject: rawObject of: type).
 	"resolve references to this object"
 	objectResolutions at: objectID ifPresent: [ :resolutions | 
-		resolutions do: [ :resolution | resolution value: object ] ]
+		resolutions do: [ :resolution | resolution value: object ] ].
+	^ object
 ]
 
 { #category : #importing }

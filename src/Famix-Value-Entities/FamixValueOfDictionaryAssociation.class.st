@@ -6,8 +6,8 @@ Class {
 	#superclass : #FamixValueEntity,
 	#instVars : [
 		'#dictionary => FMOne type: #FamixValueOfDictionary opposite: #value',
-		'#key => FMOne type: #FamixValueOfType opposite: #keyInDictionary',
-		'#value => FMOne type: #FamixValueOfType opposite: #valueInDictionary'
+		'#key => FMOne type: #FamixValueOfType opposite: #keyInDictionaries',
+		'#value => FMOne type: #FamixValueOfType opposite: #valueInDictionaries'
 	],
 	#category : #'Famix-Value-Entities-Entities'
 }
@@ -18,7 +18,7 @@ FamixValueOfDictionaryAssociation class >> annotation [
 	<FMClass: #OfDictionaryAssociation super: #FamixValueEntity>
 	<package: #'Famix-Value-Entities'>
 	<generated>
-	^self
+	^ self
 ]
 
 { #category : #accessing }
@@ -38,7 +38,7 @@ FamixValueOfDictionaryAssociation >> dictionary: anObject [
 
 { #category : #accessing }
 FamixValueOfDictionaryAssociation >> key [
-	"Relation named: #key type: #FamixValueOfType opposite: #keyInDictionary"
+	"Relation named: #key type: #FamixValueOfType opposite: #keyInDictionaries"
 
 	<generated>
 	^ key
@@ -53,7 +53,7 @@ FamixValueOfDictionaryAssociation >> key: anObject [
 
 { #category : #accessing }
 FamixValueOfDictionaryAssociation >> value [
-	"Relation named: #value type: #FamixValueOfType opposite: #valueInDictionary"
+	"Relation named: #value type: #FamixValueOfType opposite: #valueInDictionaries"
 
 	<generated>
 	^ value

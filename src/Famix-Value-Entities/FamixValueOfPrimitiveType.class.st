@@ -15,7 +15,7 @@ FamixValueOfPrimitiveType class >> annotation [
 	<FMClass: #OfPrimitiveType super: #FamixValueOfType>
 	<package: #'Famix-Value-Entities'>
 	<generated>
-	^self
+	^ self
 ]
 
 { #category : #testing }

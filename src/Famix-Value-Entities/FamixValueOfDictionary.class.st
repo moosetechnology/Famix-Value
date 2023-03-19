@@ -16,7 +16,7 @@ FamixValueOfDictionary class >> annotation [
 	<FMClass: #OfDictionary super: #FamixValueOfType>
 	<package: #'Famix-Value-Entities'>
 	<generated>
-	^self
+	^ self
 ]
 
 { #category : #adding }

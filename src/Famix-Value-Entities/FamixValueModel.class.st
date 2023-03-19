@@ -16,9 +16,3 @@ FamixValueModel class >> annotation [
 	<package: #'Famix-Value-Entities'>
 	<generated>
 ]
-
-{ #category : #testing }
-FamixValueModel class >> canBeImportedFromFile [
-	<generated>
-	^true
-]

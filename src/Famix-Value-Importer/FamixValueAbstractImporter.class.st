@@ -79,7 +79,7 @@ FamixValueAbstractImporter >> importObject: rawValue of: type [
 			do: [ 
 				self onResolved: (self importValue: assoc value) do: [ :value | 
 					value
-						valueInObject: object;
+						addValueInObject: object;
 						typedEntity: attribute ] ] ].
 	^ object
 ]
@@ -177,13 +177,13 @@ FamixValueAbstractImporter >> newValueOfUnknownType [
 { #category : #importing }
 FamixValueAbstractImporter >> onResolved: value do: aBlock [
 
-	value isOfType
-		ifTrue: [ aBlock value: value ]
-		ifFalse: [ 
+	value isInteger
+		ifFalse: [ aBlock value: value ]
+		ifTrue: [ 
 			objectResolutions
 				at: value
 				ifPresent: [ :resolutions | resolutions add: aBlock ]
-				ifAbsentPut: { aBlock } ]
+				ifAbsentPut: (OrderedCollection with: aBlock) ]
 ]
 
 { #category : #parsing }
