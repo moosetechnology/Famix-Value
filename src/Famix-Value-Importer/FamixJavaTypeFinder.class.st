@@ -7,7 +7,7 @@ Class {
 	#category : #'Famix-Value-Importer'
 }
 
-{ #category : #API }
+{ #category : #enumerating }
 FamixJavaTypeFinder >> parseTypeName: name [
 
 	^ (name beginsWithAnyOf: #( 'java.lang.' 'java.util.' ))

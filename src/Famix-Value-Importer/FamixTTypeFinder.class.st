@@ -43,19 +43,19 @@ FamixTTypeFinder >> findTypeWithName: name [
 	^ self detectType: [ :type | type name = name ]
 ]
 
-{ #category : #enumerating }
+{ #category : #accessing }
 FamixTTypeFinder >> model [
 
 	^ model ifNil: [ model := FamixModel new ]
 ]
 
-{ #category : #enumerating }
+{ #category : #accessing }
 FamixTTypeFinder >> model: aFamixModel [
 
 	model := aFamixModel
 ]
 
-{ #category : #API }
+{ #category : #enumerating }
 FamixTTypeFinder >> parseTypeName: name [
 
 	"This method can be overriden, e.g. to modify how the search is executed."
