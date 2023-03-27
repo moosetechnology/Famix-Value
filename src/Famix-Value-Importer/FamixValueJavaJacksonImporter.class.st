@@ -139,6 +139,7 @@ FamixValueJavaJacksonImporter >> parseValue: serializedValue [
 
 	"Import a serialized value."
 
+	self reset.
 	^ self importValue:
 		  (NeoJSONReader on: serializedValue readStream) parseValue
 ]
@@ -146,6 +147,7 @@ FamixValueJavaJacksonImporter >> parseValue: serializedValue [
 { #category : #parsing }
 FamixValueJavaJacksonImporter >> rawValues: serializedValues do: block [
 
+	self reset.
 	((NeoJSONReader on: serializedValues readStream) parseList at: 2) 
 		do: block
 ]

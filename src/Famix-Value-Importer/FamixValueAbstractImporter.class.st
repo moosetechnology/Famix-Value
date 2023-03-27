@@ -102,8 +102,7 @@ FamixValueAbstractImporter >> importValue: rawValue [
 { #category : #initialization }
 FamixValueAbstractImporter >> initialize [
 
-	typeInferences := Stack new.
-	self reset
+	typeInferences := Stack new
 ]
 
 { #category : #testing }
@@ -203,6 +202,7 @@ FamixValueAbstractImporter >> onResolved: value do: aBlock [
 { #category : #parsing }
 FamixValueAbstractImporter >> parseValue: rawValue [
 
+	"should send `reset` message"
 	self subclassResponsibility
 ]
 
@@ -211,6 +211,7 @@ FamixValueAbstractImporter >> rawValues: serializedValues do: block [
 
 	"Iterate over the raw values from a serialized list."
 
+	self reset.
 	(NeoJSONReader on: serializedValues readStream) parseList do: block
 ]
 
