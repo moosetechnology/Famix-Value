@@ -137,55 +137,55 @@ FamixValueAbstractImporter >> model: aModel [
 { #category : #'entity creation' }
 FamixValueAbstractImporter >> newUnknownType [
 
-	^ self model silentlyAdd: FamixValueUnknownType new
+	^ self model add: FamixValueUnknownType new
 ]
 
 { #category : #'private-entity-creation' }
 FamixValueAbstractImporter >> newValueOfAttribute [
 
-	^ self model silentlyAdd: FamixValueOfAttribute new
+	^ self model add: FamixValueOfAttribute new
 ]
 
 { #category : #'entity creation' }
 FamixValueAbstractImporter >> newValueOfCollection [
 
-	^ self model silentlyAdd: FamixValueOfCollection new
+	^ self model add: FamixValueOfCollection new
 ]
 
 { #category : #'entity creation' }
 FamixValueAbstractImporter >> newValueOfDictionary [
 
-	^ self model silentlyAdd: FamixValueOfDictionary new
+	^ self model add: FamixValueOfDictionary new
 ]
 
 { #category : #'entity creation' }
 FamixValueAbstractImporter >> newValueOfDictionaryAssociation [
 
-	^ self model silentlyAdd: FamixValueOfDictionaryAssociation new
+	^ self model add: FamixValueOfDictionaryAssociation new
 ]
 
 { #category : #'entity creation' }
 FamixValueAbstractImporter >> newValueOfEnum [
 
-	^ self model silentlyAdd: FamixValueOfEnum new
+	^ self model add: FamixValueOfEnum new
 ]
 
 { #category : #'entity creation' }
 FamixValueAbstractImporter >> newValueOfObject [
 
-	^ self model silentlyAdd: FamixValueOfObject new
+	^ self model add: FamixValueOfObject new
 ]
 
 { #category : #'entity creation' }
 FamixValueAbstractImporter >> newValueOfPrimitiveType [
 
-	^ self model silentlyAdd: FamixValueOfPrimitiveType new
+	^ self model add: FamixValueOfPrimitiveType new
 ]
 
 { #category : #'entity creation' }
 FamixValueAbstractImporter >> newValueOfUnknownType [
 
-	^ self model silentlyAdd: FamixValueOfUnknownType new
+	^ self model add: FamixValueOfUnknownType new
 ]
 
 { #category : #importing }

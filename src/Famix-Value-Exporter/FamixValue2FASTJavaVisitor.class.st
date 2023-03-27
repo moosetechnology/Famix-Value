@@ -63,109 +63,109 @@ FamixValue2FASTJavaVisitor >> model [
 { #category : #'entity creation' }
 FamixValue2FASTJavaVisitor >> newBooleanLiteral [
 
-	^ self model silentlyAdd: FASTJavaBooleanLiteral new
+	^ self model add: FASTJavaBooleanLiteral new
 ]
 
 { #category : #'entity creation' }
 FamixValue2FASTJavaVisitor >> newBooleanTypeExpression [
 
-	^ self model silentlyAdd: FASTJavaBooleanTypeExpression new
+	^ self model add: FASTJavaBooleanTypeExpression new
 ]
 
 { #category : #'entity creation' }
 FamixValue2FASTJavaVisitor >> newClassProperty [
 
-	^ self model silentlyAdd: FASTJavaClassProperty new
+	^ self model add: FASTJavaClassProperty new
 ]
 
 { #category : #'entity creation' }
 FamixValue2FASTJavaVisitor >> newClassTypeExpression [
 
-	^ self model silentlyAdd: FASTJavaClassTypeExpression new
+	^ self model add: FASTJavaClassTypeExpression new
 ]
 
 { #category : #'entity creation' }
 FamixValue2FASTJavaVisitor >> newExpressionStatement [
 
-	^ self model silentlyAdd: FASTJavaExpressionStatement new
+	^ self model add: FASTJavaExpressionStatement new
 ]
 
 { #category : #'entity creation' }
 FamixValue2FASTJavaVisitor >> newIdentifier [
 
-	^ self model silentlyAdd: FASTJavaIdentifier new
+	^ self model add: FASTJavaIdentifier new
 ]
 
 { #category : #'entity creation' }
 FamixValue2FASTJavaVisitor >> newIntTypeExpression [
 
-	^ self model silentlyAdd: FASTJavaIntTypeExpression new
+	^ self model add: FASTJavaIntTypeExpression new
 ]
 
 { #category : #'entity creation' }
 FamixValue2FASTJavaVisitor >> newIntegerLiteral [
 
-	^ self model silentlyAdd: FASTJavaIntegerLiteral new
+	^ self model add: FASTJavaIntegerLiteral new
 ]
 
 { #category : #'entity creation' }
 FamixValue2FASTJavaVisitor >> newMethodInvocation [
 
-	^ self model silentlyAdd: FASTJavaMethodInvocation new
+	^ self model add: FASTJavaMethodInvocation new
 ]
 
 { #category : #'entity creation' }
 FamixValue2FASTJavaVisitor >> newNewClassExpression [
 
-	^ self model silentlyAdd: FASTJavaNewClassExpression new
+	^ self model add: FASTJavaNewClassExpression new
 ]
 
 { #category : #'entity creation' }
 FamixValue2FASTJavaVisitor >> newNewExpression [
 
-	^ self model silentlyAdd: FASTJavaNewExpression new
+	^ self model add: FASTJavaNewExpression new
 ]
 
 { #category : #'entity creation' }
 FamixValue2FASTJavaVisitor >> newNullLiteral [
 
-	^ self model silentlyAdd: FASTJavaNullLiteral new
+	^ self model add: FASTJavaNullLiteral new
 ]
 
 { #category : #'entity creation' }
 FamixValue2FASTJavaVisitor >> newStatementBlock [
 
-	^ self model silentlyAdd: FASTJavaStatementBlock new
+	^ self model add: FASTJavaStatementBlock new
 ]
 
 { #category : #'entity creation' }
 FamixValue2FASTJavaVisitor >> newStringLiteral [
 
-	^ self model silentlyAdd: FASTJavaStringLiteral new
+	^ self model add: FASTJavaStringLiteral new
 ]
 
 { #category : #'entity creation' }
 FamixValue2FASTJavaVisitor >> newTypeName [
 
-	^ self model silentlyAdd: FASTJavaTypeName new
+	^ self model add: FASTJavaTypeName new
 ]
 
 { #category : #'entity creation' }
 FamixValue2FASTJavaVisitor >> newVarDeclStatement [
 
-	^ self model silentlyAdd: FASTJavaVarDeclStatement new
+	^ self model add: FASTJavaVarDeclStatement new
 ]
 
 { #category : #'entity creation' }
 FamixValue2FASTJavaVisitor >> newVariableDeclarator [
 
-	^ self model silentlyAdd: FASTJavaVariableDeclarator new
+	^ self model add: FASTJavaVariableDeclarator new
 ]
 
 { #category : #'entity creation' }
 FamixValue2FASTJavaVisitor >> newVariableExpression [
 
-	^ self model silentlyAdd: FASTJavaVariableExpression new
+	^ self model add: FASTJavaVariableExpression new
 ]
 
 { #category : #accessing }
