@@ -10,7 +10,6 @@ Class {
 		'model',
 		'typeInferences',
 		'typeFinder',
-		'objectResolutions',
 		'objectDict'
 	],
 	#category : #'Famix-Value-Importer'
@@ -36,30 +35,56 @@ FamixValueAbstractImporter >> getDefaultUnknownType [
 ]
 
 { #category : #importing }
+FamixValueAbstractImporter >> getObjectFromIdentity: id [
+
+	^ objectDict at: id
+]
+
+{ #category : #importing }
+FamixValueAbstractImporter >> getObjectIdentity: rawObject [
+
+	"Subclasses should define unique identifier for objects."
+
+	self subclassResponsibility
+]
+
+{ #category : #importing }
 FamixValueAbstractImporter >> importCollection: rawValue of: type [
+
+	"infer element types from type argument, e.g. List<String> => String"
 
 	| collection |
 	collection := self newValueOfCollection type: type.
-	rawValue do: [ :rawElement | 
-		self
-			onResolved: (self importValue: rawElement)
-			do: [ :value | collection addValue: value ] ].
+	self
+		withTypeInference: (type isParameterizedType
+				 ifTrue: [ type arguments first ]
+				 ifFalse: nil)
+		do: [ 
+			rawValue do: [ :rawElement | 
+				collection addValue: (self importValue: rawElement) ] ].
 	^ collection
 ]
 
 { #category : #importing }
 FamixValueAbstractImporter >> importDictionary: rawValue of: type [
 
-	| dictionary assoc |
+	"infer from type arguments, e.g. Map<String, MyClass>"
+
+	| dictionary keyType valueType assoc |
 	dictionary := self newValueOfDictionary type: type.
+	(type isUnknownType not and: [ type isParameterizedType ])
+		ifTrue: [ 
+			keyType := type keyArgument.
+			valueType := type valueArgument ]
+		ifFalse: [ keyType := valueType := nil ].
 	rawValue associationsDo: [ :rawAssoc | 
 		assoc := self newValueOfDictionaryAssociation dictionary: dictionary.
 		self
-			onResolved: (self importValue: rawAssoc key)
-			do: [ :key | assoc key: key ].
+			withTypeInference: keyType
+			do: [ assoc key: (self importValue: rawAssoc key) ].
 		self
-			onResolved: (self importValue: rawAssoc value)
-			do: [ :value | assoc value: value ] ].
+			withTypeInference: valueType
+			do: [ assoc value: (self importValue: rawAssoc value) ] ].
 	^ dictionary
 ]
 
@@ -74,20 +99,20 @@ FamixValueAbstractImporter >> importEnumValue: rawValue of: type [
 ]
 
 { #category : #importing }
-FamixValueAbstractImporter >> importObject: rawValue of: type [
+FamixValueAbstractImporter >> importObject: rawObject of: type [
 
 	| object attribute |
 	object := self newValueOfObject type: type.
-	rawValue associationsDo: [ :assoc | 
+	objectDict at: (self getObjectIdentity: rawObject) put: object.
+	rawObject associationsDo: [ :assoc | 
 		attribute := self findAttribute: assoc key of: type.
 		self
 			withTypeInference: (attribute ifNotNil: [ attribute declaredType ])
 			do: [ 
-				self onResolved: (self importValue: assoc value) do: [ :value | 
-					self newValueOfAttribute
-						value: value;
-						object: object;
-						attribute: attribute ] ] ].
+				self newValueOfAttribute
+					value: (self importValue: assoc value);
+					object: object;
+					attribute: attribute ] ].
 	^ object
 ]
 
@@ -187,18 +212,6 @@ FamixValueAbstractImporter >> newValueOfUnknownType [
 	^ self model add: FamixValueOfUnknownType new
 ]
 
-{ #category : #importing }
-FamixValueAbstractImporter >> onResolved: value do: aBlock [
-
-	value isInteger
-		ifFalse: [ aBlock value: value ]
-		ifTrue: [ 
-			objectResolutions
-				at: value
-				ifPresent: [ :resolutions | resolutions add: aBlock ]
-				ifAbsentPut: [ OrderedCollection with: aBlock ] ]
-]
-
 { #category : #parsing }
 FamixValueAbstractImporter >> parseValue: rawValue [
 
@@ -220,8 +233,7 @@ FamixValueAbstractImporter >> reset [
 
 	"Forget previous object references."
 
-	objectDict := Dictionary new.
-	objectResolutions := Dictionary new
+	objectDict := Dictionary new
 ]
 
 { #category : #accessing }

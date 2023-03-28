@@ -5,7 +5,8 @@ Integer >> asJavaJacksonValueOn: importer [
 
 	^ (importer typeInference isNotNil and: [ 
 		   (importer isPrimitiveType: importer typeInference) not ])
-		  ifTrue: [ "object reference, will be solved by the importer" self ]
+		  ifTrue: [ "object reference, solved by the importer" 
+			  importer getObjectFromIdentity: self ]
 		  ifFalse: [ "regular int"
 			  importer newValueOfPrimitiveType
 				  value: self;

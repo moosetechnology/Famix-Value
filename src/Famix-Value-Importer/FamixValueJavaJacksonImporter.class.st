@@ -20,6 +20,15 @@ FamixValueJavaJacksonImporter >> getDefaultUnknownType [
 		  ifNone: [ self newUnknownType name: 'Object' ]
 ]
 
+{ #category : #importing }
+FamixValueJavaJacksonImporter >> getObjectIdentity: rawObject [
+
+	"Keep track of objects by using the id given by Jackson.
+	References to previously seen objects are serialized by using this id."
+
+	^ rawObject removeKey: self idKey
+]
+
 { #category : #accessing }
 FamixValueJavaJacksonImporter >> idKey [
 
@@ -30,62 +39,6 @@ FamixValueJavaJacksonImporter >> idKey [
 FamixValueJavaJacksonImporter >> idKey: aString [
 
 	idKey := aString
-]
-
-{ #category : #importing }
-FamixValueJavaJacksonImporter >> importCollection: rawCollection of: type [
-
-	"infer from type argument, e.g. List<String> => String"
-
-	^ self
-		  withTypeInference: (type isParameterizedType
-				   ifTrue: [ type arguments first ]
-				   ifFalse: nil)
-		  do: [ super importCollection: rawCollection of: type ]
-]
-
-{ #category : #importing }
-FamixValueJavaJacksonImporter >> importDictionary: rawValue of: type [
-
-	"infer from type arguments, e.g. Map<String, MyClass>"
-
-	| dictionary keyType valueType assoc |
-	dictionary := self newValueOfDictionary type: type.
-	(type isUnknownType not and: [ type isParameterizedType ])
-		ifTrue: [ 
-			keyType := type arguments first.
-			valueType := type arguments second ]
-		ifFalse: [ keyType := valueType := nil ].
-	rawValue associationsDo: [ :rawAssoc | 
-		assoc := self newValueOfDictionaryAssociation dictionary: dictionary.
-		self withTypeInference: keyType do: [ 
-			self
-				onResolved: (self importValue: rawAssoc key)
-				do: [ :value | assoc key: value ] ].
-		self withTypeInference: valueType do: [ 
-			self
-				onResolved: (self importValue: rawAssoc value)
-				do: [ :value | assoc value: value ] ] ].
-	^ dictionary
-]
-
-{ #category : #importing }
-FamixValueJavaJacksonImporter >> importObject: rawObject of: type [
-
-	"Keep track of objects by using the id given by Jackson.
-	Objects with the same value are serialized by referencing this id."
-
-	| objectID object |
-	objectID := rawObject removeKey: self idKey.
-	object := objectDict
-		          at: objectID
-		          put: (super importObject: rawObject of: type).
-	"resolve references to this object"
-	objectResolutions at: objectID ifPresent: [ :resolutions | 
-		resolutions do: [ :resolution | resolution value: object ].
-		objectResolutions removeKey: objectID ].
-
-	^ object
 ]
 
 { #category : #importing }
@@ -106,12 +59,11 @@ FamixValueJavaJacksonImporter >> importValueFromList: rawValue of: type [
 		^ self newValueOfUnknownType
 			  value: rawValue;
 			  type: type ].
-	^ (self isPrimitiveType: type)
-		  ifTrue: [ 
-			  self newValueOfPrimitiveType
-				  value: rawValue;
-				  type: type ]
-		  ifFalse: [ self importEnumValue: rawValue of: type ]
+	(type class usesTrait: FamixTEnum) ifTrue: [ 
+		^ self importEnumValue: rawValue of: type ].
+	^ self newValueOfPrimitiveType
+		  value: rawValue;
+		  type: type
 ]
 
 { #category : #'private - utility' }
@@ -146,6 +98,8 @@ FamixValueJavaJacksonImporter >> parseValue: serializedValue [
 
 { #category : #parsing }
 FamixValueJavaJacksonImporter >> rawValues: serializedValues do: block [
+
+	"Ignore the type information of the top level list."
 
 	self reset.
 	((NeoJSONReader on: serializedValues readStream) parseList at: 2) 
