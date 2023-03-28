@@ -213,10 +213,13 @@ FamixValueAbstractImporter >> newValueOfUnknownType [
 ]
 
 { #category : #parsing }
-FamixValueAbstractImporter >> parseValue: rawValue [
+FamixValueAbstractImporter >> parseValue: serializedValue [
 
-	"should send `reset` message"
-	self subclassResponsibility
+	"Parse and import a serialized value."
+
+	self reset.
+	^ self importValue:
+		  (NeoJSONReader on: serializedValue readStream) parseValue
 ]
 
 { #category : #parsing }
@@ -231,7 +234,7 @@ FamixValueAbstractImporter >> rawValues: serializedValues do: block [
 { #category : #initialization }
 FamixValueAbstractImporter >> reset [
 
-	"Forget previous object references."
+	"Forget previous object identities."
 
 	objectDict := Dictionary new
 ]

@@ -87,16 +87,6 @@ FamixValueJavaJacksonImporter >> isProcedure: method [
 ]
 
 { #category : #parsing }
-FamixValueJavaJacksonImporter >> parseValue: serializedValue [
-
-	"Import a serialized value."
-
-	self reset.
-	^ self importValue:
-		  (NeoJSONReader on: serializedValue readStream) parseValue
-]
-
-{ #category : #parsing }
 FamixValueJavaJacksonImporter >> rawValues: serializedValues do: block [
 
 	"Ignore the type information of the top level list."
