@@ -258,17 +258,18 @@ FamixValue2FASTJavaVisitor >> visitEnumValue: enumValue [
 FamixValue2FASTJavaVisitor >> visitObject: object [
 
 	self statements addStatement: (self makeVarDeclStatement: object).
-	object value do: [ :attribute | 
-		self visitObject: object attribute: attribute ].
+	object value do: [ :attribute | self visitObjectAttribute: attribute ].
 	^ statements
 ]
 
 { #category : #visiting }
-FamixValue2FASTJavaVisitor >> visitObject: object attribute: attribute [
+FamixValue2FASTJavaVisitor >> visitObjectAttribute: aFamixValueOfAttribute [
 
-	| setter |
-	attribute typedEntity ifNil: [ "ignore unknown attributes" ^ self ].
-	attribute accept: self. "generate var for attribute"
+	| attribute object setter |
+	(attribute := aFamixValueOfAttribute value) typedEntity ifNil: [ "ignore unknown attributes" 
+		^ self ].
+	attribute accept: self. "generate var for attribute value"
+	object := aFamixValueOfAttribute object.
 	setter := object type allMethods detect: [ :method | 
 		          method isSetter and: [ 
 			          method name
