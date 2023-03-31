@@ -8,13 +8,7 @@ Class {
 		'intPrimitive',
 		'boolPrimitive',
 		'stringPrimitive',
-		'collection',
-		'dictionary',
-		'object',
-		'dictAssoc1',
-		'attribute',
-		'nullString',
-		'enumValue'
+		'nullString'
 	],
 	#category : #'Famix-Value-Exporter-Tests'
 }
@@ -35,38 +29,18 @@ FamixValue2FASTJavaVisitorTest >> setUp [
 		                   type: (FamixJavaClass new name: 'String').
 	nullString := FamixValueOfUnknownType new
 		              value: nil;
-		              type: (FamixJavaClass new name: 'String').
+		              type: (FamixJavaClass new name: 'String')
+]
+
+{ #category : #tests }
+FamixValue2FASTJavaVisitorTest >> testVisitCollection [
+
+	| collection |
 	collection := FamixValueOfCollection new type:
 		              (FamixJavaParameterizedType new
 			               parameterizableClass:
 				               (FamixJavaParameterizableClass new name: 'List');
 			               arguments: { (FamixJavaClass new name: 'String') }).
-	dictionary := FamixValueOfDictionary new type:
-		              (FamixJavaParameterizedType new
-			               parameterizableClass:
-				               (FamixJavaParameterizableClass new name: 'Map');
-			               arguments: { (FamixJavaClass new name: 'Object') }).
-	dictAssoc1 := FamixValueOfDictionaryAssociation new
-		              key: stringPrimitive;
-		              value: intPrimitive.
-	"Class with a method that answers true to isSetter. FamixValue and FamixJava are not linked yet, they will be in the test."
-	object := FamixValueOfObject new
-		          type: (FamixJavaClass new
-				           name: 'MyClass';
-				           addAttribute: (FamixJavaAttribute new name: 'foo');
-				           addMethod: (FamixJavaMethod new
-						            name: 'setFoo';
-						            declaredType: (FamixJavaType new name: 'void');
-						            parameters: { FamixJavaParameter new }));
-		          yourself.
-
-	enumValue := FamixValueOfEnum new
-		             value: (FamixJavaEnumValue new name: 'ENUM_VALUE');
-		             type: (FamixJavaEnum new name: 'MyEnum')
-]
-
-{ #category : #tests }
-FamixValue2FASTJavaVisitorTest >> testVisitCollection [
 
 	self assert: collection asJavaSourceCode equals: '{
   List<String> list0 = new ArrayList<String>();
@@ -95,12 +69,20 @@ FamixValue2FASTJavaVisitorTest >> testVisitCollection [
 { #category : #tests }
 FamixValue2FASTJavaVisitorTest >> testVisitDictionary [
 
+	| dictionary |
+	dictionary := FamixValueOfDictionary new type:
+		              (FamixJavaParameterizedType new
+			               parameterizableClass:
+				               (FamixJavaParameterizableClass new name: 'Map');
+			               arguments: { (FamixJavaClass new name: 'Object') }).
 	self assert: dictionary asJavaSourceCode equals: '{
   Map<Object, Object> map0 = new HashMap<Object, Object>();
 }
 '.
 
-	dictionary addValue: dictAssoc1.
+	dictionary addValue: (FamixValueOfDictionaryAssociation new
+			 key: stringPrimitive;
+			 value: intPrimitive).
 	self assert: dictionary asJavaSourceCode equals: '{
   Map<Object, Object> map0 = new HashMap<Object, Object>();
   String string1 = "hello";
@@ -113,6 +95,11 @@ FamixValue2FASTJavaVisitorTest >> testVisitDictionary [
 { #category : #tests }
 FamixValue2FASTJavaVisitorTest >> testVisitEnumValue [
 
+	| enumValue |
+	enumValue := FamixValueOfEnum new
+		             value: (FamixJavaEnumValue new name: 'ENUM_VALUE');
+		             type: (FamixJavaEnum new name: 'MyEnum').
+
 	self assert: enumValue asJavaSourceCode equals: '{
   MyEnum myEnum0 = MyEnum.ENUM_VALUE;
 }
@@ -122,15 +109,26 @@ FamixValue2FASTJavaVisitorTest >> testVisitEnumValue [
 { #category : #tests }
 FamixValue2FASTJavaVisitorTest >> testVisitObject [
 
-	"no attributes"
+	| object |
+	"Class with a method that answers true to isSetter."
+	object := FamixValueOfObject new
+		          type: (FamixJavaClass new
+				           name: 'MyClass';
+				           addAttribute: (FamixJavaAttribute new name: 'foo');
+				           addMethod: (FamixJavaMethod new
+						            name: 'setFoo';
+						            declaredType: (FamixJavaType new name: 'void');
+						            parameters: { FamixJavaParameter new }));
+		          yourself.
 
+	"no attributes"
 	self assert: object asJavaSourceCode equals: '{
   MyClass myClass0 = new MyClass();
 }
 '.
 
 	"with an attribute"
-	object addValue: boolPrimitive.
+	object addValue: (FamixValueOfAttribute new value: boolPrimitive).
 	boolPrimitive typedEntity: object type attributes first.
 	self assert: object asJavaSourceCode equals: '{
   MyClass myClass0 = new MyClass();
