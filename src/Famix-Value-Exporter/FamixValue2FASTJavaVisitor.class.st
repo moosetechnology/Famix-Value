@@ -170,12 +170,13 @@ FamixValue2FASTJavaVisitor >> visitObjectAttribute: aFamixValueOfAttribute [
 				          endsWith: attribute typedEntity name
 				          caseSensitive: false ] ].
 	self statements addStatement:
-		(self newExpressionStatement expression: (self newMethodInvocation
+		(self model newExpressionStatement expression:
+			 (model newMethodInvocation
 				  receiver:
-					  (self newIdentifier name: (self varNameDict at: object));
+					  (model newIdentifier name: (self varNameDict at: object));
 				  name: setter name;
 				  addArgument:
-					  (self newVariableExpression name:
+					  (model newVariableExpression name:
 							   (self varNameDict at: attribute));
 				  yourself))
 ]
