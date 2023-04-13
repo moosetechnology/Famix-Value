@@ -20,21 +20,21 @@ Class {
 { #category : #ast }
 FamixValue2FASTJavaVisitor >> makeClassTypeExpression: typeName [
 
-	^ self newClassTypeExpression typeName:
-		  (self newTypeName name: typeName)
+	^ self model newClassTypeExpression typeName:
+		  (model newTypeName name: typeName)
 ]
 
 { #category : #ast }
 FamixValue2FASTJavaVisitor >> makeNewExpression: object [
 
-	^ self newNewExpression type:
+	^ self model newNewExpression type:
 		  (self makeClassTypeExpression: object type concreteTypeName)
 ]
 
 { #category : #ast }
 FamixValue2FASTJavaVisitor >> makeVarDeclStatement: value [
 
-	^ self newVarDeclStatement
+	^ self model newVarDeclStatement
 		  type: (value asFASTJavaTypeExpressionOn: self);
 		  addDeclarator: (self makeVariableDeclarator: value);
 		  yourself
@@ -43,7 +43,7 @@ FamixValue2FASTJavaVisitor >> makeVarDeclStatement: value [
 { #category : #ast }
 FamixValue2FASTJavaVisitor >> makeVariableDeclarator: value [
 
-	^ self newVariableDeclarator
+	^ self model newVariableDeclarator
 		  variable: (self makeVariableExpression: value);
 		  expression: (value asFASTJavaExpressionOn: self)
 ]
@@ -51,121 +51,13 @@ FamixValue2FASTJavaVisitor >> makeVariableDeclarator: value [
 { #category : #ast }
 FamixValue2FASTJavaVisitor >> makeVariableExpression: value [
 
-	^ self newVariableExpression name: (self varNameFor: value)
+	^ self model newVariableExpression name: (self varNameFor: value)
 ]
 
 { #category : #accessing }
 FamixValue2FASTJavaVisitor >> model [
 
 	^ model ifNil: [ model := FASTJavaModel new ]
-]
-
-{ #category : #'entity creation' }
-FamixValue2FASTJavaVisitor >> newBooleanLiteral [
-
-	^ self model add: FASTJavaBooleanLiteral new
-]
-
-{ #category : #'entity creation' }
-FamixValue2FASTJavaVisitor >> newBooleanTypeExpression [
-
-	^ self model add: FASTJavaBooleanTypeExpression new
-]
-
-{ #category : #'entity creation' }
-FamixValue2FASTJavaVisitor >> newClassProperty [
-
-	^ self model add: FASTJavaClassProperty new
-]
-
-{ #category : #'entity creation' }
-FamixValue2FASTJavaVisitor >> newClassTypeExpression [
-
-	^ self model add: FASTJavaClassTypeExpression new
-]
-
-{ #category : #'entity creation' }
-FamixValue2FASTJavaVisitor >> newExpressionStatement [
-
-	^ self model add: FASTJavaExpressionStatement new
-]
-
-{ #category : #'entity creation' }
-FamixValue2FASTJavaVisitor >> newIdentifier [
-
-	^ self model add: FASTJavaIdentifier new
-]
-
-{ #category : #'entity creation' }
-FamixValue2FASTJavaVisitor >> newIntTypeExpression [
-
-	^ self model add: FASTJavaIntTypeExpression new
-]
-
-{ #category : #'entity creation' }
-FamixValue2FASTJavaVisitor >> newIntegerLiteral [
-
-	^ self model add: FASTJavaIntegerLiteral new
-]
-
-{ #category : #'entity creation' }
-FamixValue2FASTJavaVisitor >> newMethodInvocation [
-
-	^ self model add: FASTJavaMethodInvocation new
-]
-
-{ #category : #'entity creation' }
-FamixValue2FASTJavaVisitor >> newNewClassExpression [
-
-	^ self model add: FASTJavaNewClassExpression new
-]
-
-{ #category : #'entity creation' }
-FamixValue2FASTJavaVisitor >> newNewExpression [
-
-	^ self model add: FASTJavaNewExpression new
-]
-
-{ #category : #'entity creation' }
-FamixValue2FASTJavaVisitor >> newNullLiteral [
-
-	^ self model add: FASTJavaNullLiteral new
-]
-
-{ #category : #'entity creation' }
-FamixValue2FASTJavaVisitor >> newStatementBlock [
-
-	^ self model add: FASTJavaStatementBlock new
-]
-
-{ #category : #'entity creation' }
-FamixValue2FASTJavaVisitor >> newStringLiteral [
-
-	^ self model add: FASTJavaStringLiteral new
-]
-
-{ #category : #'entity creation' }
-FamixValue2FASTJavaVisitor >> newTypeName [
-
-	^ self model add: FASTJavaTypeName new
-]
-
-{ #category : #'entity creation' }
-FamixValue2FASTJavaVisitor >> newVarDeclStatement [
-
-	^ self model add: FASTJavaVarDeclStatement new
-]
-
-{ #category : #'entity creation' }
-FamixValue2FASTJavaVisitor >> newVariableDeclarator [
-
-	^ self model add: FASTJavaVariableDeclarator new
-]
-
-{ #category : #'entity creation' }
-FamixValue2FASTJavaVisitor >> newVariableExpression [
-
-	^ self model add: FASTJavaVariableExpression new
 ]
 
 { #category : #accessing }
@@ -177,7 +69,7 @@ FamixValue2FASTJavaVisitor >> nextId [
 { #category : #accessing }
 FamixValue2FASTJavaVisitor >> statements [
 
-	^ statements ifNil: [ statements := self newStatementBlock ]
+	^ statements ifNil: [ statements := self model newStatementBlock ]
 ]
 
 { #category : #accessing }
@@ -210,12 +102,13 @@ FamixValue2FASTJavaVisitor >> visitCollection: collection element: element [
 
 	element accept: self.
 	self statements addStatement:
-		(self newExpressionStatement expression: (self newMethodInvocation
+		(self model newExpressionStatement expression:
+			 (model newMethodInvocation
 				  receiver:
-					  (self newIdentifier name: (self varNameDict at: collection));
+					  (model newIdentifier name: (self varNameDict at: collection));
 				  name: #add;
 				  addArgument:
-					  (self newVariableExpression name:
+					  (model newVariableExpression name:
 							   (self varNameDict at: element));
 				  yourself))
 ]
@@ -235,13 +128,14 @@ FamixValue2FASTJavaVisitor >> visitDictionaryAssociation: association [
 	association key accept: self.
 	association value accept: self.
 	self statements addStatement:
-		(self newExpressionStatement expression: (self newMethodInvocation
-				  receiver: (self newIdentifier name:
+		(self model newExpressionStatement expression:
+			 (model newMethodInvocation
+				  receiver: (model newIdentifier name:
 							   (self varNameDict at: association dictionary));
 				  name: #put;
-				  addArgument: (self newVariableExpression name:
+				  addArgument: (model newVariableExpression name:
 							   (self varNameDict at: association key));
-				  addArgument: (self newVariableExpression name:
+				  addArgument: (model newVariableExpression name:
 							   (self varNameDict at: association value));
 				  yourself))
 ]
@@ -275,12 +169,13 @@ FamixValue2FASTJavaVisitor >> visitObject: object attribute: attribute [
 				          endsWith: attribute typedEntity name
 				          caseSensitive: false ] ].
 	self statements addStatement:
-		(self newExpressionStatement expression: (self newMethodInvocation
+		(self model newExpressionStatement expression:
+			 (model newMethodInvocation
 				  receiver:
-					  (self newIdentifier name: (self varNameDict at: object));
+					  (model newIdentifier name: (self varNameDict at: object));
 				  name: setter name;
 				  addArgument:
-					  (self newVariableExpression name:
+					  (model newVariableExpression name:
 							   (self varNameDict at: attribute));
 				  yourself))
 ]

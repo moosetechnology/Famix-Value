@@ -9,7 +9,7 @@ FamixValueOfEnum >> accept: visitor [
 { #category : #'*Famix-Value-Exporter' }
 FamixValueOfEnum >> asFASTJavaExpressionOn: visitor [
 
-	^ visitor newClassProperty
+	^ visitor model newClassProperty
 		  fieldName: self value name;
-		  type: (visitor newVariableExpression name: self type name)
+		  type: (visitor model newVariableExpression name: self type name)
 ]
