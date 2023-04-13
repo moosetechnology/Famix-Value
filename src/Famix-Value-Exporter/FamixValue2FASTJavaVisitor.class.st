@@ -152,30 +152,30 @@ FamixValue2FASTJavaVisitor >> visitEnumValue: enumValue [
 FamixValue2FASTJavaVisitor >> visitObject: object [
 
 	self statements addStatement: (self makeVarDeclStatement: object).
-	object value do: [ :attribute | 
-		self visitObject: object attribute: attribute ].
+	object value do: [ :attribute | self visitObjectAttribute: attribute ].
 	^ statements
 ]
 
 { #category : #visiting }
-FamixValue2FASTJavaVisitor >> visitObject: object attribute: attribute [
+FamixValue2FASTJavaVisitor >> visitObjectAttribute: aFamixValueOfAttribute [
 
-	| setter |
-	attribute typedEntity ifNil: [ "ignore unknown attributes" ^ self ].
-	attribute accept: self. "generate var for attribute"
+	| attribute object setter |
+	(attribute := aFamixValueOfAttribute value) typedEntity ifNil: [ "ignore unknown attributes" 
+		^ self ].
+	attribute accept: self. "generate var for attribute value"
+	object := aFamixValueOfAttribute object.
 	setter := object type allMethods detect: [ :method | 
 		          method isSetter and: [ 
 			          method name
 				          endsWith: attribute typedEntity name
 				          caseSensitive: false ] ].
 	self statements addStatement:
-		(self model newExpressionStatement expression:
-			 (model newMethodInvocation
+		(self newExpressionStatement expression: (self newMethodInvocation
 				  receiver:
-					  (model newIdentifier name: (self varNameDict at: object));
+					  (self newIdentifier name: (self varNameDict at: object));
 				  name: setter name;
 				  addArgument:
-					  (model newVariableExpression name:
+					  (self newVariableExpression name:
 							   (self varNameDict at: attribute));
 				  yourself))
 ]
