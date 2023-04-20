@@ -44,20 +44,21 @@ FamixValue2FASTJavaVisitor >> makeVarDeclStatement: value [
 FamixValue2FASTJavaVisitor >> makeVariableDeclarator: value [
 
 	^ self model newVariableDeclarator
-		  variable: (self makeVariableExpression: value);
+		  variable:
+			  (self model newVariableExpression name: (self varNameFor: value));
 		  expression: (value asFASTJavaExpressionOn: self)
-]
-
-{ #category : #ast }
-FamixValue2FASTJavaVisitor >> makeVariableExpression: value [
-
-	^ self model newVariableExpression name: (self varNameFor: value)
 ]
 
 { #category : #accessing }
 FamixValue2FASTJavaVisitor >> model [
 
 	^ model ifNil: [ model := FASTJavaModel new ]
+]
+
+{ #category : #accessing }
+FamixValue2FASTJavaVisitor >> model: aFASTJavaModel [
+
+	model := aFASTJavaModel
 ]
 
 { #category : #accessing }
