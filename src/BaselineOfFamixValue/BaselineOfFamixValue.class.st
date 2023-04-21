@@ -9,13 +9,13 @@ BaselineOfFamixValue >> baseline: spec [
 
 	<baseline>
 	spec for: #common do: [ 
-		self defineDependencies: spec.
-		self definePackages: spec.
-		self defineGroups: spec ]
+		self dependencies: spec.
+		self packages: spec.
+		self groups: spec ]
 ]
 
 { #category : #baselines }
-BaselineOfFamixValue >> defineDependencies: spec [
+BaselineOfFamixValue >> dependencies: spec [
 
 	spec baseline: 'FASTJava' with: [ 
 		spec
@@ -24,7 +24,7 @@ BaselineOfFamixValue >> defineDependencies: spec [
 ]
 
 { #category : #baselines }
-BaselineOfFamixValue >> defineGroups: spec [
+BaselineOfFamixValue >> groups: spec [
 
 	spec
 		group: 'default' with: #( 'model' 'importer' );
@@ -39,7 +39,7 @@ BaselineOfFamixValue >> defineGroups: spec [
 ]
 
 { #category : #baselines }
-BaselineOfFamixValue >> definePackages: spec [
+BaselineOfFamixValue >> packages: spec [
 
 	spec
 		package: 'Famix-Value-Entities';
