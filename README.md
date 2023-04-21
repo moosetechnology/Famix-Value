@@ -2,7 +2,7 @@
 
 Famix-Value is a metamodel for representing runtime values and their corresponding types and entities in a [Famix](https://github.com/moosetechnology/Famix) model.  
 The goal is to simplify working with values from languages other than Smalltalk by reifying them and linking them to the Famix model of the application that produced them.  
-This project allows exporting the values to code so that the values can be recreated in their original programming language.
+This project allows exporting the values to code so that they can be recreated in their original programming language.
 
 ## Installation
 
