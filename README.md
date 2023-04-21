@@ -25,7 +25,7 @@ public class MyClass {
 And the JSON serialization of an instance, produced by the Jackson library:
 ```json
 {
-  "@type": "foo.MyClass",
+  "@type": "MyClass",
   "foo": 42,
   "bar": ["java.util.ArrayList", ["Hello", "World"]]
 }
