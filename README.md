@@ -1,7 +1,7 @@
 # Famix-Value
 
-Famix-Value is a metamodel for representing runtime values and their corresponding types and entities in a Famix model.
-The goal is to simplify working with values from languages other than Smalltalk by reifying them and linking them to the Famix model of the application that produced them.
+Famix-Value is a metamodel for representing runtime values and their corresponding types and entities in a [Famix](https://github.com/moosetechnology/Famix) model.  
+The goal is to simplify working with values from languages other than Smalltalk by reifying them and linking them to the Famix model of the application that produced them.  
 This project allows exporting the values to code so that the values can be recreated in their original programming language.
 
 ## Installation
@@ -41,5 +41,6 @@ String string3 = "Hello";
 bar2.add(string3);
 String string4 = "World";
 bar2.add(string4);
+myClass0.setBar(bar2);
 ```
 This is a work in progress: there are plans to improve the readability of the code, for example by inlining primitives or giving variables better names.
