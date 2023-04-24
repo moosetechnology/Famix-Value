@@ -1,6 +1,8 @@
 Class {
 	#name : #FamixValueModel,
 	#superclass : #MooseModel,
+	#traits : 'FamixValueTEntityCreator',
+	#classTraits : 'FamixValueTEntityCreator classTrait',
 	#category : #'Famix-Value-Entities-Model'
 }
 
