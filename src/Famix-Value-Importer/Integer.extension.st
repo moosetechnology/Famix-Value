@@ -8,7 +8,7 @@ Integer >> asJavaJacksonValueOn: importer [
 		  ifTrue: [ "object reference, solved by the importer" 
 			  importer getObjectFromIdentity: self ]
 		  ifFalse: [ "regular int"
-			  importer newValueOfPrimitiveType
+			  importer model newOfPrimitiveType
 				  value: self;
 				  type: (importer loadTypeNamed: 'int') ]
 ]

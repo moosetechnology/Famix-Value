@@ -31,7 +31,7 @@ FamixValueAbstractImporter >> getDefaultUnknownType [
 
 	^ (self model allWithType: FamixValueUnknownType)
 		  detect: [ :type | type name = '<UnknownType>' ]
-		  ifNone: [ self newUnknownType name: '<UnknownType>' ]
+		  ifNone: [ self model newUnknownType name: '<UnknownType>' ]
 ]
 
 { #category : #importing }
@@ -54,7 +54,7 @@ FamixValueAbstractImporter >> importCollection: rawValue of: type [
 	"infer element types from type argument, e.g. List<String> => String"
 
 	| collection |
-	collection := self newValueOfCollection type: type.
+	collection := self model newOfCollection type: type.
 	self
 		withTypeInference: (type isParameterizedType
 				 ifTrue: [ type arguments first ]
@@ -71,14 +71,15 @@ FamixValueAbstractImporter >> importDictionary: rawValue of: type [
 	"infer from type arguments, e.g. Map<String, MyClass>"
 
 	| dictionary keyType valueType assoc |
-	dictionary := self newValueOfDictionary type: type.
+	dictionary := self model newOfDictionary type: type.
 	(type isUnknownType not and: [ type isParameterizedType ])
 		ifTrue: [ 
 			keyType := type keyArgument.
 			valueType := type valueArgument ]
 		ifFalse: [ keyType := valueType := nil ].
 	rawValue associationsDo: [ :rawAssoc | 
-		assoc := self newValueOfDictionaryAssociation dictionary: dictionary.
+		assoc := self model newOfDictionaryAssociation dictionary:
+			         dictionary.
 		self
 			withTypeInference: keyType
 			do: [ assoc key: (self importValue: rawAssoc key) ].
@@ -91,7 +92,7 @@ FamixValueAbstractImporter >> importDictionary: rawValue of: type [
 { #category : #importing }
 FamixValueAbstractImporter >> importEnumValue: rawValue of: type [
 
-	^ self newValueOfEnum
+	^ self model newOfEnum
 		  type: type;
 		  value:
 			  (type enumValues detect: [ :enumValue | 
@@ -102,14 +103,14 @@ FamixValueAbstractImporter >> importEnumValue: rawValue of: type [
 FamixValueAbstractImporter >> importObject: rawObject of: type [
 
 	| object attribute |
-	object := self newValueOfObject type: type.
+	object := self model newOfObject type: type.
 	objectDict at: (self getObjectIdentity: rawObject) put: object.
 	rawObject associationsDo: [ :assoc | 
 		attribute := self findAttribute: assoc key of: type.
 		self
 			withTypeInference: (attribute ifNotNil: [ attribute declaredType ])
 			do: [ 
-				self newValueOfAttribute
+				self model newOfAttribute
 					value: (self importValue: assoc value);
 					object: object;
 					attribute: attribute ] ].
@@ -143,7 +144,7 @@ FamixValueAbstractImporter >> loadTypeNamed: fullyQualifiedName [
 
 	^ (self typeFinder findTypeNamed: fullyQualifiedName) ifNil: [ 
 		  self typeInference ifNil: [ 
-			  self newUnknownType name: fullyQualifiedName ] ]
+			  self model newUnknownType name: fullyQualifiedName ] ]
 ]
 
 { #category : #accessing }
@@ -156,60 +157,6 @@ FamixValueAbstractImporter >> model [
 FamixValueAbstractImporter >> model: aModel [
 
 	model := aModel
-]
-
-{ #category : #'entity creation' }
-FamixValueAbstractImporter >> newUnknownType [
-
-	^ self model add: FamixValueUnknownType new
-]
-
-{ #category : #'private-entity-creation' }
-FamixValueAbstractImporter >> newValueOfAttribute [
-
-	^ self model add: FamixValueOfAttribute new
-]
-
-{ #category : #'entity creation' }
-FamixValueAbstractImporter >> newValueOfCollection [
-
-	^ self model add: FamixValueOfCollection new
-]
-
-{ #category : #'entity creation' }
-FamixValueAbstractImporter >> newValueOfDictionary [
-
-	^ self model add: FamixValueOfDictionary new
-]
-
-{ #category : #'entity creation' }
-FamixValueAbstractImporter >> newValueOfDictionaryAssociation [
-
-	^ self model add: FamixValueOfDictionaryAssociation new
-]
-
-{ #category : #'entity creation' }
-FamixValueAbstractImporter >> newValueOfEnum [
-
-	^ self model add: FamixValueOfEnum new
-]
-
-{ #category : #'entity creation' }
-FamixValueAbstractImporter >> newValueOfObject [
-
-	^ self model add: FamixValueOfObject new
-]
-
-{ #category : #'entity creation' }
-FamixValueAbstractImporter >> newValueOfPrimitiveType [
-
-	^ self model add: FamixValueOfPrimitiveType new
-]
-
-{ #category : #'entity creation' }
-FamixValueAbstractImporter >> newValueOfUnknownType [
-
-	^ self model add: FamixValueOfUnknownType new
 ]
 
 { #category : #parsing }

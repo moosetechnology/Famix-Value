@@ -3,7 +3,7 @@ Extension { #name : #Boolean }
 { #category : #'*Famix-Value-Importer' }
 Boolean >> asJavaJacksonValueOn: importer [
 
-	^ importer newValueOfPrimitiveType
+	^ importer model newOfPrimitiveType
 		  value: self;
 		  type: (importer loadTypeNamed: 'boolean')
 ]

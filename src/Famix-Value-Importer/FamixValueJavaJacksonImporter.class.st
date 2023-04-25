@@ -17,7 +17,7 @@ FamixValueJavaJacksonImporter >> getDefaultUnknownType [
 
 	^ (self model allWithType: FamixValueUnknownType)
 		  detect: [ :type | type name = 'Object' ]
-		  ifNone: [ self newUnknownType name: 'Object' ]
+		  ifNone: [ self model newUnknownType name: 'Object' ]
 ]
 
 { #category : #importing }
@@ -56,12 +56,12 @@ FamixValueJavaJacksonImporter >> importValueFromList: rawValue of: type [
 	rawValue isCollection ifTrue: [ 
 		^ self importCollection: rawValue of: type ].
 	type isUnknownType ifTrue: [ 
-		^ self newValueOfUnknownType
+		^ self model newOfUnknownType
 			  value: rawValue;
 			  type: type ].
 	(type class usesTrait: FamixTEnum) ifTrue: [ 
 		^ self importEnumValue: rawValue of: type ].
-	^ self newValueOfPrimitiveType
+	^ self model newOfPrimitiveType
 		  value: rawValue;
 		  type: type
 ]
