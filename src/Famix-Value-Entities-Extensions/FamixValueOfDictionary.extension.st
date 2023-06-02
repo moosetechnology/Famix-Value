@@ -4,6 +4,6 @@ Extension { #name : #FamixValueOfDictionary }
 FamixValueOfDictionary >> printValueOn: aStream [
 
 	aStream << ${ << self value size asString << ' association'.
-	self value size ~= 1 ifTrue: [ aStream << $s ].
+	self value size = 1 ifFalse: [ aStream << $s ].
 	aStream << $}
 ]

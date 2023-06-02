@@ -1,5 +1,5 @@
 "
-A value of an attribute, belonging to an object.
+A value of an attribute that belongs to an object.
 "
 Class {
 	#name : #FamixValueOfAttribute,

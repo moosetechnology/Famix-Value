@@ -1,5 +1,5 @@
 "
-The value of an object.
+A value of an object.
 "
 Class {
 	#name : #FamixValueOfObject,

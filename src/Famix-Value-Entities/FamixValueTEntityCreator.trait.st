@@ -31,6 +31,13 @@ FamixValueTEntityCreator >> newOfCollection [
 ]
 
 { #category : #'entity creation' }
+FamixValueTEntityCreator >> newOfCollectionElement [
+
+	<generated>
+	^ self add: FamixValueOfCollectionElement new
+]
+
+{ #category : #'entity creation' }
 FamixValueTEntityCreator >> newOfDictionary [
 
 	<generated>
@@ -63,13 +70,6 @@ FamixValueTEntityCreator >> newOfPrimitiveType [
 
 	<generated>
 	^ self add: FamixValueOfPrimitiveType new
-]
-
-{ #category : #'entity creation' }
-FamixValueTEntityCreator >> newOfType [
-
-	<generated>
-	^ self add: FamixValueOfType new
 ]
 
 { #category : #'entity creation' }

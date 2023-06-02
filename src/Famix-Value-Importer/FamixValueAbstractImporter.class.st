@@ -56,12 +56,12 @@ FamixValueAbstractImporter >> importCollection: rawValue of: type [
 	| collection |
 	collection := self model newOfCollection type: type.
 	self
-		withTypeInference: (type isParameterizedType
-				 ifTrue: [ type arguments first ]
-				 ifFalse: nil)
+		withTypeInference:
+		(type isParameterizedType ifTrue: [ type arguments first ])
 		do: [ 
 			rawValue do: [ :rawElement | 
-				collection addValue: (self importValue: rawElement) ] ].
+				collection addValue: (self model newOfCollectionElement value:
+						 (self importValue: rawElement)) ] ].
 	^ collection
 ]
 

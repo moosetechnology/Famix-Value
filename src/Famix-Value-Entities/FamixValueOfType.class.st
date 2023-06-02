@@ -5,8 +5,8 @@ Class {
 	#name : #FamixValueOfType,
 	#superclass : #FamixValueEntity,
 	#instVars : [
+		'#elementInCollections => FMMany type: #FamixValueOfCollectionElement opposite: #value',
 		'#keyInDictionaries => FMMany type: #FamixValueOfDictionaryAssociation opposite: #key',
-		'#valueInCollections => FMMany type: #FamixValueOfCollection opposite: #value',
 		'#valueInDictionaries => FMMany type: #FamixValueOfDictionaryAssociation opposite: #value',
 		'#valueInObjects => FMMany type: #FamixValueOfAttribute opposite: #value'
 	],
@@ -19,19 +19,27 @@ FamixValueOfType class >> annotation [
 	<FMClass: #OfType super: #FamixValueEntity>
 	<package: #'Famix-Value-Entities'>
 	<generated>
+	<abstract>
 	^ self
+]
+
+{ #category : #testing }
+FamixValueOfType class >> isAbstract [
+
+	<generated>
+	^ self == FamixValueOfType
+]
+
+{ #category : #adding }
+FamixValueOfType >> addElementInCollection: anObject [
+	<generated>
+	^ self elementInCollections add: anObject
 ]
 
 { #category : #adding }
 FamixValueOfType >> addKeyInDictionary: anObject [
 	<generated>
 	^ self keyInDictionaries add: anObject
-]
-
-{ #category : #adding }
-FamixValueOfType >> addValueInCollection: anObject [
-	<generated>
-	^ self valueInCollections add: anObject
 ]
 
 { #category : #adding }
@@ -44,6 +52,22 @@ FamixValueOfType >> addValueInDictionary: anObject [
 FamixValueOfType >> addValueInObject: anObject [
 	<generated>
 	^ self valueInObjects add: anObject
+]
+
+{ #category : #accessing }
+FamixValueOfType >> elementInCollections [
+	"Relation named: #elementInCollections type: #FamixValueOfCollectionElement opposite: #value"
+
+	<generated>
+	<derived>
+	^ elementInCollections
+]
+
+{ #category : #accessing }
+FamixValueOfType >> elementInCollections: anObject [
+
+	<generated>
+	elementInCollections value: anObject
 ]
 
 { #category : #testing }
@@ -99,21 +123,6 @@ FamixValueOfType >> typedEntity: anObject [
 
 	<generated>
 	self attributeAt: #typedEntity put: (FMMultivalueLink on: self update: #values from: self typedEntity to: anObject).
-]
-
-{ #category : #accessing }
-FamixValueOfType >> valueInCollections [
-	"Relation named: #valueInCollections type: #FamixValueOfCollection opposite: #value"
-
-	<generated>
-	^ valueInCollections
-]
-
-{ #category : #accessing }
-FamixValueOfType >> valueInCollections: anObject [
-
-	<generated>
-	valueInCollections value: anObject
 ]
 
 { #category : #accessing }

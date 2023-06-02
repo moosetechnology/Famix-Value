@@ -4,6 +4,6 @@ Extension { #name : #FamixValueOfCollection }
 FamixValueOfCollection >> printValueOn: aStream [
 
 	aStream << $[ << self value size asString << ' element'.
-	self value size ~= 1 ifTrue: [ aStream << $s ].
+	self value size = 1 ifFalse: [ aStream << $s ].
 	aStream << $]
 ]

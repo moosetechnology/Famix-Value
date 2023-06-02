@@ -21,7 +21,8 @@ Class {
 		'ofUnknownType',
 		'unknownType',
 		'tWithValueProperty',
-		'tType'
+		'tType',
+		'collectionElement'
 	],
 	#category : #'Famix-Value-Generator'
 }
@@ -52,15 +53,16 @@ FamixValueGenerator >> defineClasses [
 	value := (builder
 		          newClassNamed: #OfType
 		          comment:
-		          'Abstract superclass of all ValueOf_Type_ entities.')
+			          'Abstract superclass of all ValueOf_Type_ entities.')
+		         isAbstractClass: true;
 		         withTesting.
 	object := (builder
 		           newClassNamed: #OfObject
-		           comment: 'The value of an object.') withTesting.
+		           comment: 'A value of an object.') withTesting.
 	attribute := builder
 		             newClassNamed: #OfAttribute
 		             comment:
-		             'A value of an attribute, belonging to an object.'.
+		             'A value of an attribute that belongs to an object.'.
 	primitive := (builder
 		              newClassNamed: #OfPrimitiveType
 		              comment: 'A value of a primitive type.') withTesting.
@@ -70,6 +72,10 @@ FamixValueGenerator >> defineClasses [
 	collection := (builder
 		               newClassNamed: #OfCollection
 		               comment: 'A value of a collection type.') withTesting.
+	collectionElement := builder
+		                     newClassNamed: #OfCollectionElement
+		                     comment:
+		                     'An element belonging to a collection.'.
 	dictionary := (builder
 		               newClassNamed: #OfDictionary
 		               comment: 'A value of a dictionary type.') withTesting.
@@ -129,7 +135,9 @@ FamixValueGenerator >> defineRelations [
 			 #valueReferences).
 
 	(collection property: #value)
-	*-* (value property: #valueInCollections).
+	-* (collectionElement property: #collection).
+	(collectionElement property: #value)
+	*- (value property: #elementInCollections).
 
 	(dictionary property: #value)
 	-* (dictionaryAssociation property: #dictionary).
