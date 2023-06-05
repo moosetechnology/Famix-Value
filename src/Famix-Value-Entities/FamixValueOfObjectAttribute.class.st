@@ -1,27 +1,27 @@
 "
-A value of an attribute that belongs to an object.
+An attribute belonging to an object.
 "
 Class {
-	#name : #FamixValueOfAttribute,
+	#name : #FamixValueOfObjectAttribute,
 	#superclass : #FamixValueEntity,
 	#instVars : [
 		'#object => FMOne type: #FamixValueOfObject opposite: #value',
-		'#value => FMOne type: #FamixValueOfType opposite: #valueInObjects'
+		'#value => FMOne type: #FamixValueOfType opposite: #attributeInObjects'
 	],
 	#category : #'Famix-Value-Entities-Entities'
 }
 
 { #category : #meta }
-FamixValueOfAttribute class >> annotation [
+FamixValueOfObjectAttribute class >> annotation [
 
-	<FMClass: #OfAttribute super: #FamixValueEntity>
+	<FMClass: #OfObjectAttribute super: #FamixValueEntity>
 	<package: #'Famix-Value-Entities'>
 	<generated>
 	^ self
 ]
 
 { #category : #accessing }
-FamixValueOfAttribute >> attribute [
+FamixValueOfObjectAttribute >> attribute [
 	"Relation named: #attribute type: #FamixTAttribute opposite: #valueInObjects"
 
 	<generated>
@@ -30,14 +30,14 @@ FamixValueOfAttribute >> attribute [
 ]
 
 { #category : #accessing }
-FamixValueOfAttribute >> attribute: anObject [
+FamixValueOfObjectAttribute >> attribute: anObject [
 
 	<generated>
 	self attributeAt: #attribute put: (FMMultivalueLink on: self update: #valueInObjects from: self attribute to: anObject).
 ]
 
 { #category : #accessing }
-FamixValueOfAttribute >> object [
+FamixValueOfObjectAttribute >> object [
 	"Relation named: #object type: #FamixValueOfObject opposite: #value"
 
 	<generated>
@@ -45,22 +45,22 @@ FamixValueOfAttribute >> object [
 ]
 
 { #category : #accessing }
-FamixValueOfAttribute >> object: anObject [
+FamixValueOfObjectAttribute >> object: anObject [
 
 	<generated>
 	object := anObject
 ]
 
 { #category : #accessing }
-FamixValueOfAttribute >> value [
-	"Relation named: #value type: #FamixValueOfType opposite: #valueInObjects"
+FamixValueOfObjectAttribute >> value [
+	"Relation named: #value type: #FamixValueOfType opposite: #attributeInObjects"
 
 	<generated>
 	^ value
 ]
 
 { #category : #accessing }
-FamixValueOfAttribute >> value: anObject [
+FamixValueOfObjectAttribute >> value: anObject [
 
 	<generated>
 	value := anObject

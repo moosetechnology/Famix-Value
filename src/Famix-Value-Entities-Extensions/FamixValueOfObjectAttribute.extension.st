@@ -1,7 +1,7 @@
-Extension { #name : #FamixValueOfAttribute }
+Extension { #name : #FamixValueOfObjectAttribute }
 
 { #category : #'*Famix-Value-Entities-Extensions' }
-FamixValueOfAttribute >> mooseNameOn: stream [
+FamixValueOfObjectAttribute >> mooseNameOn: stream [
 
 	stream << (object ifNotNil: [ object type name ] ifNil: [ '<type>' ])
 	<< $. << (self attribute

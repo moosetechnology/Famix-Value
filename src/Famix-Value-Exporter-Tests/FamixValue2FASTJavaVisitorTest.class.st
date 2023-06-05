@@ -47,7 +47,8 @@ FamixValue2FASTJavaVisitorTest >> testVisitCollection [
 }
 '.
 
-	collection addValue: stringPrimitive.
+	collection addValue:
+		(FamixValueOfCollectionElement new value: stringPrimitive).
 	self assert: collection asJavaSourceCode equals: '{
   List<String> list0 = new ArrayList<String>();
   String string1 = "hello";
@@ -55,7 +56,8 @@ FamixValue2FASTJavaVisitorTest >> testVisitCollection [
 }
 '.
 
-	collection addValue: nullString.
+	collection addValue:
+		(FamixValueOfCollectionElement new value: nullString).
 	self assert: collection asJavaSourceCode equals: '{
   List<String> list0 = new ArrayList<String>();
   String string1 = "hello";
@@ -128,7 +130,8 @@ FamixValue2FASTJavaVisitorTest >> testVisitObject [
 '.
 
 	"with an attribute"
-	object addValue: (FamixValueOfAttribute new value: boolPrimitive).
+	object addValue:
+		(FamixValueOfObjectAttribute new value: boolPrimitive).
 	boolPrimitive typedEntity: object type attributes first.
 	self assert: object asJavaSourceCode equals: '{
   MyClass myClass0 = new MyClass();

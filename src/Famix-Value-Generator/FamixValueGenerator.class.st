@@ -13,7 +13,6 @@ Class {
 		'value',
 		'primitive',
 		'object',
-		'attribute',
 		'enumValue',
 		'collection',
 		'dictionary',
@@ -22,7 +21,8 @@ Class {
 		'unknownType',
 		'tWithValueProperty',
 		'tType',
-		'collectionElement'
+		'collectionElement',
+		'objectAttribute'
 	],
 	#category : #'Famix-Value-Generator'
 }
@@ -59,10 +59,9 @@ FamixValueGenerator >> defineClasses [
 	object := (builder
 		           newClassNamed: #OfObject
 		           comment: 'A value of an object.') withTesting.
-	attribute := builder
-		             newClassNamed: #OfAttribute
-		             comment:
-		             'A value of an attribute that belongs to an object.'.
+	objectAttribute := builder
+		                   newClassNamed: #OfObjectAttribute
+		                   comment: 'An attribute belonging to an object.'.
 	primitive := (builder
 		              newClassNamed: #OfPrimitiveType
 		              comment: 'A value of a primitive type.') withTesting.
@@ -83,7 +82,7 @@ FamixValueGenerator >> defineClasses [
 	dictionaryAssociation := builder
 		                         newClassNamed: #OfDictionaryAssociation
 		                         comment:
-		                         'A key-value pair of values belonging to a dictionary.'.
+		                         'A key-value pair belonging to a dictionary.'.
 	ofUnknownType := (builder
 		                  newClassNamed: #OfUnknownType
 		                  comment: 'A value of an unknwon type.')
@@ -124,9 +123,10 @@ FamixValueGenerator >> defineRelations [
 	*- ((self remoteTrait: #TTypedEntity withPrefix: #Famix) property:
 			 #values).
 
-	(object property: #value) -* (attribute property: #object).
-	(attribute property: #value) *- (value property: #valueInObjects).
-	(attribute property: #attribute)
+	(object property: #value) -* (objectAttribute property: #object).
+	(objectAttribute property: #value)
+	*- (value property: #attributeInObjects).
+	(objectAttribute property: #attribute)
 	*- ((self remoteTrait: #TAttribute withPrefix: #Famix) property:
 			 #valueInObjects).
 

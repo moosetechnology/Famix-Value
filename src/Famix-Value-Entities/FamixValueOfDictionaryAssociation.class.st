@@ -1,5 +1,5 @@
 "
-A key-value pair of values belonging to a dictionary.
+A key-value pair belonging to a dictionary.
 "
 Class {
 	#name : #FamixValueOfDictionaryAssociation,

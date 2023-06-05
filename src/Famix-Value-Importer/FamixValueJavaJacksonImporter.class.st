@@ -12,15 +12,13 @@ Class {
 	#category : #'Famix-Value-Importer'
 }
 
-{ #category : #'entity creation' }
+{ #category : #enumerating }
 FamixValueJavaJacksonImporter >> getDefaultUnknownType [
 
-	^ (self model allWithType: FamixValueUnknownType)
-		  detect: [ :type | type name = 'Object' ]
-		  ifNone: [ self model newUnknownTypeNamed: 'Object' ]
+	^ self getUnknownTypeNamed: 'Object'
 ]
 
-{ #category : #importing }
+{ #category : #enumerating }
 FamixValueJavaJacksonImporter >> getObjectIdentity: rawObject [
 
 	"Keep track of objects by using the id given by Jackson.
@@ -80,7 +78,7 @@ FamixValueJavaJacksonImporter >> isPrimitiveType: type [
 			  type name ]
 ]
 
-{ #category : #testing }
+{ #category : #'private - utility' }
 FamixValueJavaJacksonImporter >> isProcedure: method [
 
 	^ method declaredType name = 'void'

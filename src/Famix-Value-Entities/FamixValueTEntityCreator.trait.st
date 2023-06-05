@@ -17,13 +17,6 @@ FamixValueTEntityCreator classSide >> annotation [
 ]
 
 { #category : #'entity creation' }
-FamixValueTEntityCreator >> newOfAttribute [
-
-	<generated>
-	^ self add: FamixValueOfAttribute new
-]
-
-{ #category : #'entity creation' }
 FamixValueTEntityCreator >> newOfCollection [
 
 	<generated>
@@ -63,6 +56,13 @@ FamixValueTEntityCreator >> newOfObject [
 
 	<generated>
 	^ self add: FamixValueOfObject new
+]
+
+{ #category : #'entity creation' }
+FamixValueTEntityCreator >> newOfObjectAttribute [
+
+	<generated>
+	^ self add: FamixValueOfObjectAttribute new
 ]
 
 { #category : #'entity creation' }

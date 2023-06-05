@@ -26,26 +26,32 @@ FamixValueAbstractImporter >> findAttribute: name of: type [
 			  ifNone: nil ]
 ]
 
-{ #category : #'entity creation' }
+{ #category : #enumerating }
 FamixValueAbstractImporter >> getDefaultUnknownType [
 
-	^ (self model allWithType: FamixValueUnknownType)
-		  detect: [ :type | type name = '<UnknownType>' ]
-		  ifNone: [ self model newUnknownType name: '<UnknownType>' ]
+	^ self getUnknownTypeNamed: '<UnknownType>'
 ]
 
-{ #category : #importing }
+{ #category : #enumerating }
 FamixValueAbstractImporter >> getObjectFromIdentity: id [
 
 	^ objectDict at: id
 ]
 
-{ #category : #importing }
+{ #category : #enumerating }
 FamixValueAbstractImporter >> getObjectIdentity: rawObject [
 
 	"Subclasses should define unique identifier for objects."
 
 	self subclassResponsibility
+]
+
+{ #category : #enumerating }
+FamixValueAbstractImporter >> getUnknownTypeNamed: name [
+
+	^ (self model allWithType: FamixValueUnknownType)
+		  detect: [ :type | type name = name ]
+		  ifNone: [ self model newUnknownTypeNamed: name ]
 ]
 
 { #category : #importing }
@@ -110,7 +116,7 @@ FamixValueAbstractImporter >> importObject: rawObject of: type [
 		self
 			withTypeInference: (attribute ifNotNil: [ attribute declaredType ])
 			do: [ 
-				self model newOfAttribute
+				self model newOfObjectAttribute
 					value: (self importValue: assoc value);
 					object: object;
 					attribute: attribute ] ].
@@ -131,7 +137,7 @@ FamixValueAbstractImporter >> initialize [
 	typeInferences := Stack new
 ]
 
-{ #category : #testing }
+{ #category : #'private - utility' }
 FamixValueAbstractImporter >> isProcedure: method [
 
 	^ method declaredType isNil
@@ -144,7 +150,7 @@ FamixValueAbstractImporter >> loadTypeNamed: fullyQualifiedName [
 
 	^ (self typeFinder findTypeNamed: fullyQualifiedName) ifNil: [ 
 		  self typeInference ifNil: [ 
-			  self model newUnknownType name: fullyQualifiedName ] ]
+			  self getUnknownTypeNamed: fullyQualifiedName ] ]
 ]
 
 { #category : #accessing }

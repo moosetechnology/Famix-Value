@@ -101,16 +101,15 @@ FamixValue2FASTJavaVisitor >> visitCollection: collection [
 { #category : #visiting }
 FamixValue2FASTJavaVisitor >> visitCollection: collection element: element [
 
-	element accept: self.
+	element value accept: self.
 	self statements addStatement:
 		(self model newExpressionStatement expression:
 			 (model newMethodInvocation
 				  receiver:
 					  (model newIdentifier name: (self varNameDict at: collection));
 				  name: #add;
-				  addArgument:
-					  (model newVariableExpression name:
-							   (self varNameDict at: element));
+				  addArgument: (model newVariableExpression name:
+							   (self varNameDict at: element value));
 				  yourself))
 ]
 

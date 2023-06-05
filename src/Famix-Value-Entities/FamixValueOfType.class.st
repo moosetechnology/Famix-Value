@@ -5,10 +5,10 @@ Class {
 	#name : #FamixValueOfType,
 	#superclass : #FamixValueEntity,
 	#instVars : [
+		'#attributeInObjects => FMMany type: #FamixValueOfObjectAttribute opposite: #value',
 		'#elementInCollections => FMMany type: #FamixValueOfCollectionElement opposite: #value',
 		'#keyInDictionaries => FMMany type: #FamixValueOfDictionaryAssociation opposite: #key',
-		'#valueInDictionaries => FMMany type: #FamixValueOfDictionaryAssociation opposite: #value',
-		'#valueInObjects => FMMany type: #FamixValueOfAttribute opposite: #value'
+		'#valueInDictionaries => FMMany type: #FamixValueOfDictionaryAssociation opposite: #value'
 	],
 	#category : #'Famix-Value-Entities-Entities'
 }
@@ -31,6 +31,12 @@ FamixValueOfType class >> isAbstract [
 ]
 
 { #category : #adding }
+FamixValueOfType >> addAttributeInObject: anObject [
+	<generated>
+	^ self attributeInObjects add: anObject
+]
+
+{ #category : #adding }
 FamixValueOfType >> addElementInCollection: anObject [
 	<generated>
 	^ self elementInCollections add: anObject
@@ -48,10 +54,20 @@ FamixValueOfType >> addValueInDictionary: anObject [
 	^ self valueInDictionaries add: anObject
 ]
 
-{ #category : #adding }
-FamixValueOfType >> addValueInObject: anObject [
+{ #category : #accessing }
+FamixValueOfType >> attributeInObjects [
+	"Relation named: #attributeInObjects type: #FamixValueOfObjectAttribute opposite: #value"
+
 	<generated>
-	^ self valueInObjects add: anObject
+	<derived>
+	^ attributeInObjects
+]
+
+{ #category : #accessing }
+FamixValueOfType >> attributeInObjects: anObject [
+
+	<generated>
+	attributeInObjects value: anObject
 ]
 
 { #category : #accessing }
@@ -139,20 +155,4 @@ FamixValueOfType >> valueInDictionaries: anObject [
 
 	<generated>
 	valueInDictionaries value: anObject
-]
-
-{ #category : #accessing }
-FamixValueOfType >> valueInObjects [
-	"Relation named: #valueInObjects type: #FamixValueOfAttribute opposite: #value"
-
-	<generated>
-	<derived>
-	^ valueInObjects
-]
-
-{ #category : #accessing }
-FamixValueOfType >> valueInObjects: anObject [
-
-	<generated>
-	valueInObjects value: anObject
 ]
