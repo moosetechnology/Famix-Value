@@ -17,7 +17,6 @@ Class {
 FamixValue2FASTJavaVisitorTest >> setUp [
 
 	super setUp.
-
 	intPrimitive := FamixValueOfPrimitiveType new
 		                value: 1;
 		                type: (FamixJavaPrimitiveType new name: 'int').
