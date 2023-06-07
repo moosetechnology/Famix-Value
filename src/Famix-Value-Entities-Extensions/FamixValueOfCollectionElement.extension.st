@@ -3,7 +3,7 @@ Extension { #name : #FamixValueOfCollectionElement }
 { #category : #'*Famix-Value-Entities-Extensions' }
 FamixValueOfCollectionElement >> mooseNameOn: aStream [
 
-	aStream << $[.
+	aStream nextPut: $[.
 	self value mooseNameOn: aStream.
-	aStream << $]
+	aStream nextPut: $]
 ]

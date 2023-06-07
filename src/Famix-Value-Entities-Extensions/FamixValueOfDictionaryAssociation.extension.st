@@ -10,5 +10,5 @@ FamixValueOfDictionaryAssociation >> mooseNameOn: aStream [
 	<< (value ifNotNil: [ value type name ] ifNil: [ '<valueType>' ])
 	<< $(.
 	self value value printOn: aStream.
-	aStream << $)
+	aStream nextPut: $)
 ]
