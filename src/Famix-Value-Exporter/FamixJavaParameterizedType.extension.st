@@ -16,19 +16,22 @@ FamixJavaParameterizedType >> concreteTypeNameOn: stream [
 { #category : #'*Famix-Value-Exporter' }
 FamixJavaParameterizedType >> typeArgumentNamesOn: stream [
 
-	stream << $<.
-	arguments
-		do: [ :argument | argument typeNameOn: stream ]
-		separatedBy: [ stream << ', ' ].
-	(arguments size = 1 and: [ self isDictionaryType ]) ifTrue: [ 
-		stream << ', '.
-		arguments first typeNameOn: stream ].
-	stream << $>
+	stream nextPut: $<.
+	self isDictionaryType
+		ifTrue: [ 
+			self keyArgument typeNameOn: stream.
+			stream nextPutAll: ', '.
+			self valueArgument typeNameOn: stream ]
+		ifFalse: [ 
+			arguments
+				do: [ :argument | argument typeNameOn: stream ]
+				separatedBy: [ stream nextPutAll: ', ' ] ].
+	stream nextPut: $>
 ]
 
 { #category : #'*Famix-Value-Exporter' }
 FamixJavaParameterizedType >> typeNameOn: stream [
 
-	stream << parameterizableClass name.
+	stream nextPutAll: parameterizableClass name.
 	self typeArgumentNamesOn: stream
 ]

@@ -68,6 +68,49 @@ FamixValue2FASTJavaVisitorTest >> testVisitCollection [
 ]
 
 { #category : #tests }
+FamixValue2FASTJavaVisitorTest >> testVisitDeepCollection [
+
+	| collection inner |
+	collection := FamixValueOfCollection new type:
+		              (FamixJavaParameterizedType new
+			               parameterizableClass:
+				               (FamixJavaParameterizableClass new name: 'List');
+			               arguments: { (FamixJavaParameterizedType new
+					                parameterizableClass:
+						                (FamixJavaParameterizableClass new name: 'List');
+					                arguments:
+						                { (FamixJavaClass new name: 'Object') }) }).
+	inner := FamixValueOfCollection new type:
+		         (FamixJavaParameterizedType new
+			          parameterizableClass:
+				          (FamixJavaParameterizableClass new name: 'List');
+			          arguments: { (FamixJavaClass new name: 'Object') }).
+
+	self assert: collection asJavaSourceCode equals: '{
+  List<List<Object>> list0 = new ArrayList<List<Object>>();
+}
+'.
+
+	collection addValue: (FamixValueOfCollectionElement new value: inner).
+	self assert: collection asJavaSourceCode equals: '{
+  List<List<Object>> list0 = new ArrayList<List<Object>>();
+  List<Object> list1 = new ArrayList<Object>();
+  list0.add(list1);
+}
+'.
+
+	inner addValue: (FamixValueOfCollectionElement new value: nullString).
+	self assert: collection asJavaSourceCode equals: '{
+  List<List<Object>> list0 = new ArrayList<List<Object>>();
+  List<Object> list1 = new ArrayList<Object>();
+  String string2 = null;
+  list1.add(string2);
+  list0.add(list1);
+}
+'
+]
+
+{ #category : #tests }
 FamixValue2FASTJavaVisitorTest >> testVisitDictionary [
 
 	| dictionary |

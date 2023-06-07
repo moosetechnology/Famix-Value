@@ -17,6 +17,14 @@ Class {
 	#category : #'Famix-Value-Exporter'
 }
 
+{ #category : #testing }
+FamixValue2FASTJavaVisitor >> ensureVisited: value [
+
+	"Visit a value if I have not done it before"
+
+	(self varNameDict includesKey: value) ifFalse: [ value accept: self ]
+]
+
 { #category : #ast }
 FamixValue2FASTJavaVisitor >> makeClassTypeExpression: typeName [
 
@@ -74,6 +82,12 @@ FamixValue2FASTJavaVisitor >> statements [
 ]
 
 { #category : #accessing }
+FamixValue2FASTJavaVisitor >> statements: aStatementCollection [
+
+	statements := aStatementCollection
+]
+
+{ #category : #accessing }
 FamixValue2FASTJavaVisitor >> varNameDict [
 
 	^ varNameDict ifNil: [ varNameDict := Dictionary new ]
@@ -101,7 +115,7 @@ FamixValue2FASTJavaVisitor >> visitCollection: collection [
 { #category : #visiting }
 FamixValue2FASTJavaVisitor >> visitCollection: collection element: element [
 
-	element value accept: self.
+	self ensureVisited: element value.
 	self statements addStatement:
 		(self model newExpressionStatement expression:
 			 (model newMethodInvocation
@@ -125,8 +139,8 @@ FamixValue2FASTJavaVisitor >> visitDictionary: dictionary [
 { #category : #visiting }
 FamixValue2FASTJavaVisitor >> visitDictionaryAssociation: association [
 
-	association key accept: self.
-	association value accept: self.
+	self ensureVisited: association key.
+	self ensureVisited: association value.
 	self statements addStatement:
 		(self model newExpressionStatement expression:
 			 (model newMethodInvocation
@@ -157,17 +171,17 @@ FamixValue2FASTJavaVisitor >> visitObject: object [
 ]
 
 { #category : #visiting }
-FamixValue2FASTJavaVisitor >> visitObjectAttribute: aFamixValueOfAttribute [
+FamixValue2FASTJavaVisitor >> visitObjectAttribute: attribute [
 
-	| attribute object setter |
-	(attribute := aFamixValueOfAttribute value) typedEntity ifNil: [ "ignore unknown attributes" 
-		^ self ].
-	attribute accept: self. "generate var for attribute value"
-	object := aFamixValueOfAttribute object.
+	| value object setter |
+	"ignore unknown attributes"
+	(value := attribute value) typedEntity ifNil: [ ^ self ].
+	self ensureVisited: value.
+	object := attribute object.
 	setter := object type allMethods detect: [ :method | 
 		          method isSetter and: [ 
 			          method name
-				          endsWith: attribute typedEntity name
+				          endsWith: attribute attribute name
 				          caseSensitive: false ] ].
 	self statements addStatement:
 		(self model newExpressionStatement expression:
@@ -176,8 +190,7 @@ FamixValue2FASTJavaVisitor >> visitObjectAttribute: aFamixValueOfAttribute [
 					  (model newIdentifier name: (self varNameDict at: object));
 				  name: setter name;
 				  addArgument:
-					  (model newVariableExpression name:
-							   (self varNameDict at: attribute));
+					  (model newVariableExpression name: (self varNameDict at: value));
 				  yourself))
 ]
 

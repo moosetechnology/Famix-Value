@@ -15,10 +15,10 @@ FamixJavaType >> concreteTypeName [
 { #category : #'*Famix-Value-Exporter' }
 FamixJavaType >> concreteTypeNameOn: stream [
 
-	(#( 'Map' 'Set' ) includes: name)
-		ifTrue: [ stream << 'Hash' ]
-		ifFalse: [ 'List' = name ifTrue: [ stream << 'Array' ] ].
-	stream << name
+	(#( Map Set ) includes: name)
+		ifTrue: [ stream nextPutAll: 'Hash' ]
+		ifFalse: [ 'List' = name ifTrue: [ stream nextPutAll: 'Array' ] ].
+	stream nextPutAll: name
 ]
 
 { #category : #'*Famix-Value-Exporter' }
@@ -30,5 +30,5 @@ FamixJavaType >> typeName [
 { #category : #'*Famix-Value-Exporter' }
 FamixJavaType >> typeNameOn: stream [
 
-	stream << name
+	stream nextPutAll: name
 ]
