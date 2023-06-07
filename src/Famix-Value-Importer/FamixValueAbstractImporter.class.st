@@ -115,9 +115,9 @@ FamixValueAbstractImporter >> importObject: rawObject of: type [
 		attribute := self findAttribute: assoc key of: type.
 		self
 			withTypeInference: (attribute ifNotNil: [ attribute declaredType ])
-			do: [ 
+			do: [ "attribute and value's typedEntity may differ"
 				self model newOfObjectAttribute
-					value: (self importValue: assoc value);
+					value: ((self importValue: assoc value) typedEntity: attribute);
 					object: object;
 					attribute: attribute ] ].
 	^ object
