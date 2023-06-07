@@ -1,11 +1,12 @@
 Extension { #name : #FamixValueOfObjectAttribute }
 
 { #category : #'*Famix-Value-Entities-Extensions' }
-FamixValueOfObjectAttribute >> mooseNameOn: stream [
+FamixValueOfObjectAttribute >> mooseNameOn: aStream [
 
-	stream << (object ifNotNil: [ object type name ] ifNil: [ '<type>' ])
-	<< $. << (self attribute
-		 ifNotNil: [ :attribute | attribute name ]
-		 ifNil: [ '<attribute>' ]) << $=.
-	value printValueOn: stream
+	aStream
+	<< (object ifNotNil: [ object type name ] ifNil: [ '<type>' ]) << $.
+	<< (self attribute
+			 ifNotNil: [ :attribute | attribute name ]
+			 ifNil: [ '<attribute>' ]) << $=.
+	value printValueOn: aStream
 ]
