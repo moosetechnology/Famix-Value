@@ -23,7 +23,23 @@ FamixValueAbstractImporter >> findAttribute: name of: type [
 			   ifTrue: [ type ]
 			   ifFalse: [ type parameterizableClass ]) inheritedAttributes
 			  detect: [ :attr | attr name = name ]
-			  ifNone: nil ]
+			  ifNone: [ self findAttributeWithSetterFor: name of: type ] ]
+]
+
+{ #category : #enumerating }
+FamixValueAbstractImporter >> findAttributeWithSetterFor: name of: type [
+
+	"Useful when the serialized attribute's name does not exactly match the attribute name.
+	I try to find the setter matching the former, then search for the attribute access."
+
+	^ type allMethods
+		  detect: [ :method | 
+			  method isSetter and: [ 
+				  method name endsWith: name caseSensitive: false ] ]
+		  ifOne: [ :setter | 
+			  setter accesses
+				  detect: [ :access | access variable isAttribute ]
+				  ifOne: #variable ]
 ]
 
 { #category : #enumerating }
