@@ -19,7 +19,7 @@ BaselineOfFamixValue >> dependencies: spec [
 
 	spec baseline: 'FASTJava' with: [ 
 		spec
-			repository: 'github://moosetechnology/FAST-Java:v3/src';
+			repository: 'github://moosetechnology/FAST-JAVA:v3/src';
 			loads: 'tools' ]
 ]
 
