@@ -31,7 +31,8 @@ BaselineOfFamixValue >> groups: spec [
 		group: 'model'
 		with: #( 'Famix-Value-Entities' 'Famix-Value-Entities-Extensions'
 			   'Famix-Value-Generator' 'Famix-Value-Presenter' );
-		group: 'importer' with: #( 'Famix-Value-Importer' );
+		group: 'importer'
+		with: #( 'Famix-Value-Importer' 'Famix-Value-Types' );
 		group: 'exporter'
 		with:
 			#( 'default' 'Famix-Value-Exporter' 'Famix-Value-Exporter-Tests'
@@ -52,6 +53,7 @@ BaselineOfFamixValue >> packages: spec [
 		with: [ spec requires: 'Famix-Value-Entities' ];
 		package: 'Famix-Value-Exporter-Tests'
 		with: [ spec requires: 'Famix-Value-Exporter' ];
+		package: 'Famix-Value-Types';
 		package: 'Famix-Value-Presenter'
 		with: [ spec requires: 'Famix-Value-Entities' ]
 ]

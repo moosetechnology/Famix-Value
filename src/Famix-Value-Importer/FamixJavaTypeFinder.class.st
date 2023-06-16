@@ -10,8 +10,10 @@ Class {
 { #category : #enumerating }
 FamixJavaTypeFinder >> parseTypeName: name [
 
-	^ (name beginsWithAnyOf: #( 'java.lang.' 'java.util.' ))
+	"TODO: restore method when VerveineJ is fixed"
+
+	^ "(name beginsWithAnyOf: #( 'java.lang.' 'java.util.' ))
 		  ifTrue: [ self findTypeWithName: (name copyAfterLast: $.) ]
-		  ifFalse: [ 
-		  self findTypeWithFullName: ('::' join: (name splitOn: $.)) ]
+		  ifFalse: [ "
+		  self findTypeWithFullName: ('::' join: (name splitOn: $.)) "]"
 ]

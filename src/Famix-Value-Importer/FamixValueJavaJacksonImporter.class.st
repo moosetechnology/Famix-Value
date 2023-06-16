@@ -7,7 +7,8 @@ Class {
 	#superclass : #FamixValueAbstractImporter,
 	#instVars : [
 		'typeKey',
-		'idKey'
+		'idKey',
+		'specialTypes'
 	],
 	#category : #'Famix-Value-Importer'
 }
@@ -40,6 +41,30 @@ FamixValueJavaJacksonImporter >> idKey: aString [
 ]
 
 { #category : #importing }
+FamixValueJavaJacksonImporter >> importDateObject: rawValue of: type [
+
+	^ self model newOfObject
+		  type: (self specialTypes
+				   at: type name
+				   ifAbsentPut: [ FamixValueJavaDate proxying: type ]);
+		  addValue:
+			  (model newOfObjectAttribute value: (model newOfPrimitiveType
+						    value: rawValue;
+						    type: (self typeFinder findTypeNamed: 'long')));
+		  yourself
+]
+
+{ #category : #importing }
+FamixValueJavaJacksonImporter >> importSpecialObject: rawValue of: type [
+
+	"Some objects have special rules for serialization"
+
+	(#( Date Timestamp ) includes: type name) ifTrue: [ 
+		^ self importDateObject: rawValue of: type ].
+	self error: 'Unknown special object: ' , type mooseNameWithDots
+]
+
+{ #category : #importing }
 FamixValueJavaJacksonImporter >> importValue: rawValue [
 
 	"Import a raw value, which has been parsed from JSON in Jackson format.
@@ -59,9 +84,12 @@ FamixValueJavaJacksonImporter >> importValueFromList: rawValue of: type [
 			  type: type ].
 	(type class usesTrait: FamixTEnum) ifTrue: [ 
 		^ self importEnumValue: rawValue of: type ].
-	^ self model newOfPrimitiveType
-		  value: rawValue;
-		  type: type
+	(self isPrimitiveType: type) ifTrue: [ 
+		^ self model newOfPrimitiveType
+			  value: rawValue;
+			  type: type ].
+	type isClass ifTrue: [ ^ self importSpecialObject: rawValue of: type ].
+	self error: 'Unknown type: ' , type mooseNameWithDots
 ]
 
 { #category : #'private - utility' }
@@ -74,8 +102,7 @@ FamixValueJavaJacksonImporter >> isDictionary: type [
 FamixValueJavaJacksonImporter >> isPrimitiveType: type [
 
 	^ type isPrimitiveType or: [ 
-		  #( Integer Float Double Long Short Byte Timestamp ) includes:
-			  type name ]
+		  #( Integer Float Double Long Short Byte ) includes: type name ]
 ]
 
 { #category : #'private - utility' }
@@ -92,6 +119,12 @@ FamixValueJavaJacksonImporter >> rawValues: serializedValues do: block [
 	self reset.
 	((NeoJSONReader on: serializedValues readStream) parseList at: 2) 
 		do: block
+]
+
+{ #category : #accessing }
+FamixValueJavaJacksonImporter >> specialTypes [
+
+	^ specialTypes ifNil: [ specialTypes := Dictionary new ]
 ]
 
 { #category : #accessing }
