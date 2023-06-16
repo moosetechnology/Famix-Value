@@ -97,9 +97,10 @@ FamixValue2FASTJavaVisitor >> varNameDict [
 FamixValue2FASTJavaVisitor >> varNameFor: value [
 
 	^ self varNameDict at: value ifAbsentPut: [ 
-		  (value typedEntity
-			   ifNotNil: [ value typedEntity name ]
-			   ifNil: [ value type baseName uncapitalized ])
+		  (value typedEntity ifNotNil: [ value typedEntity name ] ifNil: [ 
+			   value attributeInObjects size = 1
+				   ifTrue: [ value attributeInObjects first attribute name ]
+				   ifFalse: [ value type baseName uncapitalized ] ])
 		  , self nextId asString ]
 ]
 
