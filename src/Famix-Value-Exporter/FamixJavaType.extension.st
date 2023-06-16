@@ -1,6 +1,12 @@
 Extension { #name : #FamixJavaType }
 
 { #category : #'*Famix-Value-Exporter' }
+FamixJavaType >> acceptValueVisitor: visitor for: object [
+
+	^ visitor visitObjectOfRegularType: object
+]
+
+{ #category : #'*Famix-Value-Exporter' }
 FamixJavaType >> baseName [
 
 	^ name
@@ -31,4 +37,10 @@ FamixJavaType >> typeName [
 FamixJavaType >> typeNameOn: stream [
 
 	stream nextPutAll: name
+]
+
+{ #category : #'*Famix-Value-Exporter' }
+FamixJavaType >> value: value asFASTJavaExpressionOn: visitor [
+
+	^ visitor makeNewExpression: value
 ]

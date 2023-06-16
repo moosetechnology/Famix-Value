@@ -165,9 +165,9 @@ FamixValue2FASTJavaVisitor >> visitEnumValue: enumValue [
 { #category : #visiting }
 FamixValue2FASTJavaVisitor >> visitObject: object [
 
-	self statements addStatement: (self makeVarDeclStatement: object).
-	object value do: [ :attribute | self visitObjectAttribute: attribute ].
-	^ statements
+	"Dispatch to type to handle special cases"
+
+	^ object type acceptValueVisitor: self for: object
 ]
 
 { #category : #visiting }
@@ -190,6 +190,14 @@ FamixValue2FASTJavaVisitor >> visitObjectAttribute: attribute [
 				  addArgument:
 					  (model newVariableExpression name: (self varNameDict at: value));
 				  yourself))
+]
+
+{ #category : #visiting }
+FamixValue2FASTJavaVisitor >> visitObjectOfRegularType: object [
+
+	self statements addStatement: (self makeVarDeclStatement: object).
+	object value do: [ :attribute | self visitObjectAttribute: attribute ].
+	^ statements
 ]
 
 { #category : #visiting }
