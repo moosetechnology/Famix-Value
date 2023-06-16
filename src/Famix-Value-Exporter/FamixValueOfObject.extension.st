@@ -9,5 +9,5 @@ FamixValueOfObject >> accept: visitor [
 { #category : #'*Famix-Value-Exporter' }
 FamixValueOfObject >> asFASTJavaExpressionOn: visitor [
 
-	^ visitor makeNewExpression: self
+	^ self type value: self asFASTJavaExpressionOn: visitor
 ]
