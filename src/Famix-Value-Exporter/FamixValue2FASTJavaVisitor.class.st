@@ -174,13 +174,10 @@ FamixValue2FASTJavaVisitor >> visitObject: object [
 { #category : #visiting }
 FamixValue2FASTJavaVisitor >> visitObjectAttribute: attribute [
 
-	| value attributeName setter |
+	| value setter |
 	attribute attribute ifNil: [ "ignore unknown attributes" ^ self ].
 	self ensureVisited: (value := attribute value).
-	attributeName := attribute attribute name onlyLetters.
-	setter := attribute object type allMethods detect: [ :method | 
-		          method isSetter and: [ 
-			          method name endsWith: attributeName caseSensitive: false ] ].
+	setter := attribute object type findSetterFor: attribute attribute.
 	self statements addStatement:
 		(self model newExpressionStatement expression:
 			 (model newMethodInvocation
