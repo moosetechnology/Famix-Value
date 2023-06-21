@@ -1,13 +1,12 @@
 Extension { #name : #Integer }
 
 { #category : #'*Famix-Value-Exporter' }
-Integer >> asFASTJavaExpressionOn: visitor [
+Integer >> asFASTJavaLiteralOn: aFASTJavaModel of: type [
 
-	^ visitor model newIntegerLiteral primitiveValue: self asString
-]
-
-{ #category : #'*Famix-Value-Exporter' }
-Integer >> asFASTJavaTypeExpressionOn: visitor [
-
-	^ visitor model newIntTypeExpression
+	| typeName |
+	typeName := type name asLowercase.
+	((typeName beginsWith: 'int') or: [ typeName = 'short' ]) ifTrue: [ 
+		^ aFASTJavaModel newIntegerLiteral ].
+	typeName = 'long' ifTrue: [ ^ aFASTJavaModel newLongLiteral ].
+	self error: 'Unknown primitive type:' , type name
 ]

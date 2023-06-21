@@ -9,11 +9,11 @@ FamixValueOfPrimitiveType >> accept: visitor [
 { #category : #'*Famix-Value-Exporter' }
 FamixValueOfPrimitiveType >> asFASTJavaExpressionOn: visitor [
 
-	^ value asFASTJavaExpressionOn: visitor
+	^ value asFASTJavaExpressionOn: visitor of: self type
 ]
 
 { #category : #'*Famix-Value-Exporter' }
 FamixValueOfPrimitiveType >> asFASTJavaTypeExpressionOn: visitor [
 
-	^ value asFASTJavaTypeExpressionOn: visitor
+	^ self type asFASTJavaTypeExpressionOn: visitor
 ]

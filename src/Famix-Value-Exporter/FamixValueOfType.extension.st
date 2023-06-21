@@ -21,7 +21,9 @@ FamixValueOfType >> asFASTJavaExpressionOn: visitor [
 { #category : #'*Famix-Value-Exporter' }
 FamixValueOfType >> asFASTJavaTypeExpressionOn: visitor [
 
-	^ visitor makeClassTypeExpression: self type typeName
+	^ visitor makeClassTypeExpression: (self typedEntity
+			   ifNotNil: [ :typedEntity | typedEntity declaredType typeName ]
+			   ifNil: [ self type typeName ])
 ]
 
 { #category : #'*Famix-Value-Exporter' }

@@ -9,7 +9,7 @@ FamixJavaParameterizedType >> baseName [
 { #category : #'*Famix-Value-Exporter' }
 FamixJavaParameterizedType >> concreteTypeNameOn: stream [
 
-	parameterizableClass concreteTypeNameOn: stream.
+	parameterizableClass concreteBaseNameOn: stream.
 	self typeArgumentNamesOn: stream
 ]
 
