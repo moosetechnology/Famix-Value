@@ -172,9 +172,9 @@ FamixValue2FASTJavaVisitorTest >> testVisitObject [
 '.
 
 	"with an attribute"
-	object addValue:
-		(FamixValueOfObjectAttribute new value: boolPrimitive).
-	boolPrimitive typedEntity: object type attributes first.
+	object addValue: (FamixValueOfObjectAttribute new
+			 value: boolPrimitive;
+			 attribute: object type attributes first).
 	self assert: object asJavaSourceCode equals: '{
   MyClass myClass0 = new MyClass();
   boolean foo1 = true;
