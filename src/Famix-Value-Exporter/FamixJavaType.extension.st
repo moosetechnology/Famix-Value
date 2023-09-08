@@ -51,7 +51,7 @@ FamixJavaType >> typeNameOn: stream [
 { #category : #'*Famix-Value-Exporter' }
 FamixJavaType >> value: value asFASTJavaExpressionOn: visitor [
 
-	"hook for special types"
+	"hook for types with a particular serialization format"
 
 	^ visitor makeNewExpression: value
 ]

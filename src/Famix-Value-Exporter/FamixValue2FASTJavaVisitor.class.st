@@ -187,6 +187,7 @@ FamixValue2FASTJavaVisitor >> visitObjectAttribute: attribute [
 				  name: setter name;
 				  addArgument:
 					  (model newVariableExpression name: (self varNameDict at: value));
+				  famixInvocation: (FamixJavaInvocation new addCandidate: setter);
 				  yourself))
 ]
 
