@@ -60,6 +60,7 @@ FamixValueOfType >> attributeInObjects [
 
 	<generated>
 	<derived>
+	<target>
 	^ attributeInObjects
 ]
 
@@ -76,6 +77,7 @@ FamixValueOfType >> elementInCollections [
 
 	<generated>
 	<derived>
+	<target>
 	^ elementInCollections
 ]
 
@@ -99,6 +101,7 @@ FamixValueOfType >> keyInDictionaries [
 
 	<generated>
 	<derived>
+	<target>
 	^ keyInDictionaries
 ]
 
@@ -114,7 +117,9 @@ FamixValueOfType >> type [
 	"Relation named: #type type: #FamixTType opposite: #values"
 
 	<generated>
+	<source>
 	<FMProperty: #type type: #FamixTType opposite: #values>
+	<package: #'Famix-UnitTest-Entities'>
 	^ self attributeAt: #type ifAbsent: [ nil ]
 ]
 
@@ -130,7 +135,9 @@ FamixValueOfType >> typedEntity [
 	"Relation named: #typedEntity type: #FamixTTypedEntity opposite: #values"
 
 	<generated>
+	<source>
 	<FMProperty: #typedEntity type: #FamixTTypedEntity opposite: #values>
+	<package: #'Famix-UnitTest-Entities'>
 	^ self attributeAt: #typedEntity ifAbsent: [ nil ]
 ]
 
@@ -147,6 +154,7 @@ FamixValueOfType >> valueInDictionaries [
 
 	<generated>
 	<derived>
+	<target>
 	^ valueInDictionaries
 ]
 

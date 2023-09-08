@@ -6,6 +6,7 @@ FamixTEnumValue >> valueReferences [
 
 	<generated>
 	<derived>
+	<target>
 	<FMProperty: #valueReferences type: #FamixValueOfEnum opposite: #value>
 	<package: #'Famix-Value-Entities'>
 	^ self attributeAt: #valueReferences ifAbsentPut: [ FMMultivalueLink on: self opposite: #value: ]

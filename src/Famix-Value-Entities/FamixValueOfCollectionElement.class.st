@@ -25,6 +25,7 @@ FamixValueOfCollectionElement >> collection [
 	"Relation named: #collection type: #FamixValueOfCollection opposite: #value"
 
 	<generated>
+	<container>
 	^ collection
 ]
 
@@ -35,11 +36,19 @@ FamixValueOfCollectionElement >> collection: anObject [
 	collection := anObject
 ]
 
+{ #category : #navigation }
+FamixValueOfCollectionElement >> collectionGroup [
+	<generated>
+	<navigation: 'Collection'>
+	^ MooseSpecializedGroup with: self collection
+]
+
 { #category : #accessing }
 FamixValueOfCollectionElement >> value [
 	"Relation named: #value type: #FamixValueOfType opposite: #elementInCollections"
 
 	<generated>
+	<source>
 	^ value
 ]
 

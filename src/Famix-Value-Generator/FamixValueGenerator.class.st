@@ -10,6 +10,7 @@ Class {
 	#name : #FamixValueGenerator,
 	#superclass : #FamixMetamodelGenerator,
 	#instVars : [
+		'entity',
 		'value',
 		'primitive',
 		'object',
@@ -50,6 +51,7 @@ FamixValueGenerator class >> submetamodels [
 { #category : #definition }
 FamixValueGenerator >> defineClasses [
 
+	entity := builder newClassNamed: #Entity.
 	value := (builder
 		          newClassNamed: #OfType
 		          comment:
@@ -95,6 +97,8 @@ FamixValueGenerator >> defineClasses [
 { #category : #definition }
 FamixValueGenerator >> defineHierarchy [
 
+	entity --|> #TEntityMetaLevelDependency.
+
 	object --|> value.
 	primitive --|> value.
 	enumValue --|> value.
@@ -118,33 +122,33 @@ FamixValueGenerator >> defineProperties [
 { #category : #definition }
 FamixValueGenerator >> defineRelations [
 
-	value *- (tType property: #values).
-	value
+	(value property: #type) source *- (tType property: #values) target.
+	(value property: #typedEntity) source
 	*- ((self remoteTrait: #TTypedEntity withPrefix: #Famix) property:
-			 #values).
+			 #values) target.
 
-	(object property: #value) -* (objectAttribute property: #object).
-	(objectAttribute property: #value)
-	*- (value property: #attributeInObjects).
-	(objectAttribute property: #attribute)
+	(object property: #value) <>-* (objectAttribute property: #object).
+	(objectAttribute property: #value) source
+	*- (value property: #attributeInObjects) target.
+	(objectAttribute property: #attribute) source
 	*- ((self remoteTrait: #TAttribute withPrefix: #Famix) property:
-			 #valueInObjects).
+			 #valueInObjects) target.
 
-	(enumValue property: #value)
+	(enumValue property: #value) source
 	*- ((self remoteTrait: #TEnumValue withPrefix: #Famix) property:
-			 #valueReferences).
+			 #valueReferences) target.
 
 	(collection property: #value)
-	-* (collectionElement property: #collection).
-	(collectionElement property: #value)
-	*- (value property: #elementInCollections).
+	<>-* (collectionElement property: #collection).
+	(collectionElement property: #value) source
+	*- (value property: #elementInCollections) target.
 
 	(dictionary property: #value)
-	-* (dictionaryAssociation property: #dictionary).
-	(dictionaryAssociation property: #key)
-	*- (value property: #keyInDictionaries).
-	(dictionaryAssociation property: #value)
-	*- (value property: #valueInDictionaries)
+	<>-* (dictionaryAssociation property: #dictionary).
+	(dictionaryAssociation property: #key) source
+	*- (value property: #keyInDictionaries) target.
+	(dictionaryAssociation property: #value) source
+	*- (value property: #valueInDictionaries) target
 ]
 
 { #category : #definition }

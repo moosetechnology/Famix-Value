@@ -6,6 +6,7 @@ FamixTTypedEntity >> values [
 
 	<generated>
 	<derived>
+	<target>
 	<FMProperty: #values type: #FamixValueOfType opposite: #typedEntity>
 	<package: #'Famix-Value-Entities'>
 	^ self attributeAt: #values ifAbsentPut: [ FMMultivalueLink on: self opposite: #typedEntity: ]

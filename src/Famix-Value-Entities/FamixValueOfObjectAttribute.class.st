@@ -25,6 +25,7 @@ FamixValueOfObjectAttribute >> attribute [
 	"Relation named: #attribute type: #FamixTAttribute opposite: #valueInObjects"
 
 	<generated>
+	<source>
 	<FMProperty: #attribute type: #FamixTAttribute opposite: #valueInObjects>
 	^ self attributeAt: #attribute ifAbsent: [ nil ]
 ]
@@ -41,6 +42,7 @@ FamixValueOfObjectAttribute >> object [
 	"Relation named: #object type: #FamixValueOfObject opposite: #value"
 
 	<generated>
+	<container>
 	^ object
 ]
 
@@ -51,11 +53,19 @@ FamixValueOfObjectAttribute >> object: anObject [
 	object := anObject
 ]
 
+{ #category : #navigation }
+FamixValueOfObjectAttribute >> objectGroup [
+	<generated>
+	<navigation: 'Object'>
+	^ MooseSpecializedGroup with: self object
+]
+
 { #category : #accessing }
 FamixValueOfObjectAttribute >> value [
 	"Relation named: #value type: #FamixValueOfType opposite: #attributeInObjects"
 
 	<generated>
+	<source>
 	^ value
 ]
 

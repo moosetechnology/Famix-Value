@@ -47,3 +47,10 @@ FamixValueOfDictionary >> value: anObject [
 	<generated>
 	value value: anObject
 ]
+
+{ #category : #navigation }
+FamixValueOfDictionary >> valueGroup [
+	<generated>
+	<navigation: 'Value'>
+	^ MooseSpecializedGroup withAll: self value asSet
+]

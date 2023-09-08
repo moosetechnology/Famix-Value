@@ -28,6 +28,7 @@ FamixValueOfEnum >> value [
 	"Relation named: #value type: #FamixTEnumValue opposite: #valueReferences"
 
 	<generated>
+	<source>
 	<FMProperty: #value type: #FamixTEnumValue opposite: #valueReferences>
 	^ self attributeAt: #value ifAbsent: [ nil ]
 ]

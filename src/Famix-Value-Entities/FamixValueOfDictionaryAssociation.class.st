@@ -26,6 +26,7 @@ FamixValueOfDictionaryAssociation >> dictionary [
 	"Relation named: #dictionary type: #FamixValueOfDictionary opposite: #value"
 
 	<generated>
+	<container>
 	^ dictionary
 ]
 
@@ -36,11 +37,19 @@ FamixValueOfDictionaryAssociation >> dictionary: anObject [
 	dictionary := anObject
 ]
 
+{ #category : #navigation }
+FamixValueOfDictionaryAssociation >> dictionaryGroup [
+	<generated>
+	<navigation: 'Dictionary'>
+	^ MooseSpecializedGroup with: self dictionary
+]
+
 { #category : #accessing }
 FamixValueOfDictionaryAssociation >> key [
 	"Relation named: #key type: #FamixValueOfType opposite: #keyInDictionaries"
 
 	<generated>
+	<source>
 	^ key
 ]
 
@@ -56,6 +65,7 @@ FamixValueOfDictionaryAssociation >> value [
 	"Relation named: #value type: #FamixValueOfType opposite: #valueInDictionaries"
 
 	<generated>
+	<source>
 	^ value
 ]
 
