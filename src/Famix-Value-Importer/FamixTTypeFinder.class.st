@@ -14,7 +14,7 @@ Class {
 { #category : #accessing }
 FamixTTypeFinder >> cache [
 
-	^ cache ifNil: [ Dictionary new ]
+	^ cache ifNil: [ cache := Dictionary new ]
 ]
 
 { #category : #enumerating }

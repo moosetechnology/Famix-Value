@@ -13,9 +13,9 @@ FamixValueJavaDate >> acceptValueVisitor: visitor for: object [
 
 	"Don't visit attribute, it'll be added as a constructor argument"
 
-	visitor statements addStatement:
-		(visitor makeVarDeclStatement: object).
 	^ visitor statements
+		  addStatement: (visitor makeVarDeclStatement: object);
+		  yourself
 ]
 
 { #category : #converting }
