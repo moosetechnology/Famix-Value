@@ -9,3 +9,11 @@ Collection >> asJavaJacksonValueOn: importer [
 		  importValueFromList: (self at: 2)
 		  of: (importer loadTypeNamed: (self at: 1))
 ]
+
+{ #category : #'*Famix-Value-Importer' }
+Collection >> asPharoSTONValueOn: importer [
+
+	^ importer
+		  importCollection: self
+		  of: (importer loadTypeNamed: self className)
+]

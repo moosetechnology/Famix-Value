@@ -8,3 +8,9 @@ UndefinedObject >> asJavaJacksonValueOn: importer [
 		  type:
 			  (importer typeInference ifNil: [ importer getDefaultUnknownType ])
 ]
+
+{ #category : #'*Famix-Value-Importer' }
+UndefinedObject >> asPharoSTONValueOn: importer [
+
+	^ importer importPrimitive: self of: self className
+]
