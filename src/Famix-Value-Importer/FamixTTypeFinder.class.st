@@ -32,7 +32,7 @@ FamixTTypeFinder >> findTypeNamed: name [
 ]
 
 { #category : #enumerating }
-FamixTTypeFinder >> findTypeWithFullName: name [
+FamixTTypeFinder >> findTypeWithMooseName: name [
 
 	^ self detectType: [ :type | type mooseName = name ]
 ]

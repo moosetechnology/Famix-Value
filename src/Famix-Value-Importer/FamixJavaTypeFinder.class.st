@@ -15,5 +15,5 @@ FamixJavaTypeFinder >> parseTypeName: name [
 	^ "(name beginsWithAnyOf: #( 'java.lang.' 'java.util.' ))
 		  ifTrue: [ self findTypeWithName: (name copyAfterLast: $.) ]
 		  ifFalse: [ "
-		  self findTypeWithFullName: ('::' join: (name splitOn: $.)) "]"
+		  self findTypeWithMooseName: (name copyReplaceAll: '.' with: '::') "]"
 ]

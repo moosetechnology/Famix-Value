@@ -17,3 +17,9 @@ FamixValueUnknownType >> typeName [
 
 	^ name
 ]
+
+{ #category : #'*Famix-Value-Exporter' }
+FamixValueUnknownType >> typeNameOn: stream [
+
+	stream nextPutAll: name
+]

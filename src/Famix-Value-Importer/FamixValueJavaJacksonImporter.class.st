@@ -76,6 +76,8 @@ FamixValueJavaJacksonImporter >> importValue: rawValue [
 { #category : #importing }
 FamixValueJavaJacksonImporter >> importValueFromList: rawValue of: type [
 
+	"Jackson can serialize different types of values in a list, so we need to find out which."
+
 	rawValue isCollection ifTrue: [ 
 		^ self importCollection: rawValue of: type ].
 	type isUnknownType ifTrue: [ 
@@ -109,6 +111,14 @@ FamixValueJavaJacksonImporter >> isPrimitiveType: type [
 FamixValueJavaJacksonImporter >> isProcedure: method [
 
 	^ method declaredType name = 'void'
+]
+
+{ #category : #parsing }
+FamixValueJavaJacksonImporter >> parseList: serializedValues [
+
+	"Ignore the type information of the top level list."
+
+	^ (super parseList: serializedValues) at: 2
 ]
 
 { #category : #parsing }

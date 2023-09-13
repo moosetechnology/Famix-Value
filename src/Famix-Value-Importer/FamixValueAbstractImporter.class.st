@@ -18,6 +18,7 @@ Class {
 { #category : #enumerating }
 FamixValueAbstractImporter >> findAttribute: name of: type [
 
+	type isUnknownType ifTrue: [ ^ nil ].
 	^ type attributes detect: [ :attr | attr name = name ] ifNone: [ 
 		  (type isClass
 			   ifTrue: [ type ]
@@ -140,6 +141,16 @@ FamixValueAbstractImporter >> importObject: rawObject of: type [
 ]
 
 { #category : #importing }
+FamixValueAbstractImporter >> importPrimitive: rawValue of: typeName [
+
+	"Expect to be given a type name instead of a type!"
+
+	^ self model newOfPrimitiveType
+		  value: rawValue;
+		  type: (self loadTypeNamed: typeName)
+]
+
+{ #category : #importing }
 FamixValueAbstractImporter >> importValue: rawValue [
 
 	"This method must figure out the rawValue's type and dispatch to the corresponding importing method."
@@ -181,6 +192,21 @@ FamixValueAbstractImporter >> model: aModel [
 	model := aModel
 ]
 
+{ #category : #options }
+FamixValueAbstractImporter >> newReader [
+
+	^ NeoJSONReader new
+]
+
+{ #category : #parsing }
+FamixValueAbstractImporter >> parseList: serializedValues [
+
+	"Reify the raw values from a serialized list, useful for iterating."
+
+	self reset.
+	^ (self newReader on: serializedValues readStream) parseList
+]
+
 { #category : #parsing }
 FamixValueAbstractImporter >> parseValue: serializedValue [
 
@@ -188,16 +214,7 @@ FamixValueAbstractImporter >> parseValue: serializedValue [
 
 	self reset.
 	^ self importValue:
-		  (NeoJSONReader on: serializedValue readStream) parseValue
-]
-
-{ #category : #parsing }
-FamixValueAbstractImporter >> rawValues: serializedValues do: block [
-
-	"Iterate over the raw values from a serialized list."
-
-	self reset.
-	(NeoJSONReader on: serializedValues readStream) parseList do: block
+		  (self newReader on: serializedValue readStream) next
 ]
 
 { #category : #initialization }
@@ -223,7 +240,7 @@ FamixValueAbstractImporter >> typeFinder: aTypeFinder [
 { #category : #enumerating }
 FamixValueAbstractImporter >> typeInference [
 
-	^ typeInferences ifEmpty: nil ifNotEmpty: [ typeInferences top ]
+	^ typeInferences ifEmpty: [  ] ifNotEmpty: [ typeInferences top ]
 ]
 
 { #category : #importing }

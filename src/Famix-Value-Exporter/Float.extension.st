@@ -7,5 +7,5 @@ Float >> asFASTJavaLiteralOn: aFASTJavaModel of: type [
 	typeName := type name asLowercase.
 	typeName = 'double' ifTrue: [ ^ aFASTJavaModel newDoubleLiteral ].
 	typeName = 'float' ifTrue: [ ^ aFASTJavaModel newFloatLiteral ].
-	self error: 'Unknown primitive type:' , type name
+	self error: 'Unknown floating-point number type:' , type name
 ]
