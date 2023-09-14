@@ -5,10 +5,10 @@ FamixValueOfDictionaryAssociation >> mooseNameOn: aStream [
 
 	aStream << (key ifNotNil: [ key type name ] ifNil: [ '<keyType>' ])
 	<< $(.
-	self key value printOn: aStream.
+	self key printValueOn: aStream.
 	aStream << ')->'
 	<< (value ifNotNil: [ value type name ] ifNil: [ '<valueType>' ])
 	<< $(.
-	self value value printOn: aStream.
+	self value printValueOn: aStream.
 	aStream nextPut: $)
 ]
