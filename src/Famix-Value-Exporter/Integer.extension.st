@@ -8,5 +8,5 @@ Integer >> asFASTJavaLiteralOn: aFASTJavaModel of: type [
 	((typeName beginsWith: 'int') or: [ typeName = 'short' ]) ifTrue: [ 
 		^ aFASTJavaModel newIntegerLiteral ].
 	typeName = 'long' ifTrue: [ ^ aFASTJavaModel newLongLiteral ].
-	self error: 'Unknown primitive type:' , type name
+	self error: 'Unknown integer type:' , type name
 ]

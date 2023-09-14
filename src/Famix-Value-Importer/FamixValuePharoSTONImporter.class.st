@@ -40,7 +40,7 @@ FamixValuePharoSTONImporter >> importValue: rawValue [
 	^ rawValue asPharoSTONValueOn: self
 ]
 
-{ #category : #options }
+{ #category : #'private - utility' }
 FamixValuePharoSTONImporter >> newReader [
 
 	^ STONReader new acceptUnknownClasses: true

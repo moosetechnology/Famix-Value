@@ -24,11 +24,11 @@ FamixValueAbstractImporter >> findAttribute: name of: type [
 			   ifTrue: [ type ]
 			   ifFalse: [ type parameterizableClass ]) inheritedAttributes
 			  detect: [ :attr | attr name = name ]
-			  ifNone: [ self findAttributeWithSetterFor: name of: type ] ]
+			  ifNone: [ self findAttributeWithSetter: name of: type ] ]
 ]
 
 { #category : #enumerating }
-FamixValueAbstractImporter >> findAttributeWithSetterFor: name of: type [
+FamixValueAbstractImporter >> findAttributeWithSetter: name of: type [
 
 	"Useful when the serialized attribute's name does not exactly match the attribute name.
 	I try to find the setter matching the former, then search for the attribute access."
@@ -192,7 +192,7 @@ FamixValueAbstractImporter >> model: aModel [
 	model := aModel
 ]
 
-{ #category : #options }
+{ #category : #'private - utility' }
 FamixValueAbstractImporter >> newReader [
 
 	^ NeoJSONReader new
