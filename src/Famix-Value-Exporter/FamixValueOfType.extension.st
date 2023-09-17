@@ -31,3 +31,15 @@ FamixValueOfType >> asJavaSourceCode [
 
 	^ FASTJavaExportVisitor new export: self asFASTJava
 ]
+
+{ #category : #'*Famix-Value-Exporter' }
+FamixValueOfType >> asPharoAST [
+
+	^ FamixValue2PharoVisitor visit: self
+]
+
+{ #category : #'*Famix-Value-Exporter' }
+FamixValueOfType >> asPharoSourceCode [
+
+	^ RBSimpleFormatter format: self asPharoAST
+]

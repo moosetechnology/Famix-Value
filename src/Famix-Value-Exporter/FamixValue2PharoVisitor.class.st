@@ -9,3 +9,122 @@ Class {
 	#superclass : #FamixValue2ASTVisitor,
 	#category : #'Famix-Value-Exporter'
 }
+
+{ #category : #visiting }
+FamixValue2PharoVisitor class >> visit: value [
+
+	^ self new visit: value
+]
+
+{ #category : #testing }
+FamixValue2PharoVisitor >> ensureVisited: value [
+
+	| node |
+	self varNameDict
+		at: value
+		ifPresent: [ :name | ^ RBVariableNode named: name ]
+		ifAbsentPut: [ 
+			node := value accept: self.
+			value referenceCount > 1
+				ifTrue: [ self varNameFor: value ]
+				ifFalse: [ nil ] ].
+	^ node
+]
+
+{ #category : #visiting }
+FamixValue2PharoVisitor >> findRequiredVariablesFor: rootValue [
+
+	"Values referenced at least twice and the root value will be in variables."
+
+	(FamixValueReferenceCountVisitor visit: rootValue) keysAndValuesDo: [ 
+		:value 
+		:count | 
+		count > 1 ifTrue: [ "ifFalse: [ varNameDict at: value put: nil ]" 
+			self varNameFor: value ] ].
+	self varNameFor: rootValue
+]
+
+{ #category : #accessing }
+FamixValue2PharoVisitor >> statements [
+
+	^ statements ifNil: [ statements := RBSequenceNode new ]
+]
+
+{ #category : #visiting }
+FamixValue2PharoVisitor >> visit: value [
+
+	"self findRequiredVariablesFor: value."
+	^ value accept: self
+]
+
+{ #category : #visiting }
+FamixValue2PharoVisitor >> visitCollection: collection [
+
+	| collectionNode |
+	collectionNode := RBArrayNode statements:
+		                  (collection value collect: [ :element | 
+			                   self ensureVisited: element value ]).
+	^ collection type name = 'Array'
+		  ifTrue: [ collectionNode ]
+		  ifFalse: [ 
+			  RBMessageNode
+				  receiver: (RBVariableNode named: collection type name)
+				  selector: #withAll:
+				  arguments: { collectionNode } ]
+]
+
+{ #category : #visiting }
+FamixValue2PharoVisitor >> visitDictionary: dictionary [
+
+	^ RBMessageNode
+		  receiver: (RBVariableNode named: dictionary type name)
+		  selector: #withAll:
+		  arguments:
+			  { (RBArrayNode statements:
+				   (dictionary value collect: [ :assoc | 
+					    RBMessageNode
+						    receiver: (self ensureVisited: assoc key)
+						    selector: #->
+						    arguments: { (self ensureVisited: assoc value) } ])) }
+]
+
+{ #category : #visiting }
+FamixValue2PharoVisitor >> visitObject: object [
+
+	| objectNode attributeNodes |
+	objectNode := RBMessageNode
+		              receiver: (RBVariableNode named: object type name)
+		              selector: #new.
+	^ object value ifEmpty: [ objectNode ] ifNotEmpty: [ :attributes | 
+		  attributeNodes := attributes collect: [ :attribute | 
+			                    self visitObjectAttribute: attribute ].
+		  attributeNodes first receiver: objectNode.
+		  attributeNodes add:
+			  (RBMessageNode receiver: RBVariableNode new selector: #yourself).
+		  RBCascadeNode messages: attributeNodes ]
+]
+
+{ #category : #visiting }
+FamixValue2PharoVisitor >> visitObjectAttribute: attribute [
+
+	attribute attribute ifNil: [ "ignore unknown attributes" ^ self ].
+	^ (attribute object type findSetterFor: attribute attribute)
+		  ifNotNil: [ :setter | 
+			  RBMessageNode
+				  receiver: RBVariableNode new
+				  selector: setter name
+				  arguments: { (self ensureVisited: attribute value) } ]
+		  ifNil: [ "Use reflectivity"
+			  RBMessageNode
+				  receiver: RBVariableNode new
+				  selector: #instVarNamed:put:
+				  arguments: { 
+						  (RBVariableNode named: '#' , attribute attribute name).
+						  (self ensureVisited: attribute value) } ]
+]
+
+{ #category : #visiting }
+FamixValue2PharoVisitor >> visitPrimitive: primitive [
+
+	^ RBLiteralValueNode value: primitive value
+]

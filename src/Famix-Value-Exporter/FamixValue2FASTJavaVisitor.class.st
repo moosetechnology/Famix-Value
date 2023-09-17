@@ -50,12 +50,6 @@ FamixValue2FASTJavaVisitor >> model [
 ]
 
 { #category : #accessing }
-FamixValue2FASTJavaVisitor >> newModel [
-
-	^ FASTJavaModel new
-]
-
-{ #category : #accessing }
 FamixValue2FASTJavaVisitor >> statements [
 
 	^ statements ifNil: [ statements := self model newStatementBlock ]
