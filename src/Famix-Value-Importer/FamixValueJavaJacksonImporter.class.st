@@ -25,7 +25,7 @@ FamixValueJavaJacksonImporter >> getObjectIdentity: rawObject [
 	"Keep track of objects by using the id given by Jackson.
 	References to previously seen objects are serialized by using this id."
 
-	^ rawObject removeKey: self idKey
+	^ rawObject removeKey: self idKey ifAbsent: nil
 ]
 
 { #category : #accessing }
@@ -127,19 +127,12 @@ FamixValueJavaJacksonImporter >> isProcedure: method [
 { #category : #parsing }
 FamixValueJavaJacksonImporter >> parseList: serializedValues [
 
-	"Ignore the type information of the top level list."
-
-	^ (super parseList: serializedValues) at: 2
-]
-
-{ #category : #parsing }
-FamixValueJavaJacksonImporter >> rawValues: serializedValues do: block [
-
-	"Ignore the type information of the top level list."
-
-	self reset.
-	((NeoJSONReader on: serializedValues readStream) parseList at: 2) 
-		do: block
+	| rawValues |
+	rawValues := super parseList: serializedValues.
+	^ rawValues hasJavaJacksonTypeInformation
+		  ifTrue: [ "ignore the type information of the top level list." 
+			  rawValues at: 2 ]
+		  ifFalse: [ rawValues ]
 ]
 
 { #category : #accessing }

@@ -17,3 +17,10 @@ Collection >> asPharoSTONValueOn: importer [
 		  importCollection: self
 		  of: (importer loadTypeNamed: self className)
 ]
+
+{ #category : #'*Famix-Value-Importer' }
+Collection >> hasJavaJacksonTypeInformation [
+
+	^ self size = 2 and: [ 
+		  (self at: 1) isString and: [ (self at: 2) isArray ] ]
+]

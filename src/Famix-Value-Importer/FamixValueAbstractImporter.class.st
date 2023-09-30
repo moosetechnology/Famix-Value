@@ -139,7 +139,8 @@ FamixValueAbstractImporter >> importObject: rawObject of: type [
 
 	| object attribute |
 	object := self model newOfObject type: type.
-	objectDict at: (self getObjectIdentity: rawObject) put: object.
+	(self getObjectIdentity: rawObject) ifNotNil: [ :id | 
+		objectDict at: id put: object ].
 	rawObject associationsDo: [ :assoc | 
 		attribute := self findAttribute: assoc key of: type.
 		self
@@ -173,7 +174,8 @@ FamixValueAbstractImporter >> importValue: rawValue [
 { #category : #initialization }
 FamixValueAbstractImporter >> initialize [
 
-	typeInferences := Stack new
+	typeInferences := Stack new.
+	objectDict := Dictionary new
 ]
 
 { #category : #'private - utility' }
@@ -215,7 +217,6 @@ FamixValueAbstractImporter >> parseList: serializedValues [
 
 	"Reify the raw values from a serialized list, useful for iterating."
 
-	self reset.
 	^ (self newReader on: serializedValues readStream) parseList
 ]
 
@@ -224,7 +225,6 @@ FamixValueAbstractImporter >> parseValue: serializedValue [
 
 	"Parse and import a serialized value."
 
-	self reset.
 	^ self importValue:
 		  (self newReader on: serializedValue readStream) next
 ]
