@@ -209,7 +209,7 @@ FamixValueAbstractImporter >> model: aModel [
 { #category : #'private - utility' }
 FamixValueAbstractImporter >> newReader [
 
-	^ NeoJSONReader new
+	^ NeoJSONReader new mapClass: OrderedDictionary
 ]
 
 { #category : #parsing }
