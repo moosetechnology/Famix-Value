@@ -22,6 +22,13 @@ FamixValueOfType >> printValueOn: aStream [
 ]
 
 { #category : #'*Famix-Value-Entities-Extensions' }
+FamixValueOfType >> referenceCount [
+
+	^ attributeInObjects size + elementInCollections size
+	  + keyInDictionaries size + valueInDictionaries size
+]
+
+{ #category : #'*Famix-Value-Entities-Extensions' }
 FamixValueOfType >> value [
 
 	self subclassResponsibility

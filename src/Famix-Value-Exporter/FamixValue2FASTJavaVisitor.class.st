@@ -7,23 +7,9 @@ Collections and Dictionaries are constructed with the `add(element)` and `put(ke
 "
 Class {
 	#name : #FamixValue2FASTJavaVisitor,
-	#superclass : #Object,
-	#instVars : [
-		'model',
-		'varNameDict',
-		'id',
-		'statements'
-	],
+	#superclass : #FamixValue2ASTVisitor,
 	#category : #'Famix-Value-Exporter'
 }
-
-{ #category : #testing }
-FamixValue2FASTJavaVisitor >> ensureVisited: value [
-
-	"Visit a value if I have not done it before"
-
-	(self varNameDict includesKey: value) ifFalse: [ value accept: self ]
-]
 
 { #category : #ast }
 FamixValue2FASTJavaVisitor >> makeClassTypeExpression: typeName [
@@ -64,95 +50,50 @@ FamixValue2FASTJavaVisitor >> model [
 ]
 
 { #category : #accessing }
-FamixValue2FASTJavaVisitor >> model: aFASTJavaModel [
-
-	model := aFASTJavaModel
-]
-
-{ #category : #accessing }
-FamixValue2FASTJavaVisitor >> nextId [
-
-	^ (id := (id ifNil: 0) + 1) - 1
-]
-
-{ #category : #accessing }
 FamixValue2FASTJavaVisitor >> statements [
 
 	^ statements ifNil: [ statements := self model newStatementBlock ]
 ]
 
-{ #category : #accessing }
-FamixValue2FASTJavaVisitor >> statements: aStatementCollection [
-
-	statements := aStatementCollection
-]
-
-{ #category : #accessing }
-FamixValue2FASTJavaVisitor >> varNameDict [
-
-	^ varNameDict ifNil: [ varNameDict := Dictionary new ]
-]
-
-{ #category : #naming }
-FamixValue2FASTJavaVisitor >> varNameFor: value [
-
-	^ self varNameDict at: value ifAbsentPut: [ 
-		  (value typedEntity ifNotNil: [ value typedEntity name ] ifNil: [ 
-			   value attributeInObjects size = 1
-				   ifTrue: [ value attributeInObjects first attribute name ]
-				   ifFalse: [ value type baseName uncapitalized ] ])
-		  , self nextId asString ]
-]
-
 { #category : #visiting }
 FamixValue2FASTJavaVisitor >> visitCollection: collection [
 
+	| varName |
 	self statements addStatement: (self makeVarDeclStatement: collection).
+	varName := self varNameDict at: collection.
 	collection value do: [ :element | 
-		self visitCollection: collection element: element ].
+		self ensureVisited: element value.
+		self statements addStatement:
+			(self model newExpressionStatement expression:
+				 (model newMethodInvocation
+					  receiver: (model newIdentifier name: varName);
+					  name: 'add';
+					  addArgument: (model newVariableExpression name:
+								   (self varNameDict at: element value));
+					  yourself)) ].
 	^ statements
-]
-
-{ #category : #visiting }
-FamixValue2FASTJavaVisitor >> visitCollection: collection element: element [
-
-	self ensureVisited: element value.
-	self statements addStatement:
-		(self model newExpressionStatement expression:
-			 (model newMethodInvocation
-				  receiver:
-					  (model newIdentifier name: (self varNameDict at: collection));
-				  name: #add;
-				  addArgument: (model newVariableExpression name:
-							   (self varNameDict at: element value));
-				  yourself))
 ]
 
 { #category : #visiting }
 FamixValue2FASTJavaVisitor >> visitDictionary: dictionary [
 
+	| varName |
 	self statements addStatement: (self makeVarDeclStatement: dictionary).
+	varName := self varNameDict at: dictionary.
 	dictionary value do: [ :association | 
-		self visitDictionaryAssociation: association ].
+		self ensureVisited: association key.
+		self ensureVisited: association value.
+		self statements addStatement:
+			(self model newExpressionStatement expression:
+				 (model newMethodInvocation
+					  receiver: (model newIdentifier name: varName);
+					  name: 'put';
+					  addArgument: (model newVariableExpression name:
+								   (self varNameDict at: association key));
+					  addArgument: (model newVariableExpression name:
+								   (self varNameDict at: association value));
+					  yourself)) ].
 	^ statements
-]
-
-{ #category : #visiting }
-FamixValue2FASTJavaVisitor >> visitDictionaryAssociation: association [
-
-	self ensureVisited: association key.
-	self ensureVisited: association value.
-	self statements addStatement:
-		(self model newExpressionStatement expression:
-			 (model newMethodInvocation
-				  receiver: (model newIdentifier name:
-							   (self varNameDict at: association dictionary));
-				  name: #put;
-				  addArgument: (model newVariableExpression name:
-							   (self varNameDict at: association key));
-				  addArgument: (model newVariableExpression name:
-							   (self varNameDict at: association value));
-				  yourself))
 ]
 
 { #category : #visiting }
