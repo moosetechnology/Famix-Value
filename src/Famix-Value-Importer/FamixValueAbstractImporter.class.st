@@ -9,11 +9,23 @@ Class {
 	#instVars : [
 		'model',
 		'typeInferences',
-		'typeFinder',
-		'objectDict'
+		'objectDict',
+		'entityFinder'
 	],
 	#category : #'Famix-Value-Importer'
 }
+
+{ #category : #accessing }
+FamixValueAbstractImporter >> entityFinder [
+
+	^ entityFinder ifNil: [ entityFinder := FamixEntityFinder new ]
+]
+
+{ #category : #accessing }
+FamixValueAbstractImporter >> entityFinder: anEntityFinder [
+
+	entityFinder := anEntityFinder
+]
 
 { #category : #enumerating }
 FamixValueAbstractImporter >> findAttribute: name of: type [
@@ -175,7 +187,7 @@ FamixValueAbstractImporter >> loadTypeNamed: fullyQualifiedName [
 
 	"Try to find type in model with finder, or fallback to the inferred type, or type is unknown."
 
-	^ (self typeFinder findTypeNamed: fullyQualifiedName) ifNil: [ 
+	^ (self entityFinder findTypeNamed: fullyQualifiedName) ifNil: [ 
 		  self typeInference ifNil: [ 
 			  self getUnknownTypeNamed: fullyQualifiedName ] ]
 ]
@@ -223,18 +235,6 @@ FamixValueAbstractImporter >> reset [
 	"Forget previous object identities."
 
 	objectDict := Dictionary new
-]
-
-{ #category : #accessing }
-FamixValueAbstractImporter >> typeFinder [
-
-	^ typeFinder ifNil: [ typeFinder := FamixTTypeFinder new ]
-]
-
-{ #category : #accessing }
-FamixValueAbstractImporter >> typeFinder: aTypeFinder [
-
-	typeFinder := aTypeFinder
 ]
 
 { #category : #enumerating }

@@ -50,7 +50,7 @@ FamixValueJavaJacksonImporter >> importDateObject: rawValue of: type [
 		  addValue:
 			  (model newOfObjectAttribute value: (model newOfPrimitiveType
 						    value: rawValue;
-						    type: (self typeFinder findTypeNamed: 'long')));
+						    type: (self entityFinder findTypeNamed: 'long')));
 		  yourself
 ]
 
