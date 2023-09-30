@@ -11,7 +11,7 @@ Class {
 { #category : #visiting }
 FamixValueJavaDate >> acceptValueVisitor: visitor for: object [
 
-	"Don't visit attribute, it'll be added as a constructor argument"
+	"Skip visiting the attribute, it is added as a constructor argument"
 
 	^ visitor statements
 		  addStatement: (visitor makeVarDeclStatement: object);

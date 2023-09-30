@@ -185,6 +185,14 @@ FamixValueAbstractImporter >> isProcedure: method [
 ]
 
 { #category : #enumerating }
+FamixValueAbstractImporter >> loadType [
+
+	"Return the inferred type if it exists, otherwise the type is unknown."
+
+	^ self typeInference ifNil: [ self getUnknownTypeNamed: 'UNKNOWN' ]
+]
+
+{ #category : #enumerating }
 FamixValueAbstractImporter >> loadTypeNamed: fullyQualifiedName [
 
 	"Try to find type in model with finder, or fallback to the inferred type, or type is unknown."

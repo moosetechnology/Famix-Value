@@ -194,6 +194,9 @@ FamixValue2FASTJavaVisitor >> visitObjectAttribute: attribute [
 { #category : #visiting }
 FamixValue2FASTJavaVisitor >> visitObjectOfRegularType: object [
 
+	"Dispatched here from #visitObject: if the object has a regular creation schema:
+	use constructor, then setup each attribute and use setter or reflection."
+
 	self statements addStatement: (self makeVarDeclStatement: object).
 	object value do: [ :attribute | self visitObjectAttribute: attribute ].
 	^ statements
