@@ -22,7 +22,8 @@ Class {
 		'tWithValueProperty',
 		'tType',
 		'collectionElement',
-		'objectAttribute'
+		'objectAttribute',
+		'classReference'
 	],
 	#category : #'Famix-Value-Generator'
 }
@@ -83,6 +84,9 @@ FamixValueGenerator >> defineClasses [
 		                         newClassNamed: #OfDictionaryAssociation
 		                         comment:
 		                         'A key-value pair belonging to a dictionary.'.
+	classReference := builder
+		                  newClassNamed: #OfClassReference
+		                  comment: 'A reference to a class.'.
 	ofUnknownType := (builder
 		                  newClassNamed: #OfUnknownType
 		                  comment: 'A value of an unknwon type.')
@@ -100,6 +104,7 @@ FamixValueGenerator >> defineHierarchy [
 	enumValue --|> value.
 	collection --|> value.
 	dictionary --|> value.
+	classReference --|> value.
 	ofUnknownType --|> value.
 
 	primitive --|> tWithValueProperty.
@@ -144,7 +149,11 @@ FamixValueGenerator >> defineRelations [
 	(dictionaryAssociation property: #key)
 	*- (value property: #keyInDictionaries).
 	(dictionaryAssociation property: #value)
-	*- (value property: #valueInDictionaries)
+	*- (value property: #valueInDictionaries).
+
+	(classReference property: #value)
+	*- ((self remoteTrait: #TClass withPrefix: #Famix) property:
+			 #valueReferences)
 ]
 
 { #category : #definition }

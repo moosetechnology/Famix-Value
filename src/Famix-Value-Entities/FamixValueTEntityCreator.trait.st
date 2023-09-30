@@ -17,6 +17,13 @@ FamixValueTEntityCreator classSide >> annotation [
 ]
 
 { #category : #'entity creation' }
+FamixValueTEntityCreator >> newOfClassReference [
+
+	<generated>
+	^ self add: FamixValueOfClassReference new
+]
+
+{ #category : #'entity creation' }
 FamixValueTEntityCreator >> newOfCollection [
 
 	<generated>

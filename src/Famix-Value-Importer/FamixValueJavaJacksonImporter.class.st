@@ -41,6 +41,17 @@ FamixValueJavaJacksonImporter >> idKey: aString [
 ]
 
 { #category : #importing }
+FamixValueJavaJacksonImporter >> importClassReference: rawValue of: type [
+
+	"The type has already been loaded during the inference.
+	The raw value contains the fully qualified name of the referenced class."
+
+	^ self model newOfClassReference
+		  value: (self loadTypeNamed: rawValue);
+		  type: type
+]
+
+{ #category : #importing }
 FamixValueJavaJacksonImporter >> importDateObject: rawValue of: type [
 
 	^ self model newOfObject
