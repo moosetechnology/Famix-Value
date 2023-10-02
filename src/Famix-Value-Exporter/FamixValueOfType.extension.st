@@ -35,7 +35,7 @@ FamixValueOfType >> asJavaSourceCode [
 { #category : #'*Famix-Value-Exporter' }
 FamixValueOfType >> asPharoAST [
 
-	^ FamixValue2PharoVisitor visit: self
+	^ self accept: FamixValue2PharoVisitor new
 ]
 
 { #category : #'*Famix-Value-Exporter' }

@@ -10,12 +10,6 @@ Class {
 	#category : #'Famix-Value-Exporter'
 }
 
-{ #category : #visiting }
-FamixValue2PharoVisitor class >> visit: value [
-
-	^ self new visit: value
-]
-
 { #category : #testing }
 FamixValue2PharoVisitor >> ensureVisited: value [
 
