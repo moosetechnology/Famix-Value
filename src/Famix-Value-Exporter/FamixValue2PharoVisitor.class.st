@@ -51,13 +51,6 @@ FamixValue2PharoVisitor >> statements [
 ]
 
 { #category : #visiting }
-FamixValue2PharoVisitor >> visit: value [
-
-	"self findRequiredVariablesFor: value."
-	^ value accept: self
-]
-
-{ #category : #visiting }
 FamixValue2PharoVisitor >> visitCollection: collection [
 
 	| collectionNode |
@@ -78,7 +71,7 @@ FamixValue2PharoVisitor >> visitDictionary: dictionary [
 
 	^ RBMessageNode
 		  receiver: (RBVariableNode named: dictionary type name)
-		  selector: #withAll:
+		  selector: #newFrom:
 		  arguments:
 			  { (RBArrayNode statements:
 				   (dictionary value collect: [ :assoc | 
@@ -95,19 +88,21 @@ FamixValue2PharoVisitor >> visitObject: object [
 	objectNode := RBMessageNode
 		              receiver: (RBVariableNode named: object type name)
 		              selector: #new.
-	^ object value ifEmpty: [ objectNode ] ifNotEmpty: [ :attributes | 
-		  attributeNodes := attributes collect: [ :attribute | 
-			                    self visitObjectAttribute: attribute ].
-		  attributeNodes first receiver: objectNode.
-		  attributeNodes add:
-			  (RBMessageNode receiver: RBVariableNode new selector: #yourself).
-		  RBCascadeNode messages: attributeNodes ]
+	attributeNodes := object value
+		                  collect: [ :attribute | 
+		                  self visitObjectAttribute: attribute ]
+		                  thenReject: #isNil.
+	attributeNodes ifEmpty: [ ^ objectNode ].
+	attributeNodes first receiver: objectNode.
+	attributeNodes add:
+		(RBMessageNode receiver: RBVariableNode new selector: #yourself).
+	^ RBCascadeNode messages: attributeNodes
 ]
 
 { #category : #visiting }
 FamixValue2PharoVisitor >> visitObjectAttribute: attribute [
 
-	attribute attribute ifNil: [ "ignore unknown attributes" ^ self ].
+	attribute attribute ifNil: [ "ignore unknown attributes" ^ nil ].
 	^ (attribute object type findSetterFor: attribute attribute)
 		  ifNotNil: [ :setter | 
 			  RBMessageNode

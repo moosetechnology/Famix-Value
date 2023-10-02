@@ -67,3 +67,9 @@ FamixValue2ASTVisitor >> varNameFor: value [
 				   ifFalse: [ value type baseName uncapitalized ] ])
 		  , self nextId asString ]
 ]
+
+{ #category : #visiting }
+FamixValue2ASTVisitor >> visit: value [
+
+	^ value accept: self
+]
