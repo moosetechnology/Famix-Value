@@ -57,13 +57,15 @@ FamixJavaEntityFinder >> signatureOf: method matches: signature [
 		              ifEmpty: [ #(  ) ]
 		              ifNotEmpty: [ :params | params splitOn: $, ].
 	method parameters size = parameters size ifFalse: [ ^ false ].
-	^ method signature = (String streamContents: [ :stream | 
-		   stream nextPutAll: (signature first: method name size + 1).
-		   parameters
-			   do: [ :parameter | 
-				   stream nextPutAll: (self translateFieldDescriptor: parameter) ]
-			   separatedBy: [ stream nextPut: $, ].
-		   stream nextPut: $) ])
+	^ ('' join: (method signature findBetweenSubstrings: { '<T>' }))
+	  = (String streamContents: [ :stream | 
+			   stream nextPutAll: (signature first: method name size + 1).
+			   parameters
+				   do: [ :parameter | 
+					   stream nextPutAll:
+						   ((self translateFieldDescriptor: parameter) copyAfterLast: $.) ]
+				   separatedBy: [ stream nextPut: $, ].
+			   stream nextPut: $) ])
 ]
 
 { #category : #translating }
@@ -82,10 +84,7 @@ FamixJavaEntityFinder >> translateFieldDescriptor: fieldDescriptor [
 		            at: (typeName at: 1)
 		            ifAbsent: [ "an instance of class, e.g. Ljava.lang.String;"
 			            (typeName at: 1) == $L
-				            ifTrue: [ 
-					            typeName
-						            copyFrom: (typeName lastIndexOf: $.) + 1
-						            to: typeName size - 1 ]
+				            ifTrue: [ typeName copyFrom: 2 to: typeName size - 1 ]
 				            ifFalse: [ 
 				            self error: 'incoherent Java field descriptor' ] ].
 	[ 
