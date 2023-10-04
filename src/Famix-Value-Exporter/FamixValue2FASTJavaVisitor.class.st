@@ -4,10 +4,16 @@ The generated code is a block statement with a variable declared for each value.
 
 Object attributes are initialized by finding the corresponding setters.
 Collections and Dictionaries are constructed with the `add(element)` and `put(key, value)` methods respectively.
+
+When exporting a `FamixValueOfObjectAttribute`, if the setter for its `FamixTAttribute` cannot be found, they are set using the Java Reflection API.
+All attributes that fall in this category are added as `markedForReflection`.
 "
 Class {
 	#name : #FamixValue2FASTJavaVisitor,
 	#superclass : #FamixValue2ASTVisitor,
+	#instVars : [
+		'markedForReflection'
+	],
 	#category : #'Famix-Value-Exporter'
 }
 
@@ -19,10 +25,55 @@ FamixValue2FASTJavaVisitor >> makeClassTypeExpression: typeName [
 ]
 
 { #category : #ast }
+FamixValue2FASTJavaVisitor >> makeIdentifier: value [
+
+	^ self model newIdentifier name: (self varNameFor: value)
+]
+
+{ #category : #ast }
 FamixValue2FASTJavaVisitor >> makeNewExpression: object [
 
 	^ self model newNewExpression type:
 		  (self makeClassTypeExpression: object type concreteTypeName)
+]
+
+{ #category : #ast }
+FamixValue2FASTJavaVisitor >> makeReflectionFieldGetter: attribute [
+
+	^ self model newMethodInvocation
+		  receiver: (model newClassProperty type:
+					   (self makeClassTypeExpression: attribute object type typeName));
+		  name: 'getField';
+		  addArgument:
+			  (model newStringLiteral primitiveValue: attribute attribute name);
+		  yourself
+]
+
+{ #category : #ast }
+FamixValue2FASTJavaVisitor >> makeReflectionSetter: attribute [
+
+	self markedForReflection add: attribute attribute.
+	^ self model newMethodInvocation
+		  receiver: (self makeReflectionFieldGetter: attribute);
+		  name: (attribute value type isPrimitiveType
+				   ifTrue: [ 'set' , attribute value type name capitalized ]
+				   ifFalse: [ 'set' ]);
+		  addArgument: (self makeVariableExpression: attribute object);
+		  addArgument: (self makeVariableExpression: attribute value);
+		  yourself
+]
+
+{ #category : #ast }
+FamixValue2FASTJavaVisitor >> makeSetter: setter for: attribute [
+
+	self statements addStatement:
+		(self model newExpressionStatement expression:
+			 (model newMethodInvocation
+				  receiver: (self makeIdentifier: attribute object);
+				  name: setter name;
+				  addArgument: (self makeVariableExpression: attribute value);
+				  "famixInvocation: (FamixJavaInvocation new addCandidate: setter);"
+					  yourself))
 ]
 
 { #category : #ast }
@@ -38,9 +89,20 @@ FamixValue2FASTJavaVisitor >> makeVarDeclStatement: value [
 FamixValue2FASTJavaVisitor >> makeVariableDeclarator: value [
 
 	^ self model newVariableDeclarator
-		  variable:
-			  (self model newVariableExpression name: (self varNameFor: value));
+		  variable: (self makeVariableExpression: value);
 		  expression: (value asFASTJavaExpressionOn: self)
+]
+
+{ #category : #ast }
+FamixValue2FASTJavaVisitor >> makeVariableExpression: value [
+
+	^ self model newVariableExpression name: (self varNameDict at: value)
+]
+
+{ #category : #accessing }
+FamixValue2FASTJavaVisitor >> markedForReflection [
+
+	^ markedForReflection ifNil: [ markedForReflection := Set new ]
 ]
 
 { #category : #accessing }
@@ -68,8 +130,7 @@ FamixValue2FASTJavaVisitor >> visitCollection: collection [
 				 (model newMethodInvocation
 					  receiver: (model newIdentifier name: varName);
 					  name: 'add';
-					  addArgument: (model newVariableExpression name:
-								   (self varNameDict at: element value));
+					  addArgument: (self makeVariableExpression: element value);
 					  yourself)) ].
 	^ statements
 ]
@@ -88,10 +149,8 @@ FamixValue2FASTJavaVisitor >> visitDictionary: dictionary [
 				 (model newMethodInvocation
 					  receiver: (model newIdentifier name: varName);
 					  name: 'put';
-					  addArgument: (model newVariableExpression name:
-								   (self varNameDict at: association key));
-					  addArgument: (model newVariableExpression name:
-								   (self varNameDict at: association value));
+					  addArgument: (self makeVariableExpression: association key);
+					  addArgument: (self makeVariableExpression: association value);
 					  yourself)) ].
 	^ statements
 ]
@@ -115,21 +174,11 @@ FamixValue2FASTJavaVisitor >> visitObject: object [
 { #category : #visiting }
 FamixValue2FASTJavaVisitor >> visitObjectAttribute: attribute [
 
-	| value setter |
 	attribute attribute ifNil: [ "ignore unknown attributes" ^ self ].
-	self ensureVisited: (value := attribute value).
-	setter := attribute object type findSetterFor: attribute attribute.
-	self statements addStatement:
-		(self model newExpressionStatement expression:
-			 (model newMethodInvocation
-				  receiver:
-					  (model newIdentifier name:
-							   (self varNameDict at: attribute object));
-				  name: setter name;
-				  addArgument:
-					  (model newVariableExpression name: (self varNameDict at: value));
-				  famixInvocation: (FamixJavaInvocation new addCandidate: setter);
-				  yourself))
+	self ensureVisited: attribute value.
+	(attribute object type findSetterOf: attribute attribute)
+		ifNotNil: [ :setter | self makeSetter: setter for: attribute ]
+		ifNil: [ self makeReflectionSetter: attribute ]
 ]
 
 { #category : #visiting }

@@ -97,7 +97,7 @@ FamixValue2PharoVisitor >> visitObject: object [
 FamixValue2PharoVisitor >> visitObjectAttribute: attribute [
 
 	attribute attribute ifNil: [ "ignore unknown attributes" ^ nil ].
-	^ (attribute object type findSetterFor: attribute attribute)
+	^ (attribute object type findSetterOf: attribute attribute)
 		  ifNotNil: [ :setter | 
 			  RBMessageNode
 				  receiver: RBVariableNode new
