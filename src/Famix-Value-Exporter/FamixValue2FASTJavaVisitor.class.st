@@ -96,7 +96,7 @@ FamixValue2FASTJavaVisitor >> makeVariableDeclarator: value [
 { #category : #ast }
 FamixValue2FASTJavaVisitor >> makeVariableExpression: value [
 
-	^ self model newVariableExpression name: (self varNameDict at: value)
+	^ self model newVariableExpression name: (self varNameFor: value)
 ]
 
 { #category : #accessing }
