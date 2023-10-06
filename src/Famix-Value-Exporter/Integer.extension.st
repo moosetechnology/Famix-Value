@@ -4,9 +4,10 @@ Extension { #name : #Integer }
 Integer >> asFASTJavaLiteralOn: aFASTJavaModel of: type [
 
 	| typeName |
-	typeName := type name asLowercase.
-	((typeName beginsWith: 'int') or: [ typeName = 'short' ]) ifTrue: [ 
+	typeName := type name.
+	((typeName beginsWith: 'int' caseSensitive: false) or: [ 
+		 typeName sameAs: 'short' ]) ifTrue: [ 
 		^ aFASTJavaModel newIntegerLiteral ].
-	typeName = 'long' ifTrue: [ ^ aFASTJavaModel newLongLiteral ].
-	self error: 'Unknown integer type:' , type name
+	(typeName sameAs: 'long') ifTrue: [ ^ aFASTJavaModel newLongLiteral ].
+	self error: 'Unknown integer type:' , typeName
 ]

@@ -4,8 +4,8 @@ Extension { #name : #Float }
 Float >> asFASTJavaLiteralOn: aFASTJavaModel of: type [
 
 	| typeName |
-	typeName := type name asLowercase.
-	typeName = 'double' ifTrue: [ ^ aFASTJavaModel newDoubleLiteral ].
-	typeName = 'float' ifTrue: [ ^ aFASTJavaModel newFloatLiteral ].
-	self error: 'Unknown floating-point number type:' , type name
+	typeName := type name.
+	(typeName sameAs: 'double') ifTrue: [ ^ aFASTJavaModel newDoubleLiteral ].
+	(typeName sameAs: 'float') ifTrue: [ ^ aFASTJavaModel newFloatLiteral ].
+	self error: 'Unknown floating-point number type: ' , typeName
 ]
