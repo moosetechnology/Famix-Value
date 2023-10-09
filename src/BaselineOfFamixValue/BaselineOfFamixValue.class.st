@@ -17,17 +17,21 @@ BaselineOfFamixValue >> baseline: spec [
 { #category : #baselines }
 BaselineOfFamixValue >> dependencies: spec [
 
-	spec baseline: 'FASTJava' with: [ 
-		spec
-			repository: 'github://moosetechnology/FAST-JAVA:v3/src';
-			loads: 'tools' ]
+	spec
+		baseline: 'FASTJava' with: [ 
+			spec
+				repository: 'github://moosetechnology/FAST-JAVA:v3/src';
+				loads: 'tools' ];
+		baseline: 'Carrefour'
+		with: [ 
+		spec repository: 'github://moosetechnology/Carrefour:v4/src' ]
 ]
 
 { #category : #baselines }
 BaselineOfFamixValue >> groups: spec [
 
 	spec
-		group: 'default' with: #( 'model' 'importer' );
+		group: 'default' with: #( 'model' 'importer' 'exporter' );
 		group: 'model'
 		with: #( 'Famix-Value-Entities' 'Famix-Value-Entities-Extensions'
 			   'Famix-Value-Generator' 'Famix-Value-Presenter' );

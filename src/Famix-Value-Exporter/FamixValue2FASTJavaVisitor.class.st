@@ -72,8 +72,7 @@ FamixValue2FASTJavaVisitor >> makeSetter: setter for: attribute [
 				  receiver: (self makeIdentifier: attribute object);
 				  name: setter name;
 				  addArgument: (self makeVariableExpression: attribute value);
-				  "famixInvocation: (FamixJavaInvocation new addCandidate: setter);"
-					  yourself))
+				  famixMethod: setter))
 ]
 
 { #category : #ast }
