@@ -11,6 +11,12 @@ Class {
 	#category : #'Famix-Value-Importer'
 }
 
+{ #category : #'instance creation' }
+FamixEntityFinder class >> on: aModel [
+
+	^ self new model: aModel
+]
+
 { #category : #accessing }
 FamixEntityFinder >> cache [
 
