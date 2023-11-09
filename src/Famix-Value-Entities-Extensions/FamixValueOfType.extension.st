@@ -3,16 +3,22 @@ Extension { #name : #FamixValueOfType }
 { #category : #'*Famix-Value-Entities-Extensions' }
 FamixValueOfType >> mooseNameOn: aStream [
 
+	self printTypeOn: aStream.
+	self typedEntity ifNotNil: [ :typedEntity | 
+		aStream << $  << typedEntity name ].
+	aStream nextPut: $=.
+	self printValueOn: aStream
+]
+
+{ #category : #'*Famix-Value-Entities-Extensions' }
+FamixValueOfType >> printTypeOn: aStream [
+
 	self type
 		ifNotNil: [ :type | 
 			type name
 				ifNotNil: [ type typeNameOn: aStream ]
 				ifNil: [ aStream nextPutAll: '<unnamedType>' ] ]
-		ifNil: [ aStream nextPutAll: '<type>' ].
-	aStream << $  << (self typedEntity
-		 ifNotNil: [ :typedEntity | typedEntity name ]
-		 ifNil: [ '<typedEntity>' ]) << $=.
-	self printValueOn: aStream
+		ifNil: [ aStream nextPutAll: '<type>' ]
 ]
 
 { #category : #'*Famix-Value-Entities-Extensions' }
