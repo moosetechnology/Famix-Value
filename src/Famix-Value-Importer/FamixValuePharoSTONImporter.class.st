@@ -1,9 +1,6 @@
 Class {
 	#name : #FamixValuePharoSTONImporter,
 	#superclass : #FamixValueAbstractImporter,
-	#instVars : [
-		'reader'
-	],
 	#category : #'Famix-Value-Importer'
 }
 
