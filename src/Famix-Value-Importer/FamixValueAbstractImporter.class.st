@@ -28,34 +28,6 @@ FamixValueAbstractImporter >> entityFinder: anEntityFinder [
 ]
 
 { #category : #enumerating }
-FamixValueAbstractImporter >> findAttribute: name of: type [
-
-	type isUnknownType ifTrue: [ ^ nil ].
-	^ type attributes detect: [ :attr | attr name = name ] ifNone: [ 
-		  (type isClass
-			   ifTrue: [ type ]
-			   ifFalse: [ type parameterizableClass ]) inheritedAttributes
-			  detect: [ :attr | attr name = name ]
-			  ifNone: [ self findAttributeWithSetter: name of: type ] ]
-]
-
-{ #category : #enumerating }
-FamixValueAbstractImporter >> findAttributeWithSetter: name of: type [
-
-	"Useful when the serialized attribute's name does not exactly match the attribute name.
-	I try to find the setter matching the former, then search for the attribute access."
-
-	^ type allMethods
-		  detect: [ :method | 
-			  method isSetter and: [ 
-				  method name endsWith: name caseSensitive: false ] ]
-		  ifOne: [ :setter | 
-			  setter accesses
-				  detect: [ :access | access variable isAttribute ]
-				  ifOne: #variable ]
-]
-
-{ #category : #enumerating }
 FamixValueAbstractImporter >> getDefaultUnknownType [
 
 	^ self getUnknownTypeNamed: '<UnknownType>'
@@ -142,7 +114,7 @@ FamixValueAbstractImporter >> importObject: rawObject of: type [
 	(self getObjectIdentity: rawObject) ifNotNil: [ :id | 
 		objectDict at: id put: object ].
 	rawObject associationsDo: [ :assoc | 
-		attribute := self findAttribute: assoc key of: type.
+		attribute := type searchAttributeNamed: assoc key.
 		self
 			withTypeInference: (attribute ifNotNil: [ attribute declaredType ])
 			do: [ 

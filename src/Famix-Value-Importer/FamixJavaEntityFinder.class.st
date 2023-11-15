@@ -57,14 +57,11 @@ FamixJavaEntityFinder >> signatureOf: method matches: signature [
 		              ifEmpty: [ #(  ) ]
 		              ifNotEmpty: [ :params | params splitOn: $, ].
 	method parameters size = parameters size ifFalse: [ ^ false ].
-	^ ('' join: (method signature findBetweenSubstrings: { '<T>' }))
+	^ method signatureWithoutParameterTypes
 	  = (String streamContents: [ :stream | 
-			   stream nextPutAll: (signature first: method name size + 1).
-			   parameters
-				   do: [ :parameter | 
-					   stream nextPutAll:
-						   ((self translateFieldDescriptor: parameter) copyAfterLast: $.) ]
-				   separatedBy: [ stream nextPut: $, ].
+			   stream nextPutAll: method name.
+			   stream nextPut: $(.
+			   self translateFieldDescriptors: parameters on: stream.
 			   stream nextPut: $) ])
 ]
 
@@ -91,4 +88,20 @@ FamixJavaEntityFinder >> translateFieldDescriptor: fieldDescriptor [
 	typeName := typeName , '[]'.
 	(dimensions := dimensions - 1) > 0 ] whileTrue.
 	^ typeName
+]
+
+{ #category : #matching }
+FamixJavaEntityFinder >> translateFieldDescriptors: parameters on: stream [
+
+	"Only keep the type's simple name, discard the qualifying prefix."
+
+	parameters
+		do: [ :parameter | 
+			| translation index |
+			translation := self translateFieldDescriptor: parameter.
+			index := translation lastIndexOf: $..
+			stream nextPutAll: (index = 0
+					 ifTrue: [ translation ]
+					 ifFalse: [ translation allButFirst: index ]) ]
+		separatedBy: [ stream nextPut: $, ]
 ]

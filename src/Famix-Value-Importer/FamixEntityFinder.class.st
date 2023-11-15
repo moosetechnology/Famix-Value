@@ -108,5 +108,5 @@ FamixEntityFinder >> parseTypeName: name [
 { #category : #matching }
 FamixEntityFinder >> signatureOf: method matches: signature [
 
-	self subclassResponsibility
+	^ method signature = signature
 ]
