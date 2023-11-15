@@ -12,10 +12,146 @@ Class {
 	#name : #FamixValue2FASTJavaVisitor,
 	#superclass : #FamixValue2ASTVisitor,
 	#instVars : [
-		'markedForReflection'
+		'markedForReflection',
+		'constructorCache'
 	],
 	#category : #'Famix-Value-Exporter'
 }
+
+{ #category : #private }
+FamixValue2FASTJavaVisitor >> addAttributesFrom: object asArgumentsTo: newExpression usingConstructor: constructor [
+
+	(constructorCache
+		 at: constructor
+		 ifAbsentPut: [ constructor mapConstructorParametersToAttributes ]) 
+		withIndexDo: [ :paramAttribute :index | 
+			newExpression addArgument: (paramAttribute
+					 ifNil: [ 
+						 (constructor parameters at: index) declaredType 
+							 asFASTJavaDefaultValueOn: self model ]
+					 ifNotNil: [ 
+						 object value
+							 detect: [ :objAttribute | 
+							 objAttribute attribute == paramAttribute ]
+							 ifOne: [ :objAttribute | 
+							 self makeIdentifier: objAttribute value ]
+							 ifNone: [ "the object does not have the attribute set" 
+								 paramAttribute declaredType asFASTJavaDefaultValueOn:
+									 self model ] ]) ]
+]
+
+{ #category : #private }
+FamixValue2FASTJavaVisitor >> chooseNonPublicConstructorAmong: constructors [
+
+	self flag: #TODO. "don't just choose first constructor, find the best one"
+	self halt.
+	^ self markedForReflection add: constructors anyOne
+]
+
+{ #category : #private }
+FamixValue2FASTJavaVisitor >> constructObject: object [
+
+	| constructor varDecl |
+	constructor := self findConstructorFor: object.
+	(self markedForReflection includes: constructor)
+		ifFalse: [ 
+			varDecl := self statements addStatement:
+				           (self makeVarDeclStatement: object).
+			constructor parameters ifNotEmpty: [ 
+				self
+					addAttributesFrom: object
+					asArgumentsTo: varDecl declarators first expression
+					usingConstructor: constructor ] ]
+		ifTrue: [ "use reflection" self halt ]
+]
+
+{ #category : #private }
+FamixValue2FASTJavaVisitor >> findConstructorFor: object [
+
+	"Order all constructors according to attributes set and number of parameters, then choose best public one.
+	If no constructor is explicitly declared, use the default constructor. Otherwise, rely on reflection."
+
+	| type |
+	type := object type.
+	^ constructorCache at: type ifAbsentPut: [ 
+		  type constructorsOrderedByScore
+			  ifEmpty: [ "use default constructor, this acts as a null object" 
+				  FamixJavaMethod new ]
+			  ifNotEmpty: [ :constructors | 
+				  constructors
+					  detect: [ :constructor | constructor isPublic ]
+					  ifNone: [ "fallback to using reflection" 
+						  self markedForReflection add: constructors anyOne ] ] ]
+]
+
+{ #category : #private }
+FamixValue2FASTJavaVisitor >> findConstructorFor: object among: constructors [
+
+	self flag: #legacy.
+	(constructors isEmpty or: [ "no point using a constructor which does not set attributes" 
+		 constructors anyOne allAccessedAttributes isEmpty ]) ifTrue: [ 
+		^ nil ].
+	constructors size = 1 ifTrue: [ ^ constructors anyOne ].
+	"TODO choose the constructor which shares the most attributes with object"
+	constructors do: [ :constructor | 
+		self halt.
+		constructor allAccessedAttributes ]
+]
+
+{ #category : #private }
+FamixValue2FASTJavaVisitor >> findStaticAttributeMatching: object [
+
+	"Only try to find static attributes for object composed of only primitive values, for now."
+
+	| typeAttributes objAttributes |
+	(object value allSatisfy: [ :attribute | 
+		 attribute value isOfPrimitiveType ]) ifFalse: [ ^ nil ].
+	"eligible attributes are public, static, of the same type, and have an initializer expression; the conditions are ordered for maximum time efficiency"
+	typeAttributes := object type attributes select: [ :attribute | 
+		                  attribute isClassSide and: [ 
+			                  attribute declaredType == object type and: [ 
+				                  attribute isPublic and: [ 
+					                  attribute hasSourceAnchor and: [ 
+						                  attribute sourceText includes: $= ] ] ] ] ].
+	typeAttributes ifEmpty: [ ^ nil ].
+	"get a list of the objetct's attributes represented as source code literals"
+	objAttributes := object value collect: [ :objAttribute | 
+		                 objAttribute value type name = 'String'
+			                 ifTrue: [ '"' , objAttribute value value , '"' ]
+			                 ifFalse: [ objAttribute value value asString ] ].
+	^ typeAttributes
+		  detect: [ :attribute | 
+		  attribute initializerMatchesValues: objAttributes ]
+		  ifNone: [ nil ]
+]
+
+{ #category : #initialization }
+FamixValue2FASTJavaVisitor >> initialize [
+
+	constructorCache := IdentityDictionary new
+]
+
+{ #category : #private }
+FamixValue2FASTJavaVisitor >> legacyFindConstructorFor: object [
+
+	"Find the constructor which accesses the most attributes and with the most parameters.
+	If no constructor is declared explicitly, use the default constructor if possible.
+	If the default constructor is not usable, rely on reflection."
+
+	| type |
+	self flag: #legacy.
+	type := object type.
+	^ constructorCache at: type ifAbsentPut: [ 
+		  (self
+			   findConstructorFor: object
+			   among: type publicConstructorsWithMostImpact)
+			  ifNotNil: [ :constructor | constructor ]
+			  ifNil: [ "either we can use the default constructor, or we must use reflection"
+				  (object type methods select: [ :method | method isConstructor ])
+					  ifNotEmpty: [ :constructors | 
+					  self chooseNonPublicConstructorAmong: constructors ]
+					  ifEmpty: [ "default constructor" FamixJavaMethod new ] ] ]
+]
 
 { #category : #ast }
 FamixValue2FASTJavaVisitor >> makeClassTypeExpression: typeName [
@@ -84,6 +220,22 @@ FamixValue2FASTJavaVisitor >> makeVarDeclStatement: value [
 		  yourself
 ]
 
+{ #category : #visiting }
+FamixValue2FASTJavaVisitor >> makeVarDeclStatement: object usingStaticAttribute: attribute [
+
+	"Declare a variable for object, initialized with the value of the given static attribute.
+	For example: MyClass myClass = MyClass.MY_STATIC_ATTRIBUTE;"
+
+	self statements addStatement: (model newVarDeclStatement
+			 type: (object asFASTJavaTypeExpressionOn: self);
+			 addDeclarator: (model newVariableDeclarator
+					  variable: (self makeVariableExpression: object);
+					  expression: (model newClassProperty
+							   fieldName: attribute name;
+							   type: (self makeClassTypeExpression: object type name)));
+			 yourself)
+]
+
 { #category : #ast }
 FamixValue2FASTJavaVisitor >> makeVariableDeclarator: value [
 
@@ -101,7 +253,8 @@ FamixValue2FASTJavaVisitor >> makeVariableExpression: value [
 { #category : #accessing }
 FamixValue2FASTJavaVisitor >> markedForReflection [
 
-	^ markedForReflection ifNil: [ markedForReflection := Set new ]
+	^ markedForReflection ifNil: [ 
+		  markedForReflection := IdentitySet new ]
 ]
 
 { #category : #accessing }
@@ -186,8 +339,15 @@ FamixValue2FASTJavaVisitor >> visitObjectOfRegularType: object [
 	"Dispatched here from #visitObject: if the object has a regular creation schema:
 	use constructor, then setup each attribute and use setter or reflection."
 
-	self statements addStatement: (self makeVarDeclStatement: object).
-	object value do: [ :attribute | self visitObjectAttribute: attribute ].
+	(self findStaticAttributeMatching: object)
+		ifNotNil: [ :attribute | 
+			self makeVarDeclStatement: object usingStaticAttribute: attribute ]
+		ifNil: [ 
+			self flag: #TODO. "redo object visit, we need to have attributes ready when calling the constructor.
+	We need to know if an attribute has been set using the constructor or if it will be set using a setter!"
+			self constructObject: object.
+			object value do: [ :attribute | 
+				self visitObjectAttribute: attribute ] ].
 	^ statements
 ]
 

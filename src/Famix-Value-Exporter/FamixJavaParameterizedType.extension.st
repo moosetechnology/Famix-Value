@@ -1,6 +1,12 @@
 Extension { #name : #FamixJavaParameterizedType }
 
 { #category : #'*Famix-Value-Exporter' }
+FamixJavaParameterizedType >> asFASTJavaDefaultValueOn: aFASTJavaModel [
+
+	^ aFASTJavaModel newNullLiteral
+]
+
+{ #category : #'*Famix-Value-Exporter' }
 FamixJavaParameterizedType >> baseName [
 
 	^ parameterizableClass name

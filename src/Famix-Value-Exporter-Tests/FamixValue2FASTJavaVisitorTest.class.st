@@ -153,16 +153,19 @@ FamixValue2FASTJavaVisitorTest >> testVisitEnumValue [
 { #category : #tests }
 FamixValue2FASTJavaVisitorTest >> testVisitObject [
 
-	| object |
+	| object attribute |
 	"Class with a method that answers true to isSetter."
 	object := FamixValueOfObject new
 		          type: (FamixJavaClass new
 				           name: 'MyClass';
-				           addAttribute: (FamixJavaAttribute new name: 'foo');
+				           addAttribute:
+					           (attribute := FamixJavaAttribute new name: 'foo');
 				           addMethod: (FamixJavaMethod new
 						            name: 'setFoo';
 						            declaredType: (FamixJavaType new name: 'void');
-						            parameters: { FamixJavaParameter new }));
+						            parameters: { FamixJavaParameter new };
+						            accesses:
+							            { (FamixJavaAccess new variable: attribute) }));
 		          yourself.
 
 	"no attributes"
@@ -196,6 +199,33 @@ FamixValue2FASTJavaVisitorTest >> testVisitPrimitive [
 '.
 	self assert: stringPrimitive asJavaSourceCode equals: '{
   String string0 = "hello";
+}
+'.
+	"number primitives"
+	self
+		assert: (FamixValueOfPrimitiveType new
+				 value: 1;
+				 type: (FamixJavaPrimitiveType new name: 'long')) asJavaSourceCode
+		equals: '{
+  long long0 = 1L;
+}
+'.
+	self
+		assert: (FamixValueOfPrimitiveType new
+				 value: 1.0;
+				 type: (FamixJavaPrimitiveType new name: 'double'))
+				asJavaSourceCode
+		equals: '{
+  double double0 = 1.0;
+}
+'.
+	self
+		assert: (FamixValueOfPrimitiveType new
+				 value: 1.0;
+				 type: (FamixJavaPrimitiveType new name: 'float'))
+				asJavaSourceCode
+		equals: '{
+  float float0 = 1.0f;
 }
 '
 ]
