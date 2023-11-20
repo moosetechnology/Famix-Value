@@ -25,6 +25,6 @@ Collection >> asPharoSTONValueOn: importer [
 { #category : #'*Famix-Value-Importer' }
 Collection >> hasJavaJacksonTypeInformation [
 
-	^ self size = 2 and: [ 
-		  (self at: 1) isString and: [ (self at: 2) isArray ] ]
+	^ self size = 2 and: [
+		  (self at: 1) isString and: [ (self at: 2) isString not ] ]
 ]
