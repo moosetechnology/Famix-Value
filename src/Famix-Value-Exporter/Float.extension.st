@@ -1,11 +1,13 @@
 Extension { #name : #Float }
 
 { #category : #'*Famix-Value-Exporter' }
-Float >> asFASTJavaLiteralOn: aFASTJavaModel of: type [
+Float >> asFASTJavaExpressionOn: visitor of: type [
 
 	| typeName |
 	typeName := type name.
-	(typeName sameAs: 'double') ifTrue: [ ^ aFASTJavaModel newDoubleLiteral ].
-	(typeName sameAs: 'float') ifTrue: [ ^ aFASTJavaModel newFloatLiteral ].
+	(typeName sameAs: 'double') ifTrue: [
+		^ visitor model newDoubleLiteral primitiveValue: self asString ].
+	(typeName sameAs: 'float') ifTrue: [
+		^ visitor model newFloatLiteral primitiveValue: self asString , 'f' ].
 	self error: 'Unknown floating-point number type: ' , typeName
 ]
