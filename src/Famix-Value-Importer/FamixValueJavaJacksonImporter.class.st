@@ -21,7 +21,6 @@ FamixValueJavaJacksonImporter >> getDefaultUnknownType [
 
 { #category : #enumerating }
 FamixValueJavaJacksonImporter >> getObjectIdentity: rawObject [
-
 	"Keep track of objects by using the id given by Jackson.
 	References to previously seen objects are serialized by using this id."
 
@@ -42,7 +41,6 @@ FamixValueJavaJacksonImporter >> idKey: aString [
 
 { #category : #importing }
 FamixValueJavaJacksonImporter >> importClassReference: rawValue of: type [
-
 	"The type has already been loaded during the inference.
 	The raw value contains the fully qualified name of the referenced class."
 
@@ -67,17 +65,15 @@ FamixValueJavaJacksonImporter >> importDateObject: rawValue of: type [
 
 { #category : #importing }
 FamixValueJavaJacksonImporter >> importSpecialObject: rawValue of: type [
-
 	"Some objects have special rules for serialization"
 
-	(#( Date Timestamp ) includes: type name) ifTrue: [ 
+	(#( Date Timestamp ) includes: type name) ifTrue: [
 		^ self importDateObject: rawValue of: type ].
 	self error: 'Unknown special object: ' , type mooseNameWithDots
 ]
 
 { #category : #importing }
 FamixValueJavaJacksonImporter >> importValue: rawValue [
-
 	"Import a raw value, which has been parsed from JSON in Jackson format.
 	It can be: nil, boolean, integer, string, array or dictionary."
 
@@ -86,18 +82,17 @@ FamixValueJavaJacksonImporter >> importValue: rawValue [
 
 { #category : #importing }
 FamixValueJavaJacksonImporter >> importValueFromList: rawValue of: type [
-
 	"Jackson can serialize different types of values in a list, so we need to find out which."
 
-	rawValue isCollection ifTrue: [ 
+	rawValue isCollection ifTrue: [
 		^ self importCollection: rawValue of: type ].
-	type isUnknownType ifTrue: [ 
+	type isUnknownType ifTrue: [
 		^ self model newOfUnknownType
 			  value: rawValue;
 			  type: type ].
-	(type class usesTrait: FamixTEnum) ifTrue: [ 
+	(type class usesTrait: FamixTEnum) ifTrue: [
 		^ self importEnumValue: rawValue of: type ].
-	(self isPrimitiveType: type) ifTrue: [ 
+	(self isPrimitiveType: type) ifTrue: [
 		^ self model newOfPrimitiveType
 			  value: rawValue;
 			  type: type ].
@@ -114,7 +109,7 @@ FamixValueJavaJacksonImporter >> isDictionary: type [
 { #category : #'private - utility' }
 FamixValueJavaJacksonImporter >> isPrimitiveType: type [
 
-	^ type isPrimitiveType or: [ 
+	^ type isPrimitiveType or: [
 		  #( Integer Float Double Long Short Byte ) includes: type name ]
 ]
 
@@ -130,7 +125,7 @@ FamixValueJavaJacksonImporter >> parseList: serializedValues [
 	| rawValues |
 	rawValues := super parseList: serializedValues.
 	^ rawValues hasJavaJacksonTypeInformation
-		  ifTrue: [ "ignore the type information of the top level list." 
+		  ifTrue: [ "ignore the type information of the top level list."
 			  rawValues at: 2 ]
 		  ifFalse: [ rawValues ]
 ]

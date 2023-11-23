@@ -4,7 +4,7 @@ Extension { #name : #Dictionary }
 Dictionary >> asPharoSTONValueOn: importer [
 
 	^ (self removeKey: STON classNameKey ifAbsent: nil)
-		  ifNotNil: [ :className | "object of an unloaded class" 
+		  ifNotNil: [ :className | "object of an unloaded class"
 			  importer
 				  importObject: self
 				  of: (importer loadTypeNamed: className) ]

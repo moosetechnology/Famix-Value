@@ -43,10 +43,10 @@ FamixEntityFinder >> findMethodWithSignature: signature in: class [
 		              in: class.
 	candidates size = 1 ifTrue: [ ^ candidates anyOne ].
 	"method might be overloaded, find the one with matching signature"
-	candidates := candidates select: [ :method | 
+	candidates := candidates select: [ :method |
 		              self signatureOf: method matches: signature ].
 	candidates size = 1 ifTrue: [ ^ candidates anyOne ].
-	candidates ifEmpty: [ 
+	candidates ifEmpty: [
 		NotFound signalFor: signature in: class methods ].
 	"consider returning a specific candidate; TODO: better"
 	self error: 'found multiple methods matching signature: ' , signature
@@ -61,7 +61,6 @@ FamixEntityFinder >> findMethodsWithName: name in: class [
 
 { #category : #API }
 FamixEntityFinder >> findTypeNamed: name [
-
 	"Main API for finding a type, should not be overridden."
 
 	^ self cache at: name ifAbsentPut: [ self parseTypeName: name ]
@@ -99,7 +98,6 @@ FamixEntityFinder >> model: aFamixModel [
 
 { #category : #enumerating }
 FamixEntityFinder >> parseTypeName: name [
-
 	"This method can be overriden to modify how the search is executed."
 
 	^ self findTypeWithName: name

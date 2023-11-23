@@ -30,9 +30,7 @@ String >> findClosing: close startingAt: startIndex [
 	nestLevel := 1.
 	startIndex + 1 to: self size do: [ :pos |
 		(current := self at: pos) == close
-			ifTrue: [
-				nestLevel := nestLevel - 1.
-				nestLevel = 0 ifTrue: [ ^ pos ] ]
+			ifTrue: [ (nestLevel := nestLevel - 1) = 0 ifTrue: [ ^ pos ] ]
 			ifFalse: [ current == open ifTrue: [ nestLevel := nestLevel + 1 ] ] ].
 	^ 0
 ]

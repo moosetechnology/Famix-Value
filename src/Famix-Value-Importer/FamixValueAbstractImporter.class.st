@@ -41,7 +41,6 @@ FamixValueAbstractImporter >> getObjectFromIdentity: id [
 
 { #category : #enumerating }
 FamixValueAbstractImporter >> getObjectIdentity: rawObject [
-
 	"Subclasses should define unique identifier for objects."
 
 	self subclassResponsibility
@@ -57,7 +56,6 @@ FamixValueAbstractImporter >> getUnknownTypeNamed: name [
 
 { #category : #importing }
 FamixValueAbstractImporter >> importCollection: rawValue of: type [
-
 	"infer element types from type argument, e.g. List<String> => String"
 
 	| collection |
@@ -65,8 +63,8 @@ FamixValueAbstractImporter >> importCollection: rawValue of: type [
 	self
 		withTypeInference:
 		(type isParameterizedType ifTrue: [ type arguments first ])
-		do: [ 
-			rawValue do: [ :rawElement | 
+		do: [
+			rawValue do: [ :rawElement |
 				collection addValue: (self model newOfCollectionElement value:
 						 (self importValue: rawElement)) ] ].
 	^ collection
@@ -74,17 +72,16 @@ FamixValueAbstractImporter >> importCollection: rawValue of: type [
 
 { #category : #importing }
 FamixValueAbstractImporter >> importDictionary: rawValue of: type [
-
 	"infer from type arguments, e.g. Map<String, MyClass>"
 
 	| dictionary keyType valueType assoc |
 	dictionary := self model newOfDictionary type: type.
 	(type isUnknownType not and: [ type isParameterizedType ])
-		ifTrue: [ 
+		ifTrue: [
 			keyType := type keyArgument.
 			valueType := type valueArgument ]
 		ifFalse: [ keyType := valueType := nil ].
-	rawValue associationsDo: [ :rawAssoc | 
+	rawValue associationsDo: [ :rawAssoc |
 		assoc := self model newOfDictionaryAssociation dictionary:
 			         dictionary.
 		self
@@ -102,7 +99,7 @@ FamixValueAbstractImporter >> importEnumValue: rawValue of: type [
 	^ self model newOfEnum
 		  type: type;
 		  value:
-			  (type enumValues detect: [ :enumValue | 
+			  (type enumValues detect: [ :enumValue |
 					   enumValue name = rawValue ])
 ]
 
@@ -111,13 +108,13 @@ FamixValueAbstractImporter >> importObject: rawObject of: type [
 
 	| object attribute |
 	object := self model newOfObject type: type.
-	(self getObjectIdentity: rawObject) ifNotNil: [ :id | 
+	(self getObjectIdentity: rawObject) ifNotNil: [ :id |
 		objectDict at: id put: object ].
-	rawObject associationsDo: [ :assoc | 
+	rawObject associationsDo: [ :assoc |
 		attribute := type searchAttributeNamed: assoc key.
 		self
 			withTypeInference: (attribute ifNotNil: [ attribute declaredType ])
-			do: [ 
+			do: [
 				self model newOfObjectAttribute
 					value: (self importValue: assoc value);
 					object: object;
@@ -127,7 +124,6 @@ FamixValueAbstractImporter >> importObject: rawObject of: type [
 
 { #category : #importing }
 FamixValueAbstractImporter >> importPrimitive: rawValue of: typeName [
-
 	"Expect to be given a type name instead of a type!"
 
 	^ self model newOfPrimitiveType
@@ -137,7 +133,6 @@ FamixValueAbstractImporter >> importPrimitive: rawValue of: typeName [
 
 { #category : #importing }
 FamixValueAbstractImporter >> importValue: rawValue [
-
 	"This method must figure out the rawValue's type and dispatch to the corresponding importing method."
 
 	self subclassResponsibility
@@ -158,7 +153,6 @@ FamixValueAbstractImporter >> isProcedure: method [
 
 { #category : #enumerating }
 FamixValueAbstractImporter >> loadType [
-
 	"Return the inferred type if it exists, otherwise the type is unknown."
 
 	^ self typeInference ifNil: [ self getUnknownTypeNamed: 'UNKNOWN' ]
@@ -166,11 +160,10 @@ FamixValueAbstractImporter >> loadType [
 
 { #category : #enumerating }
 FamixValueAbstractImporter >> loadTypeNamed: fullyQualifiedName [
-
 	"Try to find type in model with finder, or fallback to the inferred type, or type is unknown."
 
-	^ (self entityFinder findTypeNamed: fullyQualifiedName) ifNil: [ 
-		  self typeInference ifNil: [ 
+	^ (self entityFinder findTypeNamed: fullyQualifiedName) ifNil: [
+		  self typeInference ifNil: [
 			  self getUnknownTypeNamed: fullyQualifiedName ] ]
 ]
 
@@ -194,7 +187,6 @@ FamixValueAbstractImporter >> newReader [
 
 { #category : #parsing }
 FamixValueAbstractImporter >> parseList: serializedValues [
-
 	"Reify the raw values from a serialized list, useful for iterating."
 
 	^ (self newReader on: serializedValues readStream) parseList
@@ -202,7 +194,6 @@ FamixValueAbstractImporter >> parseList: serializedValues [
 
 { #category : #parsing }
 FamixValueAbstractImporter >> parseValue: serializedValue [
-
 	"Parse and import a serialized value."
 
 	^ self importValue:
@@ -211,7 +202,6 @@ FamixValueAbstractImporter >> parseValue: serializedValue [
 
 { #category : #initialization }
 FamixValueAbstractImporter >> reset [
-
 	"Forget previous object identities."
 
 	objectDict := Dictionary new

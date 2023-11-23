@@ -2,15 +2,14 @@ Extension { #name : #Collection }
 
 { #category : #'*Famix-Value-Importer' }
 Collection >> asJavaJacksonValueOn: importer [
-
 	"List values are serialized as an array containing [1] the type name and [2] the array of elements."
 
 	^ self hasJavaJacksonTypeInformation
-		  ifTrue: [ 
+		  ifTrue: [
 			  importer
 				  importValueFromList: (self at: 2)
 				  of: (importer loadTypeNamed: (self at: 1)) ]
-		  ifFalse: [ 
+		  ifFalse: [
 		  importer importValueFromList: self of: importer loadType ]
 ]
 
