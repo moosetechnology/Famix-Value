@@ -8,7 +8,7 @@ Class {
 BaselineOfFamixValue >> baseline: spec [
 
 	<baseline>
-	spec for: #common do: [ 
+	spec for: #common do: [
 		self dependencies: spec.
 		self packages: spec.
 		self groups: spec ]
@@ -18,12 +18,12 @@ BaselineOfFamixValue >> baseline: spec [
 BaselineOfFamixValue >> dependencies: spec [
 
 	spec
-		baseline: 'FASTJava' with: [ 
+		baseline: 'FASTJava' with: [
 			spec
 				repository: 'github://moosetechnology/FAST-JAVA:v3/src';
 				loads: 'tools' ];
 		baseline: 'Carrefour'
-		with: [ 
+		with: [
 		spec repository: 'github://moosetechnology/Carrefour:v4/src' ]
 ]
 

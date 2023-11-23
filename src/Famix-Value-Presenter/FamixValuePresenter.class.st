@@ -26,7 +26,7 @@ FamixValuePresenter >> initializePresenters [
 	tree := SpTreePresenter new.
 	tree children: [ :el | el presenterChildren ].
 	tree roots: { self model }.
-	tree display: [ :node | 
+	tree display: [ :node |
 		String streamContents: [ :stream | node mooseNameOn: stream ] ].
 	label := SpLabelPresenter new.
 	label label:
@@ -35,7 +35,7 @@ FamixValuePresenter >> initializePresenters [
 			 add: label expand: false fill: false;
 			 add: tree expand: true fill: true;
 			 yourself).
-	tree whenActivatedDo: [ :selection | 
+	tree whenActivatedDo: [ :selection |
 		activationBlock value: selection ]
 ]
 

@@ -4,7 +4,7 @@ Extension { #name : #FamixValueOfType }
 FamixValueOfType >> mooseNameOn: aStream [
 
 	self printTypeOn: aStream.
-	self typedEntity ifNotNil: [ :typedEntity | 
+	self typedEntity ifNotNil: [ :typedEntity |
 		aStream << $  << typedEntity name ].
 	aStream nextPut: $=.
 	self printValueOn: aStream
@@ -14,7 +14,7 @@ FamixValueOfType >> mooseNameOn: aStream [
 FamixValueOfType >> printTypeOn: aStream [
 
 	self type
-		ifNotNil: [ :type | 
+		ifNotNil: [ :type |
 			type name
 				ifNotNil: [ type typeNameOn: aStream ]
 				ifNil: [ aStream nextPutAll: '<unnamedType>' ] ]

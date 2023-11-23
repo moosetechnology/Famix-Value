@@ -4,7 +4,7 @@ Extension { #name : #FamixValueOfObjectAttribute }
 FamixValueOfObjectAttribute >> mooseNameOn: aStream [
 
 	value printTypeOn: aStream.
-	aStream << $ 
+	aStream << $
 	<< (object ifNotNil: [ object type name ] ifNil: [ '<type>' ]) << $.
 	<< (self attribute
 			 ifNotNil: [ :attribute | attribute name ]

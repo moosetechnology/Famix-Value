@@ -10,7 +10,6 @@ Class {
 
 { #category : #visiting }
 FamixValueJavaDate >> acceptValueVisitor: visitor for: object [
-
 	"Skip visiting the attribute, it is added as a constructor argument"
 
 	^ visitor statements
