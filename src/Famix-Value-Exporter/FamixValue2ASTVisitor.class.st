@@ -73,3 +73,39 @@ FamixValue2ASTVisitor >> visit: value [
 
 	^ value accept: self
 ]
+
+{ #category : #visiting }
+FamixValue2ASTVisitor >> visitCollection: collection [
+
+	self subclassResponsibility
+]
+
+{ #category : #visiting }
+FamixValue2ASTVisitor >> visitDictionary: dictionary [
+
+	self subclassResponsibility
+]
+
+{ #category : #visiting }
+FamixValue2ASTVisitor >> visitEnumValue: enumValue [
+
+	self subclassResponsibility
+]
+
+{ #category : #visiting }
+FamixValue2ASTVisitor >> visitObject: object [
+
+	self subclassResponsibility
+]
+
+{ #category : #visiting }
+FamixValue2ASTVisitor >> visitPrimitive: primitive [
+
+	self subclassResponsibility
+]
+
+{ #category : #visiting }
+FamixValue2ASTVisitor >> visitValueOfUnknownType: value [
+
+	self subclassResponsibility
+]
