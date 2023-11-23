@@ -17,7 +17,7 @@ FamixValue2PharoVisitor >> ensureVisited: value [
 	self varNameDict
 		at: value
 		ifPresent: [ :name | ^ RBVariableNode named: name ]
-		ifAbsentPut: [ 
+		ifAbsentPut: [
 			node := value accept: self.
 			value referenceCount > 1
 				ifTrue: [ self varNameFor: value ]
@@ -27,13 +27,12 @@ FamixValue2PharoVisitor >> ensureVisited: value [
 
 { #category : #visiting }
 FamixValue2PharoVisitor >> findRequiredVariablesFor: rootValue [
-
 	"Values referenced at least twice and the root value will be in variables."
 
-	(FamixValueReferenceCountVisitor visit: rootValue) keysAndValuesDo: [ 
-		:value 
-		:count | 
-		count > 1 ifTrue: [ "ifFalse: [ varNameDict at: value put: nil ]" 
+	(FamixValueReferenceCountVisitor visit: rootValue) keysAndValuesDo: [
+		:value
+		:count |
+		count > 1 ifTrue: [ "ifFalse: [ varNameDict at: value put: nil ]"
 			self varNameFor: value ] ].
 	self varNameFor: rootValue
 ]
@@ -49,11 +48,11 @@ FamixValue2PharoVisitor >> visitCollection: collection [
 
 	| collectionNode |
 	collectionNode := RBArrayNode statements:
-		                  (collection value collect: [ :element | 
+		                  (collection value collect: [ :element |
 			                   self ensureVisited: element value ]).
 	^ collection type name = 'Array'
 		  ifTrue: [ collectionNode ]
-		  ifFalse: [ 
+		  ifFalse: [
 			  RBMessageNode
 				  receiver: (RBVariableNode named: collection type name)
 				  selector: #withAll:
@@ -67,11 +66,10 @@ FamixValue2PharoVisitor >> visitDictionary: dictionary [
 		  receiver: (RBVariableNode named: dictionary type name)
 		  selector: #newFrom:
 		  arguments:
-			  { (RBArrayNode statements:
-				   (dictionary value collect: [ :assoc | 
+			  { (RBArrayNode statements: (dictionary value collect: [ :assoc |
 					    RBMessageNode
 						    receiver: (self ensureVisited: assoc key)
-						    selector: #->
+						    selector: #'->'
 						    arguments: { (self ensureVisited: assoc value) } ])) }
 ]
 
@@ -83,7 +81,7 @@ FamixValue2PharoVisitor >> visitObject: object [
 		              receiver: (RBVariableNode named: object type name)
 		              selector: #new.
 	attributeNodes := object value
-		                  collect: [ :attribute | 
+		                  collect: [ :attribute |
 		                  self visitObjectAttribute: attribute ]
 		                  thenReject: #isNil.
 	attributeNodes ifEmpty: [ ^ objectNode ].
@@ -98,7 +96,7 @@ FamixValue2PharoVisitor >> visitObjectAttribute: attribute [
 
 	attribute attribute ifNil: [ "ignore unknown attributes" ^ nil ].
 	^ (attribute object type findSetterOf: attribute attribute)
-		  ifNotNil: [ :setter | 
+		  ifNotNil: [ :setter |
 			  RBMessageNode
 				  receiver: RBVariableNode new
 				  selector: setter name
@@ -107,7 +105,7 @@ FamixValue2PharoVisitor >> visitObjectAttribute: attribute [
 			  RBMessageNode
 				  receiver: RBVariableNode new
 				  selector: #instVarNamed:put:
-				  arguments: { 
+				  arguments: {
 						  (RBVariableNode named: '#' , attribute attribute name).
 						  (self ensureVisited: attribute value) } ]
 ]

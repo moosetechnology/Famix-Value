@@ -24,11 +24,11 @@ FamixJavaParameterizedType >> typeArgumentNamesOn: stream [
 
 	stream nextPut: $<.
 	self isDictionaryType
-		ifTrue: [ 
+		ifTrue: [
 			self keyArgument typeNameOn: stream.
 			stream nextPutAll: ', '.
 			self valueArgument typeNameOn: stream ]
-		ifFalse: [ 
+		ifFalse: [
 			arguments
 				do: [ :argument | argument typeNameOn: stream ]
 				separatedBy: [ stream nextPutAll: ', ' ] ].

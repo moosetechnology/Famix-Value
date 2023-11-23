@@ -43,7 +43,7 @@ FamixValueReferenceCountVisitor >> visitDictionary: dictionary [
 		at: dictionary
 		ifPresent: [ :count | ^ references at: dictionary put: count + 1 ]
 		ifAbsentPut: 1.
-	dictionary value do: [ :assoc | 
+	dictionary value do: [ :assoc |
 		assoc key accept: self.
 		assoc value accept: self ]
 ]

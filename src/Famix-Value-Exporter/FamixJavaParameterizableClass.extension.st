@@ -21,7 +21,7 @@ FamixJavaParameterizableClass >> typeArgumentNamesOn: stream [
 
 	stream nextPut: $<.
 	self parameters
-		do: [ :parameter | 
+		do: [ :parameter |
 			stream nextPutAll: '? extends '.
 			parameter typeNameOn: stream ]
 		separatedBy: [ stream nextPutAll: ', ' ].
@@ -32,6 +32,6 @@ FamixJavaParameterizableClass >> typeArgumentNamesOn: stream [
 FamixJavaParameterizableClass >> typeNameOn: stream [
 
 	self flag: #verveinej. "duplicated elements in #parameters"
-	stream nextPutAll: name.
+	stream nextPutAll: name
 	"self typeArgumentNamesOn: stream"
 ]
