@@ -22,3 +22,12 @@ FamixJavaAttribute >> initializerMatchesValues: objectAttributes [
 			ifFalse: [ found removeAt: index ] ].
 	^ found isEmpty
 ]
+
+{ #category : #'*Famix-Value-Exporter' }
+FamixJavaAttribute >> isStaticConstant [
+	"Public static attribute with an initializer."
+
+	^ self isClassSide and: [
+		  self isPublic and: [
+			  self hasSourceAnchor and: [ self sourceText includes: $= ] ] ]
+]

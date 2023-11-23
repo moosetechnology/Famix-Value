@@ -100,27 +100,23 @@ FamixValue2FASTJavaVisitor >> findConstructorFor: object among: constructors [
 
 { #category : #private }
 FamixValue2FASTJavaVisitor >> findStaticAttributeMatching: object [
-
 	"Only try to find static attributes for object composed of only primitive values, for now."
 
 	| typeAttributes objAttributes |
-	(object value allSatisfy: [ :attribute | 
+	(object value allSatisfy: [ :attribute |
 		 attribute value isOfPrimitiveType ]) ifFalse: [ ^ nil ].
 	"eligible attributes are public, static, of the same type, and have an initializer expression; the conditions are ordered for maximum time efficiency"
-	typeAttributes := object type attributes select: [ :attribute | 
-		                  attribute isClassSide and: [ 
-			                  attribute declaredType == object type and: [ 
-				                  attribute isPublic and: [ 
-					                  attribute hasSourceAnchor and: [ 
-						                  attribute sourceText includes: $= ] ] ] ] ].
+	typeAttributes := object type attributes select: [ :attribute |
+		                  attribute declaredType == object type and: [
+			                  attribute isStaticConstant ] ].
 	typeAttributes ifEmpty: [ ^ nil ].
 	"get a list of the objetct's attributes represented as source code literals"
-	objAttributes := object value collect: [ :objAttribute | 
+	objAttributes := object value collect: [ :objAttribute |
 		                 objAttribute value type name = 'String'
 			                 ifTrue: [ '"' , objAttribute value value , '"' ]
 			                 ifFalse: [ objAttribute value value asString ] ].
 	^ typeAttributes
-		  detect: [ :attribute | 
+		  detect: [ :attribute |
 		  attribute initializerMatchesValues: objAttributes ]
 		  ifNone: [ nil ]
 ]
