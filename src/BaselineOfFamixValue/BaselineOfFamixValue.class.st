@@ -40,7 +40,7 @@ BaselineOfFamixValue >> groups: spec [
 		group: 'exporter'
 		with:
 			#( 'default' 'Famix-Value-Exporter' 'Famix-Value-Exporter-Tests'
-			   'FASTJava' )
+			   'FASTJava' 'Carrefour' )
 ]
 
 { #category : #baselines }

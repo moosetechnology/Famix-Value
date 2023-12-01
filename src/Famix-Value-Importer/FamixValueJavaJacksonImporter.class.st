@@ -82,7 +82,7 @@ FamixValueJavaJacksonImporter >> importValue: rawValue [
 
 { #category : #importing }
 FamixValueJavaJacksonImporter >> importValueFromList: rawValue of: type [
-	"Jackson can serialize different types of values in a list, so we need to find out which."
+	"Jackson can serialize different types of values in a list, so we need to find out which it is."
 
 	rawValue isCollection ifTrue: [
 		^ self importCollection: rawValue of: type ].
