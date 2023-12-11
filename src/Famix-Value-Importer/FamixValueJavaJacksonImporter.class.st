@@ -113,12 +113,6 @@ FamixValueJavaJacksonImporter >> isPrimitiveType: type [
 		  #( Integer Float Double Long Short Byte ) includes: type name ]
 ]
 
-{ #category : #'private - utility' }
-FamixValueJavaJacksonImporter >> isProcedure: method [
-
-	^ method declaredType name = 'void'
-]
-
 { #category : #parsing }
 FamixValueJavaJacksonImporter >> parseList: serializedValues [
 

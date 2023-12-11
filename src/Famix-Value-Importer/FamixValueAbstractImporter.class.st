@@ -145,12 +145,6 @@ FamixValueAbstractImporter >> initialize [
 	objectDict := Dictionary new
 ]
 
-{ #category : #'private - utility' }
-FamixValueAbstractImporter >> isProcedure: method [
-
-	^ method declaredType isNil
-]
-
 { #category : #enumerating }
 FamixValueAbstractImporter >> loadType [
 	"Return the inferred type if it exists, otherwise the type is unknown."

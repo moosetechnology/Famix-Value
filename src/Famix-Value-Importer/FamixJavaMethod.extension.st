@@ -1,6 +1,12 @@
 Extension { #name : #FamixJavaMethod }
 
 { #category : #'*Famix-Value-Importer' }
+FamixJavaMethod >> isProcedure [
+
+	^ declaredType name = 'void'
+]
+
+{ #category : #'*Famix-Value-Importer' }
 FamixJavaMethod >> signatureWithoutParameterTypes [
 	"Rewrite the method signature ignoring parameter types, e.g. f(List<String>) => f(List)"
 
