@@ -8,7 +8,7 @@ Class {
 		'model',
 		'varNameDict',
 		'id',
-		'statements'
+		'statementBlock'
 	],
 	#category : #'Famix-Value-Exporter'
 }
@@ -39,15 +39,15 @@ FamixValue2ASTVisitor >> nextId [
 ]
 
 { #category : #accessing }
-FamixValue2ASTVisitor >> statements [
+FamixValue2ASTVisitor >> statementBlock [
 
-	^ statements
+	^ statementBlock
 ]
 
 { #category : #accessing }
-FamixValue2ASTVisitor >> statements: aStatementSequence [
+FamixValue2ASTVisitor >> statementBlock: aStatementSequence [
 
-	statements := aStatementSequence
+	statementBlock := aStatementSequence
 ]
 
 { #category : #accessing }

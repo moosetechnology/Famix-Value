@@ -38,9 +38,9 @@ FamixValue2PharoVisitor >> findRequiredVariablesFor: rootValue [
 ]
 
 { #category : #accessing }
-FamixValue2PharoVisitor >> statements [
+FamixValue2PharoVisitor >> statementBlock [
 
-	^ statements ifNil: [ statements := RBSequenceNode new ]
+	^ statementBlock ifNil: [ statementBlock := RBSequenceNode new ]
 ]
 
 { #category : #visiting }

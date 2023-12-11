@@ -55,7 +55,7 @@ FamixValue2FASTJavaVisitor >> constructObject: object [
 	constructor := self findConstructorFor: object.
 	(self markedForReflection includes: constructor)
 		ifFalse: [
-			varDecl := self statements addStatement:
+			varDecl := self statementBlock addStatement:
 				           (self makeVarDeclStatement: object).
 			constructor parameters ifNotEmpty: [
 				self
@@ -196,7 +196,7 @@ FamixValue2FASTJavaVisitor >> makeReflectionSetter: attribute [
 { #category : #ast }
 FamixValue2FASTJavaVisitor >> makeSetter: setter for: attribute [
 
-	self statements addStatement:
+	self statementBlock addStatement:
 		(self model newExpressionStatement expression:
 			 (model newMethodInvocation
 				  receiver: (self makeIdentifier: attribute object);
@@ -219,7 +219,7 @@ FamixValue2FASTJavaVisitor >> makeVarDeclStatement: object usingStaticAttribute:
 	"Declare a variable for object, initialized with the value of the given static attribute.
 	For example: MyClass myClass = MyClass.MY_STATIC_ATTRIBUTE;"
 
-	self statements addStatement: (model newVarDeclStatement
+	self statementBlock addStatement: (model newVarDeclStatement
 			 type: (object asFASTJavaTypeExpressionOn: self);
 			 addDeclarator: (model newVariableDeclarator
 					  variable: (self makeVariableExpression: object);
@@ -257,39 +257,42 @@ FamixValue2FASTJavaVisitor >> model [
 ]
 
 { #category : #accessing }
-FamixValue2FASTJavaVisitor >> statements [
+FamixValue2FASTJavaVisitor >> statementBlock [
 
-	^ statements ifNil: [ statements := self model newStatementBlock ]
+	^ statementBlock ifNil: [
+		  statementBlock := self model newStatementBlock ]
 ]
 
 { #category : #visiting }
 FamixValue2FASTJavaVisitor >> visitCollection: collection [
 
 	| varName |
-	self statements addStatement: (self makeVarDeclStatement: collection).
+	self statementBlock addStatement:
+		(self makeVarDeclStatement: collection).
 	varName := self varNameDict at: collection.
 	collection value do: [ :element |
 		self ensureVisited: element value.
-		self statements addStatement:
+		statementBlock addStatement:
 			(self model newExpressionStatement expression:
 				 (model newMethodInvocation
 					  receiver: (model newIdentifier name: varName);
 					  name: 'add';
 					  addArgument: (self makeVariableExpression: element value);
 					  yourself)) ].
-	^ statements
+	^ statementBlock
 ]
 
 { #category : #visiting }
 FamixValue2FASTJavaVisitor >> visitDictionary: dictionary [
 
 	| varName |
-	self statements addStatement: (self makeVarDeclStatement: dictionary).
+	self statementBlock addStatement:
+		(self makeVarDeclStatement: dictionary).
 	varName := self varNameDict at: dictionary.
 	dictionary value do: [ :association |
 		self ensureVisited: association key.
 		self ensureVisited: association value.
-		self statements addStatement:
+		statementBlock addStatement:
 			(self model newExpressionStatement expression:
 				 (model newMethodInvocation
 					  receiver: (model newIdentifier name: varName);
@@ -297,13 +300,13 @@ FamixValue2FASTJavaVisitor >> visitDictionary: dictionary [
 					  addArgument: (self makeVariableExpression: association key);
 					  addArgument: (self makeVariableExpression: association value);
 					  yourself)) ].
-	^ statements
+	^ statementBlock
 ]
 
 { #category : #visiting }
 FamixValue2FASTJavaVisitor >> visitEnumValue: enumValue [
 
-	^ self statements
+	^ self statementBlock
 		  addStatement: (self makeVarDeclStatement: enumValue);
 		  yourself
 ]
@@ -339,13 +342,13 @@ FamixValue2FASTJavaVisitor >> visitObjectOfRegularType: object [
 			self constructObject: object.
 			object value do: [ :attribute |
 				self visitObjectAttribute: attribute ] ].
-	^ statements
+	^ statementBlock
 ]
 
 { #category : #visiting }
 FamixValue2FASTJavaVisitor >> visitPrimitive: primitive [
 
-	^ self statements
+	^ self statementBlock
 		  addStatement: (self makeVarDeclStatement: primitive);
 		  yourself
 ]
@@ -353,7 +356,7 @@ FamixValue2FASTJavaVisitor >> visitPrimitive: primitive [
 { #category : #visiting }
 FamixValue2FASTJavaVisitor >> visitValueOfUnknownType: value [
 
-	^ self statements
+	^ self statementBlock
 		  addStatement: (self makeVarDeclStatement: value);
 		  yourself
 ]
