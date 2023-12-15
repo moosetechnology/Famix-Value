@@ -34,11 +34,13 @@ FamixJavaEntityFinder >> methodNameFromSignature: signature [
 
 { #category : #enumerating }
 FamixJavaEntityFinder >> parseTypeName: name [
+	"The name may not be fully qualified."
 
-	self flag: #VerveineJ. "restore method when parsing useless stubs is fixed"
+	(name includes: $.) ifFalse: [ ^ self findTypeWithName: name ].
+	self flag: #VerveineJ.
 	^ "(name beginsWithAnyOf: #( 'java.lang.' 'java.util.' ))
 		  ifTrue: [ self findTypeWithName: (name copyAfterLast: $.) ]
-		  ifFalse: [ "
+		  ifFalse: ["
 		  self findTypeWithMooseName: (name copyReplaceAll: '.' with: '::') "]"
 ]
 
