@@ -49,6 +49,7 @@ FamixValueAbstractImporter >> getObjectIdentity: rawObject [
 { #category : #enumerating }
 FamixValueAbstractImporter >> getUnknownTypeNamed: name [
 
+	Warning signal: 'Unknown type named ' , name.
 	^ (self model allWithType: FamixValueUnknownType)
 		  detect: [ :type | type name = name ]
 		  ifNone: [ self model newUnknownTypeNamed: name ]
