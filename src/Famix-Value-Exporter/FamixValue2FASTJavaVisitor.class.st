@@ -41,14 +41,6 @@ FamixValue2FASTJavaVisitor >> addAttributesFrom: object asArgumentsTo: newExpres
 ]
 
 { #category : #private }
-FamixValue2FASTJavaVisitor >> chooseNonPublicConstructorAmong: constructors [
-
-	self flag: #TODO. "don't just choose first constructor, find the best one"
-	self halt.
-	^ self markedForReflection add: constructors anyOne
-]
-
-{ #category : #private }
 FamixValue2FASTJavaVisitor >> constructObject: object [
 
 	| constructor varDecl |
@@ -84,20 +76,6 @@ FamixValue2FASTJavaVisitor >> findConstructorFor: object [
 ]
 
 { #category : #private }
-FamixValue2FASTJavaVisitor >> findConstructorFor: object among: constructors [
-
-	self flag: #legacy.
-	(constructors isEmpty or: [ "no point using a constructor which does not set attributes"
-		 constructors anyOne allAccessedAttributes isEmpty ]) ifTrue: [
-		^ nil ].
-	constructors size = 1 ifTrue: [ ^ constructors anyOne ].
-	"TODO choose the constructor which shares the most attributes with object"
-	constructors do: [ :constructor |
-		self halt.
-		constructor allAccessedAttributes ]
-]
-
-{ #category : #private }
 FamixValue2FASTJavaVisitor >> findStaticAttributeMatching: object [
 	"Only try to find static attributes for object composed of only primitive values, for now."
 
@@ -109,7 +87,7 @@ FamixValue2FASTJavaVisitor >> findStaticAttributeMatching: object [
 		                  attribute declaredType == object type and: [
 			                  attribute isStaticConstant ] ].
 	typeAttributes ifEmpty: [ ^ nil ].
-	"get a list of the objetct's attributes represented as source code literals"
+	"get a list of the object's attributes represented as source code literals"
 	objAttributes := object value collect: [ :objAttribute |
 		                 objAttribute value type name = 'String'
 			                 ifTrue: [ '"' , objAttribute value value , '"' ]
@@ -124,27 +102,6 @@ FamixValue2FASTJavaVisitor >> findStaticAttributeMatching: object [
 FamixValue2FASTJavaVisitor >> initialize [
 
 	constructorCache := IdentityDictionary new
-]
-
-{ #category : #private }
-FamixValue2FASTJavaVisitor >> legacyFindConstructorFor: object [
-	"Find the constructor which accesses the most attributes and with the most parameters.
-	If no constructor is declared explicitly, use the default constructor if possible.
-	If the default constructor is not usable, rely on reflection."
-
-	| type |
-	self flag: #legacy.
-	type := object type.
-	^ constructorCache at: type ifAbsentPut: [
-		  (self
-			   findConstructorFor: object
-			   among: type publicConstructorsWithMostImpact)
-			  ifNotNil: [ :constructor | constructor ]
-			  ifNil: [ "either we can use the default constructor, or we must use reflection"
-				  (object type methods select: [ :method | method isConstructor ])
-					  ifNotEmpty: [ :constructors |
-					  self chooseNonPublicConstructorAmong: constructors ]
-					  ifEmpty: [ "default constructor" FamixJavaMethod new ] ] ]
 ]
 
 { #category : #ast }
