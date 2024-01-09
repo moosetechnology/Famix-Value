@@ -150,7 +150,7 @@ FamixValueAbstractImporter >> initialize [
 FamixValueAbstractImporter >> loadType [
 	"Return the inferred type if it exists, otherwise the type is unknown."
 
-	^ self typeInference ifNil: [ self getUnknownTypeNamed: 'UNKNOWN' ]
+	^ self typeInference ifNil: [ self getDefaultUnknownType ]
 ]
 
 { #category : #enumerating }

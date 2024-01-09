@@ -1,7 +1,13 @@
 Extension { #name : #FamixJavaType }
 
 { #category : #'*Famix-Value-Exporter' }
-FamixJavaType >> acceptValueVisitor: visitor for: object [
+FamixJavaType >> acceptValueVisitor: visitor forCollection: collection [
+
+	^ visitor visitCollectionOfRegularType: collection
+]
+
+{ #category : #'*Famix-Value-Exporter' }
+FamixJavaType >> acceptValueVisitor: visitor forObject: object [
 
 	^ visitor visitObjectOfRegularType: object
 ]

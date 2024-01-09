@@ -34,14 +34,24 @@ FamixJavaEntityFinder >> methodNameFromSignature: signature [
 
 { #category : #enumerating }
 FamixJavaEntityFinder >> parseTypeName: name [
-	"The name may not be fully qualified."
+	"The name may not be fully qualified.
+	Even if we want to find a name in java.lang or java.util packages, we want to search using the mooseName if it is parameterized.
+	Famix does not represent arrays, but we need the information, so we use a wrapper around the type."
 
-	(name includes: $.) ifFalse: [ ^ self findTypeWithName: name ].
-	self flag: #VerveineJ.
-	^ "(name beginsWithAnyOf: #( 'java.lang.' 'java.util.' ))
-		  ifTrue: [ self findTypeWithName: (name copyAfterLast: $.) ]
-		  ifFalse: ["
-		  self findTypeWithMooseName: (name copyReplaceAll: '.' with: '::') "]"
+	| typeName dimensions type |
+	typeName := self translateFieldDescriptor: name.
+	dimensions := name occurrencesOf: $[.
+	type := (typeName includes: $.)
+		        ifFalse: [ self findTypeWithName: typeName ]
+		        ifTrue: [
+			        self findTypeWithMooseName:
+				        ((typeName allButLast: dimensions * 2)
+					         copyReplaceAll: '.'
+					         with: '::') ].
+	^ dimensions > 0
+		  ifFalse: [ type ]
+		  ifTrue: [
+		  (FamixValueJavaArray proxying: type) dimensions: dimensions ]
 ]
 
 { #category : #matching }

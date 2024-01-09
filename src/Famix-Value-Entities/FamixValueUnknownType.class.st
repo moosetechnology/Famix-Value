@@ -19,7 +19,7 @@ FamixValueUnknownType class >> annotation [
 ]
 
 { #category : #visiting }
-FamixValueUnknownType >> acceptValueVisitor: visitor for: object [
+FamixValueUnknownType >> acceptValueVisitor: visitor forObject: object [
 
 	self error: 'Exporting an unknown type is not (yet?) supported.'
 ]

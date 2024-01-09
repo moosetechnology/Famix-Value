@@ -228,6 +228,13 @@ FamixValue2FASTJavaVisitor >> statementBlock [
 
 { #category : #visiting }
 FamixValue2FASTJavaVisitor >> visitCollection: collection [
+	"Dispatch to type to handle special cases"
+
+	^ collection type acceptValueVisitor: self forCollection: collection
+]
+
+{ #category : #visiting }
+FamixValue2FASTJavaVisitor >> visitCollectionOfRegularType: collection [
 
 	| varName |
 	self statementBlock addStatement:
@@ -278,7 +285,7 @@ FamixValue2FASTJavaVisitor >> visitEnumValue: enumValue [
 FamixValue2FASTJavaVisitor >> visitObject: object [
 	"Dispatch to type to handle special cases"
 
-	^ object type acceptValueVisitor: self for: object
+	^ object type acceptValueVisitor: self forObject: object
 ]
 
 { #category : #visiting }
