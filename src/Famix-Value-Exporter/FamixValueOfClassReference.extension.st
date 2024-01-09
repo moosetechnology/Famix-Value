@@ -10,6 +10,6 @@ FamixValueOfClassReference >> accept: visitor [
 FamixValueOfClassReference >> asFASTJavaExpressionOn: visitor [
 
 	^ visitor model newClassProperty
-		  type: self value;
+		  type: (visitor makeClassTypeExpression: self value);
 		  fieldName: 'class'
 ]

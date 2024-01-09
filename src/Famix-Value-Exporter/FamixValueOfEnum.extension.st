@@ -10,6 +10,6 @@ FamixValueOfEnum >> accept: visitor [
 FamixValueOfEnum >> asFASTJavaExpressionOn: visitor [
 
 	^ visitor model newClassProperty
-		  fieldName: self value name;
-		  type: (visitor model newVariableExpression name: self type name)
+		  type: (visitor makeClassTypeExpression: self type);
+		  fieldName: self value name
 ]

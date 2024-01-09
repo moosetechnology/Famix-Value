@@ -18,12 +18,14 @@ FamixJavaParameterizableClass >> concreteTypeNameOn: stream [
 
 { #category : #'*Famix-Value-Exporter' }
 FamixJavaParameterizableClass >> typeArgumentNamesOn: stream [
+	"TODO: deal with generics?"
 
 	stream nextPut: $<.
 	self parameters
 		do: [ :parameter |
-			stream nextPutAll: '? extends '.
-			parameter typeNameOn: stream ]
+			parameter isParameterType
+				ifTrue: [ stream nextPutAll: 'Object' ]
+				ifFalse: [ parameter typeNameOn: stream ] ]
 		separatedBy: [ stream nextPutAll: ', ' ].
 	stream nextPut: $>
 ]
@@ -31,7 +33,7 @@ FamixJavaParameterizableClass >> typeArgumentNamesOn: stream [
 { #category : #'*Famix-Value-Exporter' }
 FamixJavaParameterizableClass >> typeNameOn: stream [
 
-	self flag: #verveinej. "duplicated elements in #parameters"
 	stream nextPutAll: name
+	"type arguments of parameterizable classes can be generics, and we cannot use them without defining them"
 	"self typeArgumentNamesOn: stream"
 ]
