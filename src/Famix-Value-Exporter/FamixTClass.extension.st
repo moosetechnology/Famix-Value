@@ -15,7 +15,7 @@ FamixTClass >> findSetterOf: aFamixAttribute [
 
 	^ self allMethods
 		  detect: [ :method |
-			  method isSetter and: [
+			  method isSetterLax and: [
 				  method accesses anySatisfy: [ :access |
 					  access variable == aFamixAttribute ] ] ]
 		  ifNone: nil
