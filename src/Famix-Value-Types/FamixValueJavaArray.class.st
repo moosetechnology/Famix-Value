@@ -1,3 +1,8 @@
+"
+I represent Java arrays.
+Famix does not take dimensions into account because it is a dependency model.
+However, arrays are required to represent values faithfully, and that is my purpose.
+"
 Class {
 	#name : #FamixValueJavaArray,
 	#superclass : #FamixValueSpecialType,
@@ -33,12 +38,6 @@ FamixValueJavaArray >> acceptValueVisitor: visitor forCollection: array [
 								     initializer: initializer));
 				   yourself);
 		  yourself
-]
-
-{ #category : #visiting }
-FamixValueJavaArray >> acceptValueVisitor: visitor forObject: array [
-
-	self halt. "export an array"
 ]
 
 { #category : #accessing }
