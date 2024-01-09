@@ -55,8 +55,7 @@ FamixEntityFinder >> findMethodWithSignature: signature in: class [
 { #category : #API }
 FamixEntityFinder >> findMethodsWithName: name in: class [
 
-	self flag: #VerveineJ. "should not have to use a Set for methods"
-	^ class methods asSet select: [ :method | method name = name ]
+	^ class methods select: [ :method | method name = name ]
 ]
 
 { #category : #API }

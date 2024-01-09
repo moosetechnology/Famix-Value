@@ -5,9 +5,8 @@ FamixTClass >> constructorsOrderedByScore [
 	"Return the constructors ordered by an arbitrary score that determine their effectiveness.
 	The score is roughly the ratio of attributes set over parameter count, see FamixTMethod>>#impactScore."
 
-	self flag: #VerveineJ. "should not have to use Sets"
-	^ (methods asSet asArray select: [ :method | method isConstructor ])
-		  sort: [ :a :b | a constructorScore > b constructorScore ]
+	^ (methods select: [ :method | method isConstructor ]) sort: [ :a :b |
+		  a constructorScore > b constructorScore ]
 ]
 
 { #category : #'*Famix-Value-Exporter' }
@@ -27,8 +26,7 @@ FamixTClass >> publicConstructorsWithMostImpact [
 
 	| maxAccessCount maxParamCount candidates |
 	maxAccessCount := maxParamCount := -1.
-	self flag: #VerveineJ. "should not have to use Sets"
-	candidates := IdentitySet new.
+	candidates := OrderedCollection new.
 	methods asSet do: [ :method |
 		| accessCount paramCount |
 		method isPublic & method isConstructor ifTrue: [
@@ -37,7 +35,7 @@ FamixTClass >> publicConstructorsWithMostImpact [
 			 > maxAccessCount or: [
 				 accessCount = maxAccessCount and: [ paramCount > maxParamCount ] ])
 				ifTrue: [
-					candidates := IdentitySet with: method.
+					candidates := OrderedCollection with: method.
 					maxAccessCount := accessCount.
 					maxParamCount := paramCount ]
 				ifFalse: [

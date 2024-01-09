@@ -3,12 +3,9 @@ Extension { #name : #FamixTMethod }
 { #category : #'*Famix-Value-Exporter' }
 FamixTMethod >> allAccessedAttributes [
 
-	self flag: #VerveineJ. "should not have to use a Set"
-	^ self
-		  cacheAt: #allAccessedAttributes
-		  ifAbsentPut: [
+	^ self cacheAt: #allAccessedAttributes ifAbsentPut: [
 		  self
-			  allAccessedAttributesOn: IdentitySet new
+			  allAccessedAttributesOn: OrderedCollection new
 			  seen: IdentitySet new ]
 ]
 
@@ -57,6 +54,9 @@ FamixTMethod >> mapConstructorParametersToAttributes [
 	^ parameters collect: [ :parameter |
 		  (parameter fastAccesses flatCollectAsSet: [ :access |
 			   access accessedAttributesOf: parentType ])
-			  ifNotEmpty: [ :attributes | attributes anyOneIfOnlyOneElement ]
+			  ifNotEmpty: [ :attributes |
+				  attributes size = 1
+					  ifTrue: [ attributes at: 1 ]
+					  ifFalse: [ self error: 'Expected only one attribute.' ] ]
 			  ifEmpty: [ nil ] ]
 ]
