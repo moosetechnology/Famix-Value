@@ -20,12 +20,6 @@ FamixValueSpecialType class >> proxying: aFamixTType [
 	^ self new type: aFamixTType
 ]
 
-{ #category : #visiting }
-FamixValueSpecialType >> acceptValueVisitor: visitor for: object [
-
-	self subclassResponsibility
-]
-
 { #category : #'reflective operations' }
 FamixValueSpecialType >> doesNotUnderstand: aMessage [
 

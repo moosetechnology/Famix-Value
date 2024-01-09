@@ -9,7 +9,7 @@ Class {
 }
 
 { #category : #visiting }
-FamixValueJavaDate >> acceptValueVisitor: visitor for: object [
+FamixValueJavaDate >> acceptValueVisitor: visitor forObject: object [
 	"Skip visiting the attribute, it is added as a constructor argument"
 
 	^ visitor statementBlock

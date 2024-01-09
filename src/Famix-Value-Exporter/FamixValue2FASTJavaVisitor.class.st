@@ -128,30 +128,36 @@ FamixValue2FASTJavaVisitor >> makeNewExpression: object [
 FamixValue2FASTJavaVisitor >> makeReflectionFieldGetter: attribute [
 
 	^ self model newMethodInvocation
-		  receiver: (model newClassProperty type:
-					   (self makeClassTypeExpression: attribute object type typeName));
+		  receiver: (model newClassProperty
+				   type:
+					   (self makeClassTypeExpression: attribute object type typeName);
+				   fieldName: 'class');
 		  name: 'getField';
 		  addArgument:
-			  (model newStringLiteral primitiveValue: attribute attribute name);
+		  (model newStringLiteral primitiveValue: attribute attribute name);
 		  yourself
 ]
 
 { #category : #ast }
-FamixValue2FASTJavaVisitor >> makeReflectionSetter: attribute [
+FamixValue2FASTJavaVisitor >> makeReflectionSetterInvocation: attribute [
+	"Use reflection to set an attribute on an object."
 
+	self flag: #TODO. "we need to make a variable to hold the field, make it accessible, then use it to set the value."
 	self markedForReflection add: attribute attribute.
-	^ self model newMethodInvocation
-		  receiver: (self makeReflectionFieldGetter: attribute);
-		  name: (attribute value type isPrimitiveType
-				   ifTrue: [ 'set' , attribute value type name capitalized ]
-				   ifFalse: [ 'set' ]);
-		  addArgument: (self makeVariableExpression: attribute object);
-		  addArgument: (self makeVariableExpression: attribute value);
-		  yourself
+	self statementBlock addStatement:
+		(self model newExpressionStatement expression:
+			 (model newMethodInvocation
+				  receiver: (self makeReflectionFieldGetter: attribute);
+				  name: (attribute value type isPrimitiveType
+						   ifTrue: [ 'set' , attribute value type name capitalized ]
+						   ifFalse: [ 'set' ]);
+				  addArgument: (self makeVariableExpression: attribute object);
+				  addArgument: (self makeVariableExpression: attribute value);
+				  yourself))
 ]
 
 { #category : #ast }
-FamixValue2FASTJavaVisitor >> makeSetter: setter for: attribute [
+FamixValue2FASTJavaVisitor >> makeSetterInvocation: setter for: attribute [
 
 	self statementBlock addStatement:
 		(self model newExpressionStatement expression:
@@ -181,8 +187,8 @@ FamixValue2FASTJavaVisitor >> makeVarDeclStatement: object usingStaticAttribute:
 			 addDeclarator: (model newVariableDeclarator
 					  variable: (self makeVariableExpression: object);
 					  expression: (model newClassProperty
-							   fieldName: attribute name;
-							   type: (self makeClassTypeExpression: object type name)));
+							   type: (self makeClassTypeExpression: object type name);
+							   fieldName: attribute name));
 			 yourself)
 ]
 
@@ -281,8 +287,8 @@ FamixValue2FASTJavaVisitor >> visitObjectAttribute: attribute [
 	attribute attribute ifNil: [ "ignore unknown attributes" ^ self ].
 	self ensureVisited: attribute value.
 	(attribute object type findSetterOf: attribute attribute)
-		ifNotNil: [ :setter | self makeSetter: setter for: attribute ]
-		ifNil: [ self makeReflectionSetter: attribute ]
+		ifNotNil: [ :setter | self makeSetterInvocation: setter for: attribute ]
+		ifNil: [ self makeReflectionSetterInvocation: attribute ]
 ]
 
 { #category : #visiting }
