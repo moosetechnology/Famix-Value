@@ -4,18 +4,18 @@ An importer helper for finding Java types represented by `FamixJavaType` and its
 Class {
 	#name : #FamixJavaEntityFinder,
 	#superclass : #FamixEntityFinder,
-	#instVars : [
-		'fieldDescriptors'
+	#classVars : [
+		'FieldDescriptors'
 	],
 	#category : #'Famix-Value-Importer'
 }
 
-{ #category : #initialization }
-FamixJavaEntityFinder >> initialize [
+{ #category : #'class initialization' }
+FamixJavaEntityFinder class >> initialize [
 	"See https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.2"
 
-	fieldDescriptors := IdentityDictionary new.
-	fieldDescriptors
+	FieldDescriptors := IdentityDictionary new.
+	FieldDescriptors
 		at: $B put: 'byte';
 		at: $C put: 'char';
 		at: $D put: 'double';
@@ -76,7 +76,7 @@ FamixJavaEntityFinder >> translateFieldDescriptor: fieldDescriptor [
 		dimensions := dimensions + 1 ].
 	dimensions = 0 ifTrue: [ ^ fieldDescriptor ].
 	typeName := fieldDescriptor allButFirst: dimensions.
-	typeName := fieldDescriptors
+	typeName := FieldDescriptors
 		            at: (typeName at: 1)
 		            ifAbsent: [ "an instance of class, e.g. Ljava.lang.String;"
 			            (typeName at: 1) == $L
