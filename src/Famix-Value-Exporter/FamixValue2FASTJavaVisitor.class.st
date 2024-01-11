@@ -13,7 +13,8 @@ Class {
 	#superclass : #FamixValue2ASTVisitor,
 	#instVars : [
 		'markedForReflection',
-		'constructorCache'
+		'constructorCache',
+		'staticAttributesCache'
 	],
 	#category : #'Famix-Value-Exporter'
 }
@@ -79,29 +80,32 @@ FamixValue2FASTJavaVisitor >> findConstructorFor: object [
 FamixValue2FASTJavaVisitor >> findStaticAttributeMatching: object [
 	"Only try to find static attributes for object composed of only primitive values, for now."
 
-	| typeAttributes objAttributes |
+	| type staticAttributes objAttributes |
+	type := object type.
 	(object value allSatisfy: [ :attribute |
 		 attribute value isOfPrimitiveType ]) ifFalse: [ ^ nil ].
 	"eligible attributes are public, static, of the same type, and have an initializer expression; the conditions are ordered for maximum time efficiency"
-	typeAttributes := object type attributes select: [ :attribute |
-		                  attribute declaredType == object type and: [
-			                  attribute isStaticConstant ] ].
-	typeAttributes ifEmpty: [ ^ nil ].
+	staticAttributes := staticAttributesCache at: type ifAbsentPut: [
+		                    type attributes select: [ :attribute |
+			                    attribute declaredType == object type and: [
+				                    attribute isStaticConstant ] ] ].
+	staticAttributes ifEmpty: [ ^ nil ].
 	"get a list of the object's attributes represented as source code literals"
 	objAttributes := object value collect: [ :objAttribute |
 		                 objAttribute value type name = 'String'
 			                 ifTrue: [ '"' , objAttribute value value , '"' ]
 			                 ifFalse: [ objAttribute value value asString ] ].
-	^ typeAttributes
+	^ staticAttributes
 		  detect: [ :attribute |
 		  attribute initializerMatchesValues: objAttributes ]
-		  ifNone: [ nil ]
+		  ifNone: nil
 ]
 
 { #category : #initialization }
 FamixValue2FASTJavaVisitor >> initialize [
 
-	constructorCache := IdentityDictionary new
+	constructorCache := IdentityDictionary new.
+	staticAttributesCache := IdentityDictionary new
 ]
 
 { #category : #ast }

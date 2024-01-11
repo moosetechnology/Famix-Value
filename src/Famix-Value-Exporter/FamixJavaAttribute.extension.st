@@ -2,7 +2,8 @@ Extension { #name : #FamixJavaAttribute }
 
 { #category : #'*Famix-Value-Exporter' }
 FamixJavaAttribute >> initializerMatchesValues: objectAttributes [
-	"Assume I have a source and an initializer expression. Return whether the representations of primitive objects, given as argument, match those of my initializer expression, regardless of order.
+	"Assume I have a source and an initializer expression.
+	Return whether the representations of primitive objects, given as argument, match those of my initializer expression, regardless of order.
 	For example, if my representation in Java was:
 	public static MY_ATTRIBUTE = MyClass(1, 'foo');
 	Then I would match: { 1. 'foo' } or { 'foo'. 1 }"
@@ -13,7 +14,7 @@ FamixJavaAttribute >> initializerMatchesValues: objectAttributes [
 	source := source
 		          copyFrom: (source indexOf: $() + 1
 		          to: (source lastIndexOf: $)) - 1.
-	source regex: '[^,\s]+' matchesDo: [ :match |
+	source splitJavaArguments do: [ :match |
 		| index |
 		index := found indexOf: match.
 		index = 0
