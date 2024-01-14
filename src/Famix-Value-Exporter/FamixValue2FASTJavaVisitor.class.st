@@ -73,7 +73,7 @@ FamixValue2FASTJavaVisitor >> findConstructorFor: object [
 				  constructors
 					  detect: [ :constructor | constructor isPublic ]
 					  ifNone: [ "fallback to using reflection"
-						  self markedForReflection add: constructors anyOne ] ] ]
+						  self markedForReflection add: constructors first ] ] ]
 ]
 
 { #category : #private }
@@ -163,12 +163,21 @@ FamixValue2FASTJavaVisitor >> makeReflectionSetterInvocation: attribute [
 { #category : #ast }
 FamixValue2FASTJavaVisitor >> makeSetterInvocation: setter for: attribute [
 
+	self
+		makeSetterInvocation: setter
+		for: attribute
+		named: (self varNameFor: attribute value)
+]
+
+{ #category : #ast }
+FamixValue2FASTJavaVisitor >> makeSetterInvocation: setter for: attribute named: aString [
+
 	self statementBlock addStatement:
 		(self model newExpressionStatement expression:
 			 (model newMethodInvocation
 				  receiver: (self makeIdentifier: attribute object);
 				  name: setter name;
-				  addArgument: (self makeVariableExpression: attribute value);
+				  addArgument: (model newVariableExpression name: aString);
 				  famixMethod: setter))
 ]
 
