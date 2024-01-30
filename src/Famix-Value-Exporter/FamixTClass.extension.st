@@ -12,12 +12,14 @@ FamixTClass >> constructorsOrderedByScore [
 { #category : #'*Famix-Value-Exporter' }
 FamixTClass >> findSetterOf: aFamixAttribute [
 
-	^ self allMethods
+	^ self methods
 		  detect: [ :method |
 			  method isSetterLax and: [
 				  method accesses anySatisfy: [ :access |
 					  access variable == aFamixAttribute ] ] ]
-		  ifNone: nil
+		  ifNone: [
+			  self superclass ifNotNil: [ :superclass |
+				  superclass findSetterOf: aFamixAttribute ] ]
 ]
 
 { #category : #'*Famix-Value-Exporter' }

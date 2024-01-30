@@ -59,12 +59,9 @@ FamixValue2ASTVisitor >> varNameDict [
 { #category : #naming }
 FamixValue2ASTVisitor >> varNameFor: value [
 
-	^ self varNameDict at: value ifAbsentPut: [
-		  (value typedEntity ifNotNil: [ value typedEntity name ] ifNil: [
-			   value attributeInObjects size = 1
-				   ifTrue: [ value attributeInObjects first attribute name ]
-				   ifFalse: [ value type baseName uncapitalized ] ])
-		  , self nextId asString ]
+	^ self varNameDict
+		  at: value
+		  ifAbsentPut: [ value varName , self nextId asString ]
 ]
 
 { #category : #visiting }

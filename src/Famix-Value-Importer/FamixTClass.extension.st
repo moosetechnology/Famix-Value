@@ -1,18 +1,18 @@
 Extension { #name : #FamixTClass }
 
 { #category : #'*Famix-Value-Importer' }
-FamixTClass >> searchAttributeNamed: attributeName [
+FamixTClass >> findAttributeNamed: attributeName [
 
 	^ self attributes
 		  detect: [ :attr | attr name = attributeName ]
 		  ifNone: [
 			  self inheritedAttributes
 				  detect: [ :attribute | attribute name = attributeName ]
-				  ifNone: [ self searchAttributeWithSetterForName: attributeName ] ]
+				  ifNone: [ self findAttributeWithSetterNamed: attributeName ] ]
 ]
 
 { #category : #'*Famix-Value-Importer' }
-FamixTClass >> searchAttributeWithSetterForName: attributeName [
+FamixTClass >> findAttributeWithSetterNamed: attributeName [
 	"Useful when the serialized attribute's name does not exactly match the attribute name.
 	I try to find the setter matching the former, then search for the attribute access."
 

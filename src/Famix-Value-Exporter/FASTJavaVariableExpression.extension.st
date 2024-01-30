@@ -22,8 +22,11 @@ FASTJavaVariableExpression >> accessedAttributesOf: aFamixJavaClass [
 		^ (((method := invoc famixInvocation anyCandidate) parameters
 			    ifNotEmpty: [ method ]
 			    ifEmpty: [ "TODO: investigate why we need to do this"
-				    method invokingMethods anyOneIfOnlyOneElement ]) parameters
-			   at: (invoc arguments indexOf: self)) allAccessedAttributesOf:
+				    | methods |
+				    (methods := method invokingMethods) size = 1 ifFalse: [
+					    self error: 'Only one method expected' ].
+				    methods anyOne ]) parameters at:
+			   (invoc arguments indexOf: self)) allAccessedAttributesOf:
 			  aFamixJavaClass ].
 	self error: 'TODO: what else can be using the parameter?'.
 	^ nil

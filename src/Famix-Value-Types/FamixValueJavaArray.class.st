@@ -40,6 +40,17 @@ FamixValueJavaArray >> acceptValueVisitor: visitor forCollection: array [
 		  yourself
 ]
 
+{ #category : #'as yet unclassified' }
+FamixValueJavaArray >> decorate: aFamixJavaType asFASTJavaTypeExpressionOn: visitor [
+	"Add array brackets to the type name."
+
+	| expression |
+	expression := aFamixJavaType asFASTJavaTypeExpressionOn: visitor.
+	expression typeName name:
+		expression typeName name , ('[]' repeat: dimensions).
+	^ expression
+]
+
 { #category : #accessing }
 FamixValueJavaArray >> dimensions [
 

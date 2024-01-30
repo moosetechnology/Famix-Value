@@ -112,7 +112,7 @@ FamixValueAbstractImporter >> importObject: rawObject of: type [
 	(self getObjectIdentity: rawObject) ifNotNil: [ :id |
 		objectDict at: id put: object ].
 	rawObject associationsDo: [ :assoc |
-		attribute := type searchAttributeNamed: assoc key.
+		attribute := type findAttributeNamed: assoc key.
 		self
 			withTypeInference: (attribute ifNotNil: [ attribute declaredType ])
 			do: [

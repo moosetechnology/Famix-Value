@@ -9,13 +9,16 @@ FamixJavaType >> acceptValueVisitor: visitor forCollection: collection [
 { #category : #'*Famix-Value-Exporter' }
 FamixJavaType >> acceptValueVisitor: visitor forObject: object [
 
-	^ visitor visitObjectOfRegularType: object
+	^ self isStub
+		  ifTrue: [ visitor visitObjectStub: object ]
+		  ifFalse: [ visitor visitObjectOfRegularType: object ]
 ]
 
 { #category : #'*Famix-Value-Exporter' }
 FamixJavaType >> asFASTJavaTypeExpressionOn: visitor [
+	"^ visitor makeClassTypeExpression: self typeName"
 
-	^ visitor makeClassTypeExpression: self typeName
+	^ FASTBuilder current referType: self
 ]
 
 { #category : #'*Famix-Value-Exporter' }
@@ -36,6 +39,17 @@ FamixJavaType >> concreteTypeName [
 FamixJavaType >> concreteTypeNameOn: stream [
 
 	stream nextPutAll: name
+]
+
+{ #category : #'*Famix-Value-Exporter' }
+FamixJavaType >> decorate: aFamixJavaType asFASTJavaTypeExpressionOn: visitor [
+	"This method allows for more control by having access to both the static (argument) and dynamic (self) types of a value.
+	The default behavior handles when the static type is a parameter type, then it uses the dynamic type.
+	See Famix-Value-Types for special cases."
+
+	^ aFamixJavaType isParameterType
+		  ifTrue: [ self asFASTJavaTypeExpressionOn: visitor ]
+		  ifFalse: [ aFamixJavaType asFASTJavaTypeExpressionOn: visitor ]
 ]
 
 { #category : #'*Famix-Value-Exporter' }

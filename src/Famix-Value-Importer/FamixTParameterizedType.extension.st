@@ -1,7 +1,7 @@
 Extension { #name : #FamixTParameterizedType }
 
 { #category : #'*Famix-Value-Importer' }
-FamixTParameterizedType >> searchAttributeNamed: attributeName [
+FamixTParameterizedType >> findAttributeNamed: attributeName [
 
-	^ parameterizableClass searchAttributeNamed: attributeName
+	^ parameterizableClass findAttributeNamed: attributeName
 ]

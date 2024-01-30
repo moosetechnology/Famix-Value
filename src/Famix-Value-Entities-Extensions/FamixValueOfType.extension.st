@@ -45,3 +45,15 @@ FamixValueOfType >> value: anObject [
 
 	self subclassResponsibility
 ]
+
+{ #category : #'*Famix-Value-Entities-Extensions' }
+FamixValueOfType >> varName [
+	"Basic variable name of a value."
+
+	^ self typedEntity
+		  ifNotNil: [ :typedEntity | typedEntity name ]
+		  ifNil: [
+			  attributeInObjects size = 1
+				  ifTrue: [ attributeInObjects first attribute name ]
+				  ifFalse: [ self type baseName uncapitalized ] ]
+]

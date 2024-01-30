@@ -116,6 +116,91 @@ FamixValue2FASTJavaVisitor >> makeClassTypeExpression: typeName [
 ]
 
 { #category : #ast }
+FamixValue2FASTJavaVisitor >> makeHelper [
+
+	self model newCompilationUnit
+		packageDeclaration: (model newPackageDeclaration qualifiedName:
+					 (model newQualifiedName name: 'fr.evref.modest'));
+		importDeclarations: FASTBuilder current makeImportDeclarations;
+		addImportDeclaration: (model newImportDeclaration qualifiedName:
+					 (model newQualifiedName name: 'java.io.IOException'));
+		addImportDeclaration: (model newImportDeclaration qualifiedName:
+					 (model newQualifiedName name:
+							  'com.fasterxml.jackson.databind.ObjectMapper'));
+		addClassDeclaration: self makeHelperClass
+]
+
+{ #category : #ast }
+FamixValue2FASTJavaVisitor >> makeHelperClass [
+	"The helper class has static methods used for creating objects.
+	It has a private constructor, a Jackson ObjectMapper and a `deserialize` method to handle stubs."
+
+	^ self model newClassDeclaration
+		  name: 'ModestHelper';
+		  addModifier: (model newModifier token: 'public');
+		  declarations: {
+				  (model newMethodEntity
+					   name: 'ModestHelper';
+					   modifiers: { (model newModifier token: 'private') };
+					   statementBlock: model newStatementBlock).
+				  (model newVarDeclStatement
+					   type: (model newClassTypeExpression typeName:
+								    (model newTypeName name: 'ObjectMapper'));
+					   modifiers: {
+							   (model newModifier token: 'private').
+							   (model newModifier token: 'static').
+							   (model newModifier token: 'final') };
+					   declarators: { (model newVariableDeclarator
+							    variable: (model newVariableExpression name: 'mapper');
+							    expression:
+								    (model newNewExpression type:
+										     (model newClassTypeExpression typeName:
+												      (model newTypeName name: 'ObjectMapper')))) }).
+				  (model newMethodEntity
+					   typeParameters:
+						   { (model newTypeParameterExpression name: 'T') };
+					   type:
+						   (model newClassTypeExpression typeName:
+								    (model newTypeName name: 'T'));
+					   name: 'deserialize';
+					   parameters: {
+							   (model newParameter
+								    variable: (model newVariableExpression name: 'json');
+								    type: (model newClassTypeExpression typeName:
+											     (model newTypeName name: 'String'))).
+							   (model newParameter
+								    variable: (model newVariableExpression name: 'clazz');
+								    type: (model newClassTypeExpression
+										     typeName: (model newTypeName name: 'Class');
+										     arguments: { (model newClassTypeExpression typeName:
+													      (model newTypeName name: 'T')) })) };
+					   modifiers: {
+							   (model newModifier token: 'public').
+							   (model newModifier token: 'static') };
+					   statementBlock: (model newStatementBlock statements: {
+								    (model newTryCatchStatement
+									     try: (model newStatementBlock statements:
+												      { (model newReturnStatement expression:
+														       (model newMethodInvocation
+															        receiver: (model newIdentifier name: 'mapper');
+															        name: 'readValue';
+															        arguments: {
+																	        (model newVariableExpression name: 'json').
+																	        (model newVariableExpression name: 'clazz') })) });
+									     catches: { (model newCatchPartStatement
+											      catchedTypes:
+												      { (model newClassTypeExpression typeName:
+														       (model newTypeName name: 'IOException')) };
+											      body: (model newStatementBlock statements:
+														       { (model newExpressionStatement expression:
+																        (model newMethodInvocation
+																	         receiver: (model newIdentifier name: 'e');
+																	         name: 'printStackTrace')) });
+											      parameter: (model newVariableExpression name: 'e')) }).
+								    (model newReturnStatement expression: model newNullLiteral) })) }
+]
+
+{ #category : #ast }
 FamixValue2FASTJavaVisitor >> makeIdentifier: value [
 
 	^ self model newIdentifier name: (self varNameFor: value)
@@ -125,7 +210,8 @@ FamixValue2FASTJavaVisitor >> makeIdentifier: value [
 FamixValue2FASTJavaVisitor >> makeNewExpression: object [
 
 	^ self model newNewExpression type:
-		  (self makeClassTypeExpression: object type concreteTypeName)
+		  (object asFASTJavaTypeExpressionOn: self)
+	"(self makeClassTypeExpression: object type concreteTypeName)"
 ]
 
 { #category : #ast }
@@ -326,6 +412,24 @@ FamixValue2FASTJavaVisitor >> visitObjectOfRegularType: object [
 			object value do: [ :attribute |
 				self visitObjectAttribute: attribute ] ].
 	^ statementBlock
+]
+
+{ #category : #visiting }
+FamixValue2FASTJavaVisitor >> visitObjectStub: object [
+
+	self statementBlock addStatement: (self model newVarDeclStatement
+			 type: (object asFASTJavaTypeExpressionOn: self);
+			 addDeclarator: (self model newVariableDeclarator
+					  variable: (self makeVariableExpression: object);
+					  expression: (model newMethodInvocation
+							   name: 'deserialize';
+							   arguments: {
+									   (model newStringLiteral primitiveValue:
+											    object asJsonString).
+									   (model newClassProperty
+										    type: (object asFASTJavaTypeExpressionOn: self);
+										    fieldName: 'class') }));
+			 yourself)
 ]
 
 { #category : #visiting }
