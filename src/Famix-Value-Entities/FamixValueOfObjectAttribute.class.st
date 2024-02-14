@@ -1,5 +1,18 @@
 "
 An attribute belonging to an object.
+
+## Relations
+======================
+
+### Other
+| Relation | Origin | Opposite | Type | Comment |
+|---|
+| `attribute` | `FamixValueOfObjectAttribute` | `valueInObjects` | `FamixTAttribute` | |
+| `object` | `FamixValueOfObjectAttribute` | `value` | `FamixValueOfObject` | |
+| `value` | `FamixValueOfObjectAttribute` | `attributeInObjects` | `FamixValueOfType` | |
+
+
+
 "
 Class {
 	#name : #FamixValueOfObjectAttribute,

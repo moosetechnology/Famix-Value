@@ -1,5 +1,16 @@
 "
 A value of an object.
+
+## Relations
+======================
+
+### Other
+| Relation | Origin | Opposite | Type | Comment |
+|---|
+| `value` | `FamixValueOfObject` | `object` | `FamixValueOfObjectAttribute` | |
+
+
+
 "
 Class {
 	#name : #FamixValueOfObject,

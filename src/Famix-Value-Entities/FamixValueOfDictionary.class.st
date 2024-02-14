@@ -1,5 +1,16 @@
 "
 A value of a dictionary type.
+
+## Relations
+======================
+
+### Other
+| Relation | Origin | Opposite | Type | Comment |
+|---|
+| `value` | `FamixValueOfDictionary` | `dictionary` | `FamixValueOfDictionaryAssociation` | |
+
+
+
 "
 Class {
 	#name : #FamixValueOfDictionary,

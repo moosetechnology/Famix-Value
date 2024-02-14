@@ -1,5 +1,16 @@
 "
 A value of an enumeration.
+
+## Relations
+======================
+
+### Other
+| Relation | Origin | Opposite | Type | Comment |
+|---|
+| `value` | `FamixValueOfEnum` | `valueReferences` | `FamixTEnumValue` | |
+
+
+
 "
 Class {
 	#name : #FamixValueOfEnum,

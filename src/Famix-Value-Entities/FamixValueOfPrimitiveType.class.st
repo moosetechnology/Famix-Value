@@ -1,5 +1,13 @@
 "
 A value of a primitive type.
+
+## Properties
+======================
+
+| Name | Type | Default value | Comment |
+|---|
+| `value` | `Object` | nil | Value data represented as a native Smalltalk object.|
+
 "
 Class {
 	#name : #FamixValueOfPrimitiveType,

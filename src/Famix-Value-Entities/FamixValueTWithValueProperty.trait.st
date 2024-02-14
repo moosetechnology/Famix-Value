@@ -1,5 +1,13 @@
 "
 My users have the value data represented by a Smalltalk object as a property.
+
+## Properties
+======================
+
+| Name | Type | Default value | Comment |
+|---|
+| `value` | `Object` | nil | Value data represented as a native Smalltalk object.|
+
 "
 Trait {
 	#name : #FamixValueTWithValueProperty,

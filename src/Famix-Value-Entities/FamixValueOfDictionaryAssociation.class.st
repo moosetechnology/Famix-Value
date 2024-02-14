@@ -1,5 +1,18 @@
 "
 A key-value pair belonging to a dictionary.
+
+## Relations
+======================
+
+### Other
+| Relation | Origin | Opposite | Type | Comment |
+|---|
+| `dictionary` | `FamixValueOfDictionaryAssociation` | `value` | `FamixValueOfDictionary` | |
+| `key` | `FamixValueOfDictionaryAssociation` | `keyInDictionaries` | `FamixValueOfType` | |
+| `value` | `FamixValueOfDictionaryAssociation` | `valueInDictionaries` | `FamixValueOfType` | |
+
+
+
 "
 Class {
 	#name : #FamixValueOfDictionaryAssociation,

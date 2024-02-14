@@ -1,5 +1,16 @@
 "
 A value of a collection type.
+
+## Relations
+======================
+
+### Other
+| Relation | Origin | Opposite | Type | Comment |
+|---|
+| `value` | `FamixValueOfCollection` | `collection` | `FamixValueOfCollectionElement` | |
+
+
+
 "
 Class {
 	#name : #FamixValueOfCollection,

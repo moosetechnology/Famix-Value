@@ -1,5 +1,21 @@
 "
 Abstract superclass of all ValueOf_Type_ entities.
+
+## Relations
+======================
+
+### Other
+| Relation | Origin | Opposite | Type | Comment |
+|---|
+| `attributeInObjects` | `FamixValueOfType` | `value` | `FamixValueOfObjectAttribute` | |
+| `elementInCollections` | `FamixValueOfType` | `value` | `FamixValueOfCollectionElement` | |
+| `keyInDictionaries` | `FamixValueOfType` | `key` | `FamixValueOfDictionaryAssociation` | |
+| `type` | `FamixValueOfType` | `values` | `FamixTType` | |
+| `typedEntity` | `FamixValueOfType` | `values` | `FamixTTypedEntity` | |
+| `valueInDictionaries` | `FamixValueOfType` | `value` | `FamixValueOfDictionaryAssociation` | |
+
+
+
 "
 Class {
 	#name : #FamixValueOfType,

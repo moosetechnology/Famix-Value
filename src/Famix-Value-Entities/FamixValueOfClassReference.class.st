@@ -1,5 +1,16 @@
 "
 A reference to a class.
+
+## Relations
+======================
+
+### Other
+| Relation | Origin | Opposite | Type | Comment |
+|---|
+| `value` | `FamixValueOfClassReference` | `valueReferences` | `FamixTClass` | |
+
+
+
 "
 Class {
 	#name : #FamixValueOfClassReference,

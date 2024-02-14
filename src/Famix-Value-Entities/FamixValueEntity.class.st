@@ -78,6 +78,13 @@ FamixValueEntity >> isOfUnknownType [
 ]
 
 { #category : #testing }
+FamixValueEntity >> isQueryable [
+
+	<generated>
+	^ false
+]
+
+{ #category : #testing }
 FamixValueEntity >> isType [
 
 	<generated>
