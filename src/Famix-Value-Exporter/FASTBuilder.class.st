@@ -16,6 +16,12 @@ FASTBuilder class >> current [
 	^ Current ifNil: [ Current := self new ]
 ]
 
+{ #category : #'class initialization' }
+FASTBuilder class >> reset [
+
+	Current := nil
+]
+
 { #category : #accessing }
 FASTBuilder >> beCurrent [
 

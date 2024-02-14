@@ -121,7 +121,7 @@ FamixValue2FASTJavaVisitor >> makeHelper [
 	self model newCompilationUnit
 		packageDeclaration: (model newPackageDeclaration qualifiedName:
 					 (model newQualifiedName name: 'fr.evref.modest'));
-		importDeclarations: FASTBuilder current makeImportDeclarations;
+		importDeclarations: FASTJavaBuilder current makeImportDeclarations;
 		addImportDeclaration: (model newImportDeclaration qualifiedName:
 					 (model newQualifiedName name: 'java.io.IOException'));
 		addImportDeclaration: (model newImportDeclaration qualifiedName:
@@ -233,6 +233,7 @@ FamixValue2FASTJavaVisitor >> makeReflectionSetterInvocation: attribute [
 	"Use reflection to set an attribute on an object."
 
 	self flag: #TODO. "we need to make a variable to hold the field, make it accessible, then use it to set the value."
+	self halt. "current implementation does not work"
 	self markedForReflection add: attribute attribute.
 	self statementBlock addStatement:
 		(self model newExpressionStatement expression:

@@ -57,7 +57,7 @@ FamixValueUnknownType >> acceptValueVisitor: visitor forObject: object [
 { #category : #converting }
 FamixValueUnknownType >> asFASTJavaTypeExpressionOn: visitor [
 
-	^ FASTBuilder current referType: self
+	^ FASTJavaBuilder current referType: self
 ]
 
 { #category : #testing }
