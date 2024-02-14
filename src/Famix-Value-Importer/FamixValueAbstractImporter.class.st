@@ -34,9 +34,9 @@ FamixValueAbstractImporter >> getDefaultUnknownType [
 ]
 
 { #category : #enumerating }
-FamixValueAbstractImporter >> getObjectFromIdentity: id [
+FamixValueAbstractImporter >> getObjectFromIdentity: id ifAbsent: aBlock [
 
-	^ objectDict at: id
+	^ objectDict at: id ifAbsent: aBlock
 ]
 
 { #category : #enumerating }
@@ -142,8 +142,7 @@ FamixValueAbstractImporter >> importValue: rawValue [
 { #category : #initialization }
 FamixValueAbstractImporter >> initialize [
 
-	typeInferences := Stack new.
-	objectDict := Dictionary new
+	self reset
 ]
 
 { #category : #enumerating }
@@ -197,8 +196,9 @@ FamixValueAbstractImporter >> parseValue: serializedValue [
 
 { #category : #initialization }
 FamixValueAbstractImporter >> reset [
-	"Forget previous object identities."
+	"Forget type inferences and previous object identities."
 
+	typeInferences := Stack new.
 	objectDict := Dictionary new
 ]
 
@@ -212,7 +212,7 @@ FamixValueAbstractImporter >> typeInference [
 FamixValueAbstractImporter >> withTypeInference: type do: block [
 
 	| result |
-	type = self typeInference ifTrue: [ ^ block value ].
+	type == self typeInference ifTrue: [ ^ block value ].
 	typeInferences push: type.
 	result := block value.
 	typeInferences pop.

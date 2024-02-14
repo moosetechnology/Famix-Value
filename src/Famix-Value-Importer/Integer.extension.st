@@ -8,9 +8,9 @@ Integer >> asJavaJacksonValueOn: importer [
 	^ (typeInference isNotNil and: [
 		   (importer isPrimitiveType: typeInference) not ])
 		  ifTrue: [ "object reference, solved by the importer"
-			  [ importer getObjectFromIdentity: self ]
-				  on: KeyNotFound
-				  do: [ "might be a special object with missing runtime type information"
+			  importer
+				  getObjectFromIdentity: self
+				  ifAbsent: [ "might be a special object with missing runtime type information"
 					  importer importSpecialObject: self of: typeInference ] ]
 		  ifFalse: [ importer importPrimitive: self of: 'int' ]
 ]
