@@ -63,7 +63,7 @@ FamixValueAbstractImporter >> importCollection: rawValue of: type [
 	collection := self model newOfCollection type: type.
 	self
 		withTypeInference:
-		(type isParameterizedType ifTrue: [ type arguments first ])
+		(type isParametricEntity ifTrue: [ type allTypeParameters first ])
 		do: [
 			rawValue do: [ :rawElement |
 				collection addValue: (self model newOfCollectionElement value:
@@ -77,10 +77,10 @@ FamixValueAbstractImporter >> importDictionary: rawValue of: type [
 
 	| dictionary keyType valueType assoc |
 	dictionary := self model newOfDictionary type: type.
-	(type isUnknownType not and: [ type isParameterizedType ])
+	type isParametricEntity
 		ifTrue: [
-			keyType := type keyArgument.
-			valueType := type valueArgument ]
+			keyType := type keyType.
+			valueType := type valueType ]
 		ifFalse: [ keyType := valueType := nil ].
 	rawValue associationsDo: [ :rawAssoc |
 		assoc := self model newOfDictionaryAssociation dictionary:

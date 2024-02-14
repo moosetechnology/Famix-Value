@@ -62,7 +62,11 @@ FamixEntityFinder >> findMethodsWithName: name in: class [
 FamixEntityFinder >> findTypeNamed: name [
 	"Main API for finding a type, should not be overridden."
 
-	^ self cache at: name ifAbsentPut: [ self parseTypeName: name ]
+	^ self cache at: name ifAbsentPut: [
+		  | type |
+		  (type := self parseTypeName: name) isParametricEntity
+			  ifTrue: [ type genericEntity ]
+			  ifFalse: [ type ] ]
 ]
 
 { #category : #enumerating }

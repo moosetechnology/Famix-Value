@@ -13,7 +13,7 @@ FamixValueUnknownType >> concreteTypeName [
 ]
 
 { #category : #'*Famix-Value-Entities-Extensions' }
-FamixValueUnknownType >> isParameterizedType [
+FamixValueUnknownType >> isParametricEntity [
 
 	^ false
 ]
