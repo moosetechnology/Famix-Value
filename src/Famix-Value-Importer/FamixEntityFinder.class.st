@@ -26,7 +26,7 @@ FamixEntityFinder >> cache [
 { #category : #enumerating }
 FamixEntityFinder >> detectType: block [
 
-	^ (self model allUsing: FamixTType) detect: block ifNone: nil
+	^ self model allTypes detect: block ifNone: nil
 ]
 
 { #category : #API }

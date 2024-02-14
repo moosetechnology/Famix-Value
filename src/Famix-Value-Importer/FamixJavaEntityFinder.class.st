@@ -23,7 +23,7 @@ FamixJavaEntityFinder class >> initialize [
 		at: $I put: 'int';
 		at: $J put: 'long';
 		at: $S put: 'short';
-		at: $Z put: 'bool'
+		at: $Z put: 'boolean'
 ]
 
 { #category : #enumerating }
