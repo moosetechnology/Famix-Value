@@ -12,6 +12,8 @@ FamixTClass >> constructorsOrderedByScore [
 { #category : #'*Famix-Value-Exporter' }
 FamixTClass >> findSetterOf: aFamixAttribute [
 
+	(self isParametricEntity and: [ self isConcreteEntity ]) ifTrue: [
+		^ self genericEntity findSetterOf: aFamixAttribute ].
 	^ self methods
 		  detect: [ :method |
 			  method isSetterLax and: [
