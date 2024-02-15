@@ -77,11 +77,11 @@ FamixValueAbstractImporter >> importDictionary: rawValue of: type [
 
 	| dictionary keyType valueType assoc |
 	dictionary := self model newOfDictionary type: type.
-	type isParametricEntity
-		ifTrue: [
-			keyType := type keyType.
-			valueType := type valueType ]
-		ifFalse: [ keyType := valueType := nil ].
+	(self parametricTypeInferencesOf: type)
+		ifNotNil: [ :paramTypeInferences |
+			keyType := paramTypeInferences at: 1.
+			valueType := paramTypeInferences at: 2 ]
+		ifNil: [ keyType := valueType := nil ].
 	rawValue associationsDo: [ :rawAssoc |
 		assoc := self model newOfDictionaryAssociation dictionary:
 			         dictionary.
@@ -177,6 +177,25 @@ FamixValueAbstractImporter >> model: aModel [
 FamixValueAbstractImporter >> newReader [
 
 	^ NeoJSONReader new mapClass: OrderedDictionary
+]
+
+{ #category : #'as yet unclassified' }
+FamixValueAbstractImporter >> parametricTypeInferencesOf: type [
+
+	type isParametricEntity ifFalse: [ ^ nil ].
+	^ type isGenericEntity
+		  ifTrue: [
+			  self typeInference ifNotNil: [ :inference |
+				  (inference isDictionaryType and: [
+					   inference concreteParameters size = 1 ])
+					  ifTrue: [
+						  {
+							  (inference concreteParameters at: 1).
+							  (inference concreteParameters at: 1) } ]
+					  ifFalse: [ inference concreteParameters ] ] ]
+		  ifFalse: [
+			  self halt.
+			  type allTypeParameters ]
 ]
 
 { #category : #parsing }
