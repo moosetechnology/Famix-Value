@@ -63,7 +63,8 @@ FamixValueAbstractImporter >> importCollection: rawValue of: type [
 	collection := self model newOfCollection type: type.
 	self
 		withTypeInference:
-		(type isParametricEntity ifTrue: [ type allTypeParameters first ])
+			((self parametricTypeInferencesOf: type) ifNotNil: [ :inferences |
+				 inferences first ])
 		do: [
 			rawValue do: [ :rawElement |
 				collection addValue: (self model newOfCollectionElement value:
@@ -179,7 +180,7 @@ FamixValueAbstractImporter >> newReader [
 	^ NeoJSONReader new mapClass: OrderedDictionary
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #enumerating }
 FamixValueAbstractImporter >> parametricTypeInferencesOf: type [
 
 	type isParametricEntity ifFalse: [ ^ nil ].
@@ -193,9 +194,7 @@ FamixValueAbstractImporter >> parametricTypeInferencesOf: type [
 							  (inference concreteParameters at: 1).
 							  (inference concreteParameters at: 1) } ]
 					  ifFalse: [ inference concreteParameters ] ] ]
-		  ifFalse: [
-			  self halt.
-			  type allTypeParameters ]
+		  ifFalse: [ type allTypeParameters ]
 ]
 
 { #category : #parsing }
