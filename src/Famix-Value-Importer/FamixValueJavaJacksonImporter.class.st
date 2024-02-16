@@ -69,7 +69,7 @@ FamixValueJavaJacksonImporter >> importSpecialObject: rawValue of: type [
 
 	(#( Date Timestamp ) includes: type name) ifTrue: [
 		^ self importDateObject: rawValue of: type ].
-	self error: 'Unknown special object: ' , type mooseNameWithDots
+	^ nil
 ]
 
 { #category : #importing }
