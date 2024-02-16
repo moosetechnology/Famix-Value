@@ -53,11 +53,11 @@ FASTJavaBuilder >> makeImportDeclarations [
 FASTJavaBuilder >> processType: aFamixType [
 
 	| type |
-	type := aFamixType isParameterizedType
+	type := aFamixType isParametricEntity
 		        ifTrue: [
-			        aFamixType arguments do: [ :argument |
-				        self processType: argument ].
-			        aFamixType parameterizableClass ]
+			        aFamixType concreteParameters do: [ :parameter |
+				        self processType: parameter ].
+			        aFamixType genericEntity ]
 		        ifFalse: [ aFamixType ].
 	type needsJavaImport ifTrue: [ self registerType: type ]
 ]
@@ -73,8 +73,8 @@ FASTJavaBuilder >> referType: aFamixType [
 	^ self model newClassTypeExpression typeName:
 		  ((registeredType == aFamixType or: [
 			    aFamixType needsJavaImport not or: [
-				    aFamixType isParameterizedType and: [
-					    registeredType == aFamixType parameterizableClass ] ] ])
+				    aFamixType isParametricEntity and: [
+					    registeredType == aFamixType genericEntity ] ] ])
 			   ifTrue: [ "has import"
 			   model newTypeName name: aFamixType baseName ]
 			   ifFalse: [ "no import"

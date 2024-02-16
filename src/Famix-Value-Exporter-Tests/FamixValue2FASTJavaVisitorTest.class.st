@@ -44,10 +44,13 @@ FamixValue2FASTJavaVisitorTest >> testVisitCollection [
 
 	| collection |
 	collection := FamixValueOfCollection new type:
-		              (FamixJavaParameterizedType new
-			               parameterizableClass:
-				               (FamixJavaParameterizableClass new name: 'List');
-			               arguments: { (FamixJavaClass new name: 'String') }).
+		              (FamixJavaParametricClass new
+			               name: 'List';
+			               genericization:
+				               (FamixJavaConcretization new genericEntity:
+						                (FamixJavaParametricInterface named: 'List'));
+			               concreteParameters:
+				               { (FamixJavaClass named: 'String') }).
 
 	self assert: collection asJavaSourceCode equals: '{
   List<String> list0 = new ArrayList<String>();
@@ -78,28 +81,33 @@ FamixValue2FASTJavaVisitorTest >> testVisitCollection [
 { #category : #tests }
 FamixValue2FASTJavaVisitorTest >> testVisitDeepCollection [
 
-	| collection inner |
+	| list object collection element |
+	list := FamixJavaParametricInterface named: 'List'.
+	object := FamixJavaParametricInterface named: 'Object'.
 	collection := FamixValueOfCollection new type:
-		              (FamixJavaParameterizedType new
-			               parameterizableClass:
-				               (FamixJavaParameterizableClass new name: 'List');
-			               arguments: { (FamixJavaParameterizedType new
-					                parameterizableClass:
-						                (FamixJavaParameterizableClass new name: 'List');
-					                arguments:
-						                { (FamixJavaClass new name: 'Object') }) }).
-	inner := FamixValueOfCollection new type:
-		         (FamixJavaParameterizedType new
-			          parameterizableClass:
-				          (FamixJavaParameterizableClass new name: 'List');
-			          arguments: { (FamixJavaClass new name: 'Object') }).
+		              (FamixJavaParametricInterface new
+			               genericization:
+				               (FamixJavaConcretization new genericEntity: list);
+			               concreteParameters:
+				               { (FamixJavaParametricInterface new
+					                name: 'List';
+					                genericization:
+						                (FamixJavaConcretization new genericEntity: list);
+					                concreteParameters: { object }) }).
+	element := FamixValueOfCollection new type:
+		           (FamixJavaParametricInterface new
+			            name: 'List';
+			            genericization:
+				            (FamixJavaConcretization new genericEntity: list);
+			            concreteParameters: { object }).
 
 	self assert: collection asJavaSourceCode equals: '{
   List<List<Object>> list0 = new ArrayList<List<Object>>();
 }
 '.
 
-	collection addValue: (FamixValueOfCollectionElement new value: inner).
+	collection addValue:
+		(FamixValueOfCollectionElement new value: element).
 	self assert: collection asJavaSourceCode equals: '{
   List<List<Object>> list0 = new ArrayList<List<Object>>();
   List<Object> list1 = new ArrayList<Object>();
@@ -107,7 +115,8 @@ FamixValue2FASTJavaVisitorTest >> testVisitDeepCollection [
 }
 '.
 
-	inner addValue: (FamixValueOfCollectionElement new value: nullString).
+	element addValue:
+		(FamixValueOfCollectionElement new value: nullString).
 	self assert: collection asJavaSourceCode equals: '{
   List<List<Object>> list0 = new ArrayList<List<Object>>();
   List<Object> list1 = new ArrayList<Object>();
@@ -123,10 +132,14 @@ FamixValue2FASTJavaVisitorTest >> testVisitDictionary [
 
 	| dictionary |
 	dictionary := FamixValueOfDictionary new type:
-		              (FamixJavaParameterizedType new
-			               parameterizableClass:
-				               (FamixJavaParameterizableClass new name: 'Map');
-			               arguments: { (FamixJavaClass new name: 'Object') }).
+		              (FamixJavaParametricInterface new
+			               name: 'Map';
+			               genericization:
+				               (FamixJavaConcretization new genericEntity:
+						                (FamixJavaParametricInterface named: 'Map'));
+			               concreteParameters:
+				               { (FamixJavaClass named: 'Object') }).
+
 	self assert: dictionary asJavaSourceCode equals: '{
   Map<Object, Object> map0 = new HashMap<Object, Object>();
 }
