@@ -82,8 +82,8 @@ FamixValue2FASTJavaVisitor >> findStaticAttributeMatching: object [
 
 	| type staticAttributes objAttributes |
 	type := object type.
-	(object value allSatisfy: [ :attribute |
-		 attribute value isOfPrimitiveType ]) ifFalse: [ ^ nil ].
+	((objAttributes := object relevantAttributes) allSatisfy: [
+		 :attribute | attribute value isOfPrimitiveType ]) ifFalse: [ ^ nil ].
 	"eligible attributes are public, static, of the same type, and have an initializer expression; the conditions are ordered for maximum time efficiency"
 	staticAttributes := staticAttributesCache at: type ifAbsentPut: [
 		                    type attributes select: [ :attribute |
@@ -91,7 +91,7 @@ FamixValue2FASTJavaVisitor >> findStaticAttributeMatching: object [
 				                    attribute isStaticConstant ] ] ].
 	staticAttributes ifEmpty: [ ^ nil ].
 	"get a list of the object's attributes represented as source code literals"
-	objAttributes := object value collect: [ :objAttribute |
+	objAttributes := objAttributes collect: [ :objAttribute |
 		                 objAttribute value type name = 'String'
 			                 ifTrue: [ '"' , objAttribute value value , '"' ]
 			                 ifFalse: [ objAttribute value value asString ] ].
