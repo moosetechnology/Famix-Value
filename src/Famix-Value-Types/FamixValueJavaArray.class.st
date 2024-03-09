@@ -40,7 +40,7 @@ FamixValueJavaArray >> acceptValueVisitor: visitor forCollection: array [
 		  yourself
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #visiting }
 FamixValueJavaArray >> decorate: aFamixJavaType asFASTJavaTypeExpressionOn: visitor [
 	"Add array brackets to the type name."
 
@@ -61,4 +61,10 @@ FamixValueJavaArray >> dimensions [
 FamixValueJavaArray >> dimensions: anInteger [
 
 	dimensions := anInteger
+]
+
+{ #category : #importing }
+FamixValueJavaArray >> import: rawValue on: importer [
+
+	self shouldNotImplement
 ]

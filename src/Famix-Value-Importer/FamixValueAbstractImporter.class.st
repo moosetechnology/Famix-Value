@@ -108,20 +108,28 @@ FamixValueAbstractImporter >> importEnumValue: rawValue of: type [
 { #category : #importing }
 FamixValueAbstractImporter >> importObject: rawObject of: type [
 
-	| object attribute |
+	| object |
 	object := self model newOfObject type: type.
 	(self getObjectIdentity: rawObject) ifNotNil: [ :id |
 		objectDict at: id put: object ].
-	rawObject associationsDo: [ :assoc |
-		attribute := type findAttributeNamed: assoc key.
-		self
-			withTypeInference: (attribute ifNotNil: [ attribute declaredType ])
-			do: [
-				self model newOfObjectAttribute
-					value: (self importValue: assoc value);
-					object: object;
-					attribute: attribute ] ].
+	rawObject keysAndValuesDo: [ :name :value |
+		(self importObjectAttribute: value of: type named: name) ifNotNil: [
+			:attribute | attribute object: object ] ].
 	^ object
+]
+
+{ #category : #importing }
+FamixValueAbstractImporter >> importObjectAttribute: rawValue of: type named: name [
+
+	| attribute |
+	attribute := type findAttributeNamed: name.
+	^ self
+		  withTypeInference:
+		  (attribute ifNotNil: [ attribute declaredType ])
+		  do: [
+			  self model newOfObjectAttribute
+				  value: (self importValue: rawValue);
+				  attribute: attribute ]
 ]
 
 { #category : #importing }

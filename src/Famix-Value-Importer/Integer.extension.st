@@ -8,7 +8,7 @@ Integer >> asJavaJacksonValueOn: importer [
 		 (importer isPrimitiveType: typeInference) not ]) ifTrue: [ "object reference, solved by the importer"
 		(importer
 			 getObjectFromIdentity: self
-			 ifAbsent: [ "*might* be a special object with missing runtime type information"
+			 ifAbsent: [ "might be a special object with missing runtime type information"
 				 importer importSpecialObject: self of: typeInference ])
 			ifNotNil: [ :value | ^ value ] ].
 	"if none of the above holds true, this must be a regular integer"

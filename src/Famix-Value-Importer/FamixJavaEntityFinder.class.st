@@ -43,15 +43,15 @@ FamixJavaEntityFinder >> parseTypeName: name [
 	dimensions := name occurrencesOf: $[.
 	type := (typeName includes: $.)
 		        ifFalse: [ self findTypeWithName: typeName ]
-		        ifTrue: [
+		        ifTrue: [ "Search by translating the type name to a mooseName."
 			        self findTypeWithMooseName:
 				        ((typeName allButLast: dimensions * 2)
-					         copyReplaceAll: '.'
-					         with: '::') ].
+					         copyWithRegex: '\.|\$'
+					         matchesReplacedWith: '::') ].
 	^ dimensions > 0
 		  ifFalse: [ type ]
 		  ifTrue: [
-		  (FamixValueJavaArray proxying: type) dimensions: dimensions ]
+		  (FamixValueJavaArray wrapping: type) dimensions: dimensions ]
 ]
 
 { #category : #matching }

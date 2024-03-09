@@ -1,6 +1,15 @@
 "
 I am a FamixValue importer for Java.
-I understand the JSON format from the Jackson library, which must be configured to pair each value with the fully qualified name of its type.
+I understand the JSON format of the Jackson library up to and including version `2.10`.
+The ObjectMapper must be configured to associate each value with the fully qualified name of its type.
+
+```language=text
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = ""@id"")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = ""@type"")
+interface MixIn {}
+
+new ObjectMapper().addMixIn(Object.class, MixIn.class);
+```
 "
 Class {
 	#name : #FamixValueJavaJacksonImporter,
@@ -50,25 +59,30 @@ FamixValueJavaJacksonImporter >> importClassReference: rawValue of: type [
 ]
 
 { #category : #importing }
-FamixValueJavaJacksonImporter >> importDateObject: rawValue of: type [
+FamixValueJavaJacksonImporter >> importObjectAttribute: rawValue of: type named: name [
+	"Skip transient attributes."
 
-	^ self model newOfObject
-		  type: (self specialTypes
-				   at: type name
-				   ifAbsentPut: [ FamixValueJavaDate proxying: type ]);
-		  addValue:
-			  (model newOfObjectAttribute value: (model newOfPrimitiveType
-						    value: rawValue;
-						    type: (self entityFinder findTypeNamed: 'long')));
-		  yourself
+	| attribute |
+	(attribute := type findAttributeNamed: name) ifNotNil: [
+		attribute isTransient ifTrue: [ ^ nil ] ].
+	^ self
+		  withTypeInference:
+		  (attribute ifNotNil: [ attribute declaredType ])
+		  do: [
+			  self model newOfObjectAttribute
+				  value: (self importValue: rawValue);
+				  attribute: attribute ]
 ]
 
 { #category : #importing }
 FamixValueJavaJacksonImporter >> importSpecialObject: rawValue of: type [
-	"Some objects have special rules for serialization"
+	"Some objects have special rules for serialization.
+	They should have a corresponding type wrapper that knows how to handle them."
 
-	(#( Date Timestamp ) includes: type name) ifTrue: [
-		^ self importDateObject: rawValue of: type ].
+	self specialTypes
+		at: type mooseNameWithDots
+		ifPresent: [ :typeWrapper |
+			^ typeWrapper import: rawValue wrapping: type on: self ].
 	^ nil
 ]
 
@@ -90,26 +104,22 @@ FamixValueJavaJacksonImporter >> importValueFromList: rawValue of: type [
 		^ self model newOfUnknownType
 			  value: rawValue;
 			  type: type ].
-	(type class usesTrait: FamixTEnum) ifTrue: [
+	(type usesFamixTrait: FamixTEnum) ifTrue: [
 		^ self importEnumValue: rawValue of: type ].
 	(self isPrimitiveType: type) ifTrue: [
 		^ self model newOfPrimitiveType
 			  value: rawValue;
 			  type: type ].
-	type isClass ifTrue: [ ^ self importSpecialObject: rawValue of: type ].
+	type isClass ifTrue: [ "might be a special object"
+		(self importSpecialObject: rawValue of: type) ifNotNil: [ :object |
+			^ object ] ].
 	self error: 'Unknown type: ' , type mooseNameWithDots
-]
-
-{ #category : #'private - utility' }
-FamixValueJavaJacksonImporter >> isDictionary: type [
-
-	^ #( Map HashMap LinkedHashMap ) includes: type name
 ]
 
 { #category : #'private - utility' }
 FamixValueJavaJacksonImporter >> isPrimitiveType: type [
 
-	^ type isPrimitiveType or: [
+	^ type isPrimitiveType or: [ "Classes wrapping primitives are also considered primitives."
 		  #( Integer Float Double Long Short Byte ) includes: type name ]
 ]
 
@@ -127,7 +137,12 @@ FamixValueJavaJacksonImporter >> parseList: serializedValues [
 { #category : #accessing }
 FamixValueJavaJacksonImporter >> specialTypes [
 
-	^ specialTypes ifNil: [ specialTypes := Dictionary new ]
+	^ specialTypes ifNil: [
+		  specialTypes := Dictionary new.
+		  specialTypes at: 'java.util.Date' put: FamixValueJavaDate.
+		  specialTypes at: 'java.sql.Timestamp' put: FamixValueJavaDate.
+		  specialTypes at: 'java.sql.Date' put: FamixValueJavaSQLDate.
+		  specialTypes ]
 ]
 
 { #category : #accessing }
