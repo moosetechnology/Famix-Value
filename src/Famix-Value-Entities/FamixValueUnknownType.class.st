@@ -54,12 +54,6 @@ FamixValueUnknownType >> acceptValueVisitor: visitor forObject: object [
 	self error: 'Exporting an unknown type is not (yet?) supported.'
 ]
 
-{ #category : #converting }
-FamixValueUnknownType >> asFASTJavaTypeExpressionOn: visitor [
-
-	^ FASTJavaBuilder current referType: self
-]
-
 { #category : #testing }
 FamixValueUnknownType >> isUnknownType [
 

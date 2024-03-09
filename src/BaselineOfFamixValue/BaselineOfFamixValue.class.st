@@ -52,7 +52,8 @@ BaselineOfFamixValue >> packages: spec [
 		with: [ spec requires: 'Famix-Value-Entities' ];
 		package: 'Famix-Value-Generator';
 		package: 'Famix-Value-Importer'
-		with: [ spec requires: 'Famix-Value-Entities' ];
+		with: [
+			spec requires: #( 'Famix-Value-Entities' 'Famix-Value-Types' ) ];
 		package: 'Famix-Value-Exporter'
 		with: [ spec requires: 'Famix-Value-Entities' ];
 		package: 'Famix-Value-Exporter-Tests'
