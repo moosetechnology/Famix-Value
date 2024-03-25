@@ -60,10 +60,9 @@ FamixValueJavaJacksonImporter >> importClassReference: rawValue of: type [
 
 { #category : #importing }
 FamixValueJavaJacksonImporter >> importObjectAttribute: rawValue of: type named: name [
-	"Skip transient attributes."
 
 	| attribute |
-	(attribute := type findAttributeNamed: name) ifNotNil: [
+	(attribute := type findAttributeNamed: name) ifNotNil: [ "Skip transient attributes."
 		attribute isTransient ifTrue: [ ^ nil ] ].
 	^ self
 		  withTypeInference:

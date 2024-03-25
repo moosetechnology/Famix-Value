@@ -3,12 +3,15 @@ Extension { #name : #FamixTClass }
 { #category : #'*Famix-Value-Importer' }
 FamixTClass >> findAttributeNamed: attributeName [
 
-	^ self attributes
-		  detect: [ :attr | attr name = attributeName ]
-		  ifNone: [
-			  self inheritedAttributes
-				  detect: [ :attribute | attribute name = attributeName ]
-				  ifNone: [ self findAttributeWithSetterNamed: attributeName ] ]
+	^ (self cacheAt: #resolvedAttributes ifAbsentPut: [ Dictionary new ])
+		  at: attributeName
+		  ifAbsentPut: [
+			  self attributes
+				  detect: [ :attr | attr name = attributeName ]
+				  ifNone: [
+					  self inheritedAttributes
+						  detect: [ :attribute | attribute name = attributeName ]
+						  ifNone: [ self findAttributeWithSetterNamed: attributeName ] ] ]
 ]
 
 { #category : #'*Famix-Value-Importer' }
