@@ -12,6 +12,7 @@ Class {
 	#name : #FamixValue2FASTJavaVisitor,
 	#superclass : #FamixValue2ASTVisitor,
 	#instVars : [
+		'builder',
 		'markedForReflection',
 		'constructorCache',
 		'staticAttributesCache'
@@ -39,6 +40,12 @@ FamixValue2FASTJavaVisitor >> addAttributesFrom: object asArgumentsTo: newExpres
 							 ifNone: [ "the object does not have the attribute set"
 								 paramAttribute declaredType asFASTJavaDefaultValueOn:
 									 self model ] ]) ]
+]
+
+{ #category : #initialization }
+FamixValue2FASTJavaVisitor >> builder [
+
+	^ builder ifNil: [ builder := FASTJavaBuilder new model: self model ]
 ]
 
 { #category : #private }
@@ -121,7 +128,7 @@ FamixValue2FASTJavaVisitor >> makeHelper [
 	self model newCompilationUnit
 		packageDeclaration: (model newPackageDeclaration qualifiedName:
 					 (model newQualifiedName name: 'fr.evref.modest'));
-		importDeclarations: FASTJavaBuilder current makeImportDeclarations;
+		importDeclarations: self builder makeImportDeclarations;
 		addImportDeclaration: (model newImportDeclaration qualifiedName:
 					 (model newQualifiedName name: 'java.io.IOException'));
 		addImportDeclaration: (model newImportDeclaration qualifiedName:

@@ -28,15 +28,7 @@ FamixValue2FASTJavaVisitorTest >> setUp [
 		                   type: (FamixJavaClass new name: 'String').
 	nullString := FamixValueOfUnknownType new
 		              value: nil;
-		              type: (FamixJavaClass new name: 'String').
-	FASTJavaBuilder new beCurrent
-]
-
-{ #category : #running }
-FamixValue2FASTJavaVisitorTest >> tearDown [
-
-	FASTJavaBuilder reset.
-	super tearDown
+		              type: (FamixJavaClass new name: 'String')
 ]
 
 { #category : #tests }

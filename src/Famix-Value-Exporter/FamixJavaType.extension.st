@@ -16,9 +16,8 @@ FamixJavaType >> acceptValueVisitor: visitor forObject: object [
 
 { #category : #'*Famix-Value-Exporter' }
 FamixJavaType >> asFASTJavaTypeExpressionOn: visitor [
-	"^ visitor makeClassTypeExpression: self typeName"
 
-	^ FASTJavaBuilder current referType: self
+	^ visitor builder referType: self
 ]
 
 { #category : #'*Famix-Value-Exporter' }
