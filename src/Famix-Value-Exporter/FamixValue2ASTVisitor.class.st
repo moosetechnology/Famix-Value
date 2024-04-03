@@ -58,6 +58,7 @@ FamixValue2ASTVisitor >> varNameDict [
 
 { #category : #naming }
 FamixValue2ASTVisitor >> varNameFor: value [
+	"IMPORTANT: a named value is considered already exported."
 
 	^ self varNameDict
 		  at: value

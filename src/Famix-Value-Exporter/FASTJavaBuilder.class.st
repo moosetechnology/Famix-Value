@@ -9,7 +9,7 @@ Class {
 	#category : #'Famix-Value-Exporter'
 }
 
-{ #category : #temp }
+{ #category : #ast }
 FASTJavaBuilder >> fullyQualifiedPackageNameFor: aFamixJavaPackage [
 
 	^ aFamixJavaPackage parentPackage
@@ -20,7 +20,7 @@ FASTJavaBuilder >> fullyQualifiedPackageNameFor: aFamixJavaPackage [
 				  namespace: (self fullyQualifiedPackageNameFor: parentPackage) ]
 ]
 
-{ #category : #temp }
+{ #category : #ast }
 FASTJavaBuilder >> fullyQualifiedTypeNameFor: aFamixJavaType [
 
 	^ self model newQualifiedTypeName
@@ -35,21 +35,31 @@ FASTJavaBuilder >> initialize [
 	self reset
 ]
 
-{ #category : #temp }
+{ #category : #ast }
 FASTJavaBuilder >> makeImportDeclaration: aFamixType [
 
 	^ self model newImportDeclaration qualifiedName:
 		  (model newQualifiedName name: aFamixType mooseNameWithDots)
 ]
 
-{ #category : #temp }
+{ #category : #ast }
 FASTJavaBuilder >> makeImportDeclarations [
+	"Make an import declaration for each type processed by this builder."
 
 	^ typeNameDictionary values collect: [ :type |
 		  self makeImportDeclaration: type ]
 ]
 
-{ #category : #temp }
+{ #category : #ast }
+FASTJavaBuilder >> makeImportDeclarations: anEntity [
+	"Make import declarations for all types related to the given entity."
+
+	^ (anEntity allTypes select: [ :type | type needsJavaImport ])
+		  collect: [ :type | self makeImportDeclaration: type ]
+		  as: OrderedCollection
+]
+
+{ #category : #processing }
 FASTJavaBuilder >> processType: aFamixType [
 
 	| type |
@@ -62,7 +72,7 @@ FASTJavaBuilder >> processType: aFamixType [
 	type needsJavaImport ifTrue: [ self registerType: type ]
 ]
 
-{ #category : #temp }
+{ #category : #processing }
 FASTJavaBuilder >> referType: aFamixType [
 
 	| registeredType |
@@ -81,7 +91,7 @@ FASTJavaBuilder >> referType: aFamixType [
 			   self fullyQualifiedTypeNameFor: aFamixType ])
 ]
 
-{ #category : #temp }
+{ #category : #processing }
 FASTJavaBuilder >> registerType: aFamixType [
 	"If the type is in the typeNameDict, it will be imported."
 
