@@ -119,7 +119,7 @@ FamixValueJavaJacksonImporter >> importValueFromList: rawValue of: type [
 FamixValueJavaJacksonImporter >> isPrimitiveType: type [
 
 	^ type isPrimitiveType or: [ "Classes wrapping primitives are also considered primitives."
-		  #( Integer Float Double Long Short Byte ) includes: type name ]
+		  type isPrimitiveWrapper ]
 ]
 
 { #category : #parsing }
