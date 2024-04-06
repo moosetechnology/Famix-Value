@@ -7,6 +7,12 @@ Class {
 	#category : #'Famix-Value-Exporter'
 }
 
+{ #category : #testing }
+FASTBuilder class >> isAbstract [
+
+	^ self == FASTBuilder
+]
+
 { #category : #accessing }
 FASTBuilder >> model [
 

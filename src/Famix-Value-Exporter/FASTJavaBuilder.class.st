@@ -3,8 +3,7 @@ Class {
 	#superclass : #FASTBuilder,
 	#instVars : [
 		'imports',
-		'typeNameDictionary',
-		'registeredTypes'
+		'typeNameDictionary'
 	],
 	#category : #'Famix-Value-Exporter'
 }
@@ -32,7 +31,7 @@ FASTJavaBuilder >> fullyQualifiedTypeNameFor: aFamixJavaType [
 { #category : #initialization }
 FASTJavaBuilder >> initialize [
 
-	self reset
+	typeNameDictionary := Dictionary new
 ]
 
 { #category : #ast }
@@ -61,6 +60,9 @@ FASTJavaBuilder >> makeImportDeclarations: anEntity [
 
 { #category : #processing }
 FASTJavaBuilder >> processType: aFamixType [
+	"Process the given type and its related types, for example if it has concrete type parameters.
+	This lets the builder know how to refer to the type.
+	If the type is in the typeNameDict, it will be imported, so it can be referenced by its unqualified name."
 
 	| type |
 	type := aFamixType isParametricEntity
@@ -69,11 +71,14 @@ FASTJavaBuilder >> processType: aFamixType [
 				        self processType: parameter ].
 			        aFamixType genericEntity ]
 		        ifFalse: [ aFamixType ].
-	type needsJavaImport ifTrue: [ self registerType: type ]
+	type needsJavaImport ifTrue: [
+		typeNameDictionary at: aFamixType name ifAbsentPut: aFamixType ]
 ]
 
 { #category : #processing }
 FASTJavaBuilder >> referType: aFamixType [
+	"Process a type and return a FAST expression to reference it.
+	Use its unqualified name when importing the type, otherwise use its fully qualified name."
 
 	| registeredType |
 	self processType: aFamixType.
@@ -89,19 +94,4 @@ FASTJavaBuilder >> referType: aFamixType [
 			   model newTypeName name: aFamixType baseName ]
 			   ifFalse: [ "no import"
 			   self fullyQualifiedTypeNameFor: aFamixType ])
-]
-
-{ #category : #processing }
-FASTJavaBuilder >> registerType: aFamixType [
-	"If the type is in the typeNameDict, it will be imported."
-
-	registeredTypes add: aFamixType.
-	typeNameDictionary at: aFamixType name ifAbsentPut: aFamixType
-]
-
-{ #category : #initialization }
-FASTJavaBuilder >> reset [
-
-	typeNameDictionary := Dictionary new.
-	registeredTypes := IdentitySet new
 ]
