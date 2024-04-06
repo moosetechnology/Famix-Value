@@ -15,7 +15,8 @@ Class {
 		'builder',
 		'markedForReflection',
 		'constructorCache',
-		'staticAttributesCache'
+		'staticAttributesCache',
+		'objectExportStrategy'
 	],
 	#category : #'Famix-Value-Exporter'
 }
@@ -36,7 +37,7 @@ FamixValue2FASTJavaVisitor >> addAttributesFrom: object asArgumentsTo: newExpres
 							 detect: [ :objAttribute |
 							 objAttribute attribute == paramAttribute ]
 							 ifOne: [ :objAttribute |
-							 self makeIdentifier: objAttribute value ]
+							 self makeVariableExpression: objAttribute value ]
 							 ifNone: [ "the object does not have the attribute set"
 								 paramAttribute declaredType asFASTJavaDefaultValueOn:
 									 self model ] ]) ]
@@ -208,12 +209,6 @@ FamixValue2FASTJavaVisitor >> makeHelperClass [
 ]
 
 { #category : #ast }
-FamixValue2FASTJavaVisitor >> makeIdentifier: value [
-
-	^ self model newIdentifier name: (self varNameFor: value)
-]
-
-{ #category : #ast }
 FamixValue2FASTJavaVisitor >> makeNewExpression: object [
 
 	^ self model newNewExpression type:
@@ -269,7 +264,7 @@ FamixValue2FASTJavaVisitor >> makeSetterInvocation: setter for: attribute named:
 	self statementBlock addStatement:
 		(self model newExpressionStatement expression:
 			 (model newMethodInvocation
-				  receiver: (self makeIdentifier: attribute object);
+				  receiver: (self makeVariableExpression: attribute object);
 				  name: setter name;
 				  addArgument: (model newVariableExpression name: aString);
 				  famixMethod: setter))
