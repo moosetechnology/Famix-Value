@@ -52,10 +52,11 @@ FamixValue2FASTJavaVisitor >> builder [
 { #category : #private }
 FamixValue2FASTJavaVisitor >> constructObject: object [
 
-	| constructor varDecl |
+	| constructor |
 	constructor := self findConstructorFor: object.
 	(self markedForReflection includes: constructor)
 		ifFalse: [
+			| varDecl |
 			varDecl := self statementBlock addStatement:
 				           (self makeVarDeclStatement: object).
 			constructor parameters ifNotEmpty: [
@@ -125,7 +126,10 @@ FamixValue2FASTJavaVisitor >> makeClassTypeExpression: typeName [
 
 { #category : #ast }
 FamixValue2FASTJavaVisitor >> makeHelper [
+	"The helper should always be generated, regardless of strategy.
+	This method must be called after all of the other value exports are done."
 
+	| helperClass |
 	self model newCompilationUnit
 		packageDeclaration: (model newPackageDeclaration qualifiedName:
 					 (model newQualifiedName name: 'fr.evref.modest'));
@@ -135,7 +139,8 @@ FamixValue2FASTJavaVisitor >> makeHelper [
 		addImportDeclaration: (model newImportDeclaration qualifiedName:
 					 (model newQualifiedName name:
 							  'com.fasterxml.jackson.databind.ObjectMapper'));
-		addClassDeclaration: self makeHelperClass
+		addClassDeclaration: (helperClass := self makeHelperClass).
+	self objectExportStrategy addToHelper: helperClass
 ]
 
 { #category : #ast }
@@ -322,6 +327,19 @@ FamixValue2FASTJavaVisitor >> model [
 ]
 
 { #category : #accessing }
+FamixValue2FASTJavaVisitor >> objectExportStrategy [
+
+	^ objectExportStrategy ifNil: [
+		  objectExportStrategy := FamixValueObjectHelperExportStrategy new ]
+]
+
+{ #category : #accessing }
+FamixValue2FASTJavaVisitor >> objectExportStrategy: anObjectExportStrategy [
+
+	objectExportStrategy := anObjectExportStrategy
+]
+
+{ #category : #accessing }
 FamixValue2FASTJavaVisitor >> statementBlock [
 
 	^ statementBlock ifNil: [
@@ -408,12 +426,7 @@ FamixValue2FASTJavaVisitor >> visitObjectOfRegularType: object [
 	(self findStaticAttributeMatching: object)
 		ifNotNil: [ :attribute |
 			self makeVarDeclStatement: object usingStaticAttribute: attribute ]
-		ifNil: [
-			self flag: #TODO. "redo object visit, we need to have attributes ready when calling the constructor.
-	We need to know if an attribute has been set using the constructor or if it will be set using a setter!"
-			self constructObject: object.
-			object value do: [ :attribute |
-				self visitObjectAttribute: attribute ] ].
+		ifNil: [ self objectExportStrategy export: object on: self ].
 	^ statementBlock
 ]
 

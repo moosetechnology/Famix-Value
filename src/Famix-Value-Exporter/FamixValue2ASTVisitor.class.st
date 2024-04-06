@@ -14,6 +14,12 @@ Class {
 }
 
 { #category : #testing }
+FamixValue2ASTVisitor class >> isAbstract [
+
+	^ self == FamixValue2ASTVisitor
+]
+
+{ #category : #testing }
 FamixValue2ASTVisitor >> ensureVisited: value [
 	"Visit a value if I have not done it before"
 
