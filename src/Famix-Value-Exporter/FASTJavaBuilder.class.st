@@ -2,7 +2,6 @@ Class {
 	#name : #FASTJavaBuilder,
 	#superclass : #FASTBuilder,
 	#instVars : [
-		'imports',
 		'typeNameDictionary'
 	],
 	#category : #'Famix-Value-Exporter'
