@@ -52,6 +52,12 @@ FamixJavaType >> decorate: aFamixJavaType asFASTJavaTypeExpressionOn: visitor [
 ]
 
 { #category : #'*Famix-Value-Exporter' }
+FamixJavaType >> needsJavaImport [
+
+	^ typeContainer mooseName ~= 'java::lang'
+]
+
+{ #category : #'*Famix-Value-Exporter' }
 FamixJavaType >> typeName [
 	"Includes type arguments, e.g. List<Map<String, Integer>>"
 

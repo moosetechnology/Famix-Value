@@ -31,3 +31,9 @@ FamixJavaPrimitiveType >> asFASTJavaTypeExpressionOn: visitor [
 	name = 'short' ifTrue: [ ^ model newShortTypeExpression ].
 	self error: 'Unknown primitive type:' , name
 ]
+
+{ #category : #'*Famix-Value-Exporter' }
+FamixJavaPrimitiveType >> needsJavaImport [
+
+	^ false
+]
