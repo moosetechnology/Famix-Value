@@ -330,7 +330,7 @@ FamixValue2FASTJavaVisitor >> model [
 FamixValue2FASTJavaVisitor >> objectExportStrategy [
 
 	^ objectExportStrategy ifNil: [
-		  objectExportStrategy := FamixValueObjectHelperExportStrategy new ]
+		  objectExportStrategy := FamixValueObjectInlineExportStrategy new ]
 ]
 
 { #category : #accessing }
