@@ -71,7 +71,7 @@ FASTJavaBuilder >> processType: aFamixType [
 			        aFamixType genericEntity ]
 		        ifFalse: [ aFamixType ].
 	type needsJavaImport ifTrue: [
-		typeNameDictionary at: aFamixType name ifAbsentPut: aFamixType ]
+		typeNameDictionary at: type name ifAbsentPut: type ]
 ]
 
 { #category : #processing }
