@@ -62,6 +62,12 @@ FamixValue2PharoVisitor >> visitDictionary: dictionary [
 ]
 
 { #category : #visiting }
+FamixValue2PharoVisitor >> visitEnumValue: enumValue [
+
+	self shouldNotImplement
+]
+
+{ #category : #visiting }
 FamixValue2PharoVisitor >> visitObject: object [
 
 	| objectNode attributeNodes |
