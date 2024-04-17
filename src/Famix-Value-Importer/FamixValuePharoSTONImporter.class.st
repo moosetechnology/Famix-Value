@@ -7,7 +7,7 @@ Class {
 { #category : #enumerating }
 FamixValuePharoSTONImporter >> getObjectIdentity: rawObject [
 
-	^ rawObject hash
+	^ rawObject identityHash
 ]
 
 { #category : #importing }
