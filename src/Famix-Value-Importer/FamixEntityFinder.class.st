@@ -84,7 +84,7 @@ FamixEntityFinder >> findTypeWithName: name [
 { #category : #enumerating }
 FamixEntityFinder >> methodNameFromSignature: signature [
 
-	self subclassResponsibility
+	^ signature
 ]
 
 { #category : #accessing }
