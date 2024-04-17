@@ -49,7 +49,7 @@ FamixEntityFinder >> findMethodWithSignature: signature in: class [
 	candidates ifEmpty: [
 		NotFound signalFor: signature in: class methods ].
 	"consider returning a specific candidate; TODO: better"
-	self error: 'found multiple methods matching signature: ' , signature
+	self error: 'Found multiple methods matching signature: ' , signature
 ]
 
 { #category : #API }
@@ -63,10 +63,10 @@ FamixEntityFinder >> findTypeNamed: name [
 	"Main API for finding a type, should not be overridden."
 
 	^ self cache at: name ifAbsentPut: [
-		  | type |
-		  (type := self parseTypeName: name) isParametricEntity
-			  ifTrue: [ type genericEntity ]
-			  ifFalse: [ type ] ]
+		  (self parseTypeName: name) ifNotNil: [ :type |
+			  type isParametricEntity
+				  ifTrue: [ type genericEntity ]
+				  ifFalse: [ type ] ] ]
 ]
 
 { #category : #enumerating }
