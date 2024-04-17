@@ -25,18 +25,6 @@ FamixValue2PharoVisitor >> ensureVisited: value [
 	^ node
 ]
 
-{ #category : #visiting }
-FamixValue2PharoVisitor >> findRequiredVariablesFor: rootValue [
-	"Values referenced at least twice and the root value will be in variables."
-
-	(FamixValueReferenceCountVisitor visit: rootValue) keysAndValuesDo: [
-		:value
-		:count |
-		count > 1 ifTrue: [ "ifFalse: [ varNameDict at: value put: nil ]"
-			self varNameFor: value ] ].
-	self varNameFor: rootValue
-]
-
 { #category : #accessing }
 FamixValue2PharoVisitor >> statementBlock [
 

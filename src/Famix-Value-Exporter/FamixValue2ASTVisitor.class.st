@@ -72,12 +72,6 @@ FamixValue2ASTVisitor >> varNameFor: value [
 ]
 
 { #category : #visiting }
-FamixValue2ASTVisitor >> visit: value [
-
-	^ value accept: self
-]
-
-{ #category : #visiting }
 FamixValue2ASTVisitor >> visitCollection: collection [
 
 	self subclassResponsibility
