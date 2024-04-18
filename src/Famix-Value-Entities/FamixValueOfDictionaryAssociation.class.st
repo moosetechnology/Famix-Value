@@ -16,7 +16,7 @@ A key-value pair belonging to a dictionary.
 "
 Class {
 	#name : #FamixValueOfDictionaryAssociation,
-	#superclass : #FamixValueEntity,
+	#superclass : #FamixValueOfType,
 	#instVars : [
 		'#dictionary => FMOne type: #FamixValueOfDictionary opposite: #value',
 		'#key => FMOne type: #FamixValueOfType opposite: #keyInDictionaries',
@@ -28,7 +28,7 @@ Class {
 { #category : #meta }
 FamixValueOfDictionaryAssociation class >> annotation [
 
-	<FMClass: #OfDictionaryAssociation super: #FamixValueEntity>
+	<FMClass: #OfDictionaryAssociation super: #FamixValueOfType>
 	<package: #'Famix-Value-Entities'>
 	<generated>
 	^ self

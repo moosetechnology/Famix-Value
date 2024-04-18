@@ -106,6 +106,7 @@ FamixValueGenerator >> defineHierarchy [
 	dictionary --|> value.
 	classReference --|> value.
 	ofUnknownType --|> value.
+	dictionaryAssociation --|> value.
 
 	primitive --|> tWithValueProperty.
 	ofUnknownType --|> tWithValueProperty.
