@@ -6,7 +6,8 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'model',
-		'cache'
+		'cache',
+		'replacements'
 	],
 	#category : #'Famix-Value-Importer'
 }
@@ -62,8 +63,10 @@ FamixEntityFinder >> findMethodsWithName: name in: class [
 FamixEntityFinder >> findTypeNamed: name [
 	"Main API for finding a type, should not be overridden."
 
-	^ self cache at: name ifAbsentPut: [
-		  (self parseTypeName: name) ifNotNil: [ :type |
+	| actualName |
+	actualName := self replacements at: name ifAbsent: [ name ].
+	^ self cache at: actualName ifAbsentPut: [
+		  (self parseTypeName: actualName) ifNotNil: [ :type |
 			  type isParametricEntity
 				  ifTrue: [ type genericEntity ]
 				  ifFalse: [ type ] ] ]
@@ -104,6 +107,24 @@ FamixEntityFinder >> parseTypeName: name [
 	"This method can be overriden to modify how the search is executed."
 
 	^ self findTypeWithName: name
+]
+
+{ #category : #accessing }
+FamixEntityFinder >> replace: aTypeName with: anotherTypeName [
+
+	self replacements at: aTypeName put: anotherTypeName
+]
+
+{ #category : #accessing }
+FamixEntityFinder >> replacements [
+
+	^ replacements ifNil: [ replacements := Dictionary new ]
+]
+
+{ #category : #accessing }
+FamixEntityFinder >> replacements: aDictionary [
+
+	replacements := aDictionary
 ]
 
 { #category : #matching }
