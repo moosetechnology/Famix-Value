@@ -1,6 +1,20 @@
 Extension { #name : #FamixValueOfDictionary }
 
 { #category : #'*Famix-Value-Entities-Extensions' }
+FamixValueOfDictionary >> containsCollection [
+
+	^ true
+]
+
+{ #category : #'*Famix-Value-Entities-Extensions' }
+FamixValueOfDictionary >> containsObject [
+
+	^ value anySatisfy: [ :association |
+		  association key containsObject or: [
+			  association value containsObject ] ]
+]
+
+{ #category : #'*Famix-Value-Entities-Extensions' }
 FamixValueOfDictionary >> printValueOn: aStream [
 
 	aStream << ${ << self value size asString << ' association'.

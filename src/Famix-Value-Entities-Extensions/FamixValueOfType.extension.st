@@ -1,6 +1,18 @@
 Extension { #name : #FamixValueOfType }
 
 { #category : #'*Famix-Value-Entities-Extensions' }
+FamixValueOfType >> containsCollection [
+
+	^ false
+]
+
+{ #category : #'*Famix-Value-Entities-Extensions' }
+FamixValueOfType >> containsObject [
+
+	^ false
+]
+
+{ #category : #'*Famix-Value-Entities-Extensions' }
 FamixValueOfType >> mooseNameOn: aStream [
 
 	self printTypeOn: aStream.
