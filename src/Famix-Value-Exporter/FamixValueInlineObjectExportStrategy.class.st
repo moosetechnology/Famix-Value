@@ -1,11 +1,11 @@
 Class {
-	#name : #FamixValueObjectInlineExportStrategy,
-	#superclass : #FamixValueObjectExportStrategy,
+	#name : #FamixValueInlineObjectExportStrategy,
+	#superclass : #FamixValueAbstractObjectExportStrategy,
 	#category : #'Famix-Value-Exporter-Strategies'
 }
 
 { #category : #exporting }
-FamixValueObjectInlineExportStrategy >> export: object on: visitor [
+FamixValueInlineObjectExportStrategy >> export: object on: visitor [
 
 	self flag: #TODO. "redo object visit, we need to have attributes ready when calling the constructor.
 	We need to know if an attribute has been set using the constructor or if it will be set using a setter!"

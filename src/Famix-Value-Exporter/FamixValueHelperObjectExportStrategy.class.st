@@ -1,6 +1,6 @@
 Class {
-	#name : #FamixValueObjectHelperExportStrategy,
-	#superclass : #FamixValueObjectExportStrategy,
+	#name : #FamixValueHelperObjectExportStrategy,
+	#superclass : #FamixValueAbstractObjectExportStrategy,
 	#instVars : [
 		'helperMethods'
 	],
@@ -8,7 +8,7 @@ Class {
 }
 
 { #category : #ast }
-FamixValueObjectHelperExportStrategy >> addToHelper: helperClass [
+FamixValueHelperObjectExportStrategy >> addToHelper: helperClass [
 	"Must be called when building the helper class to add the generated helper methods."
 
 	helperMethods valuesDo: [ :method |
@@ -16,7 +16,7 @@ FamixValueObjectHelperExportStrategy >> addToHelper: helperClass [
 ]
 
 { #category : #ast }
-FamixValueObjectHelperExportStrategy >> buildMethodFor: object withParametersFor: attributes on: visitor [
+FamixValueHelperObjectExportStrategy >> buildMethodFor: object withParametersFor: attributes on: visitor [
 	"Build the helper method to construct objects of the same type as the one given in argument.
 	Use only the relevant attributes that are given, rather than all attributes."
 
@@ -43,7 +43,7 @@ FamixValueObjectHelperExportStrategy >> buildMethodFor: object withParametersFor
 ]
 
 { #category : #ast }
-FamixValueObjectHelperExportStrategy >> dependencyImportsOn: aFASTModel [
+FamixValueHelperObjectExportStrategy >> dependencyImportsOn: aFASTModel [
 
 	^ { ((aFASTModel newImportDeclaration qualifiedName:
 			    (aFASTModel newQualifiedName name:
@@ -53,7 +53,7 @@ FamixValueObjectHelperExportStrategy >> dependencyImportsOn: aFASTModel [
 ]
 
 { #category : #exporting }
-FamixValueObjectHelperExportStrategy >> export: object on: visitor [
+FamixValueHelperObjectExportStrategy >> export: object on: visitor [
 	"Use a helper method to instantiate the object and set its attributes."
 
 	| attributes helper model |
@@ -84,13 +84,13 @@ FamixValueObjectHelperExportStrategy >> export: object on: visitor [
 ]
 
 { #category : #initialization }
-FamixValueObjectHelperExportStrategy >> initialize [
+FamixValueHelperObjectExportStrategy >> initialize [
 
 	helperMethods := IdentityDictionary new
 ]
 
 { #category : #ast }
-FamixValueObjectHelperExportStrategy >> makeMethodFor: aFamixType withParametersFor: attributes on: visitor [
+FamixValueHelperObjectExportStrategy >> makeMethodFor: aFamixType withParametersFor: attributes on: visitor [
 	"Make the method entity, handles its signature and modifiers."
 
 	| model |
@@ -116,7 +116,7 @@ FamixValueObjectHelperExportStrategy >> makeMethodFor: aFamixType withParameters
 ]
 
 { #category : #ast }
-FamixValueObjectHelperExportStrategy >> makeSetterInvocationsFor: attributes on: visitor [
+FamixValueHelperObjectExportStrategy >> makeSetterInvocationsFor: attributes on: visitor [
 	"Build the helper method's body: set the value of each argument to the corresponding attribute using setters or reflection."
 
 	attributes do: [ :attribute |
