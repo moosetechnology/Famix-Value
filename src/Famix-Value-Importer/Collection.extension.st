@@ -24,6 +24,14 @@ Collection >> asJavaJacksonValueOn: importer [
 ]
 
 { #category : #'*Famix-Value-Importer' }
+Collection >> asPharoJacksonValueOn: importer [
+
+	^ importer
+		  importCollection: self
+		  of: (importer loadTypeNamed: self className)
+]
+
+{ #category : #'*Famix-Value-Importer' }
 Collection >> asPharoSTONValueOn: importer [
 
 	^ importer

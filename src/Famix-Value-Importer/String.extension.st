@@ -16,6 +16,12 @@ String >> asJavaJacksonValueOn: importer [
 ]
 
 { #category : #'*Famix-Value-Importer' }
+String >> asPharoJacksonValueOn: importer [
+
+	^ importer importPrimitive: self of: self className
+]
+
+{ #category : #'*Famix-Value-Importer' }
 String >> asPharoSTONValueOn: importer [
 
 	^ importer importPrimitive: self of: self className

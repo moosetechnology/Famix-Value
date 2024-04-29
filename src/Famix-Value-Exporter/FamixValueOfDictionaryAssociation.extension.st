@@ -3,7 +3,7 @@ Extension { #name : #FamixValueOfDictionaryAssociation }
 { #category : #'*Famix-Value-Exporter' }
 FamixValueOfDictionaryAssociation >> accept: visitor [
 
-	self shouldNotImplement
+	^ visitor visitDictionaryAssociation: self
 ]
 
 { #category : #'*Famix-Value-Exporter' }

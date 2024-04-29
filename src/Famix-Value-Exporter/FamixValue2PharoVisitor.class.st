@@ -55,10 +55,16 @@ FamixValue2PharoVisitor >> visitDictionary: dictionary [
 		  selector: #newFrom:
 		  arguments:
 			  { (RBArrayNode statements: (dictionary value collect: [ :assoc |
-					    RBMessageNode
-						    receiver: (self ensureVisited: assoc key)
-						    selector: #'->'
-						    arguments: { (self ensureVisited: assoc value) } ])) }
+					    self visitDictionaryAssociation: assoc ])) }
+]
+
+{ #category : #visiting }
+FamixValue2PharoVisitor >> visitDictionaryAssociation: association [
+
+	^ RBMessageNode
+		  receiver: (self ensureVisited: association key)
+		  selector: #'->'
+		  arguments: { (self ensureVisited: association value) }
 ]
 
 { #category : #visiting }
@@ -74,10 +80,10 @@ FamixValue2PharoVisitor >> visitObject: object [
 	objectNode := RBMessageNode
 		              receiver: (RBVariableNode named: object type name)
 		              selector: #new.
-	attributeNodes := object value
-		                  collect: [ :attribute |
-		                  self visitObjectAttribute: attribute ]
-		                  thenReject: #isNil.
+	attributeNodes := (object value
+		                   collect: [ :attribute |
+		                   self visitObjectAttribute: attribute ]
+		                   as: OrderedCollection) reject: #isNil.
 	attributeNodes ifEmpty: [ ^ objectNode ].
 	attributeNodes first receiver: objectNode.
 	attributeNodes add:

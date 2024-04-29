@@ -10,6 +10,12 @@ UndefinedObject >> asJavaJacksonValueOn: importer [
 ]
 
 { #category : #'*Famix-Value-Importer' }
+UndefinedObject >> asPharoJacksonValueOn: importer [
+
+	^ importer importPrimitive: self of: self className
+]
+
+{ #category : #'*Famix-Value-Importer' }
 UndefinedObject >> asPharoSTONValueOn: importer [
 
 	^ importer importPrimitive: self of: self className
