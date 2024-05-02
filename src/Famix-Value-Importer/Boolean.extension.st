@@ -7,6 +7,12 @@ Boolean >> asJavaJacksonValueOn: importer [
 ]
 
 { #category : #'*Famix-Value-Importer' }
+Boolean >> asPharoJacksonValueOn: importer [
+
+	^ importer importPrimitive: self of: self className
+]
+
+{ #category : #'*Famix-Value-Importer' }
 Boolean >> asPharoSTONValueOn: importer [
 
 	^ importer importPrimitive: self of: self className

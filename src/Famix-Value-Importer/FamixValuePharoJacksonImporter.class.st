@@ -64,6 +64,15 @@ FamixValuePharoJacksonImporter >> importClassReference: rawValue of: type [
 ]
 
 { #category : #importing }
+FamixValuePharoJacksonImporter >> importCollection: rawValue of: type [
+
+	^ objectDict
+		  at: rawValue first
+		  ifAbsentPut: [
+		  super importCollection: rawValue allButFirst of: type ]
+]
+
+{ #category : #importing }
 FamixValuePharoJacksonImporter >> importDictionary: rawValue of: type [
 	"infer from type arguments, e.g. Map<String, MyClass>"
 
