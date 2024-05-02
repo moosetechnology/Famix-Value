@@ -21,13 +21,6 @@ FamixJavaType >> asFASTJavaTypeExpressionOn: visitor [
 ]
 
 { #category : #'*Famix-Value-Exporter' }
-FamixJavaType >> baseName [
-	"Without type arguments, e.g. List"
-
-	^ name
-]
-
-{ #category : #'*Famix-Value-Exporter' }
 FamixJavaType >> concreteTypeName [
 	"Answer the type name of the most commonly used concrete class of this type, e.g. List -> ArrayList"
 
@@ -62,12 +55,6 @@ FamixJavaType >> typeName [
 	"Includes type arguments, e.g. List<Map<String, Integer>>"
 
 	^ String streamContents: [ :stream | self typeNameOn: stream ]
-]
-
-{ #category : #'*Famix-Value-Exporter' }
-FamixJavaType >> typeNameOn: stream [
-
-	stream nextPutAll: name
 ]
 
 { #category : #'*Famix-Value-Exporter' }

@@ -63,7 +63,7 @@ FamixValueOfType >> varName [
 	"Basic variable name of a value."
 
 	^ self typedEntity
-		  ifNotNil: [ :typedEntity | typedEntity name ]
+		  ifNotNil: [ :typedEntity | typedEntity varName ]
 		  ifNil: [
 			  attributeInObjects size = 1
 				  ifTrue: [ attributeInObjects first attribute name ]

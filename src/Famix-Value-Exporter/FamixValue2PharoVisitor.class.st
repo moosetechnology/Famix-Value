@@ -25,6 +25,18 @@ FamixValue2PharoVisitor >> ensureVisited: value [
 	^ node
 ]
 
+{ #category : #ast }
+FamixValue2PharoVisitor >> makeHelper [
+
+	
+]
+
+{ #category : #visiting }
+FamixValue2PharoVisitor >> makeVariableExpression: value [
+
+	^ RBVariableNode named: (self varNameFor: value)
+]
+
 { #category : #accessing }
 FamixValue2PharoVisitor >> statementBlock [
 
