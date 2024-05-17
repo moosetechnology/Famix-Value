@@ -62,9 +62,9 @@ FamixValueAbstractImporter >> importCollection: rawValue of: type [
 	| collection |
 	collection := self model newOfCollection type: type.
 	self
-		withTypeInference:
-			((self parametricTypeInferencesOf: type) ifNotNil: [ :inferences |
-				 inferences first ])
+		withTypeInference: ((self parametricTypeInferencesOf: type)
+				 ifNotEmpty: [ :inferences | inferences first ]
+				 ifEmpty: [ nil ])
 		do: [
 			rawValue do: [ :rawElement |
 				collection addValue: (self model newOfCollectionElement value:
@@ -191,7 +191,7 @@ FamixValueAbstractImporter >> newReader [
 { #category : #enumerating }
 FamixValueAbstractImporter >> parametricTypeInferencesOf: type [
 
-	type isParametricEntity ifFalse: [ ^ nil ].
+	type isParametricEntity ifFalse: [ ^ {  } ].
 	^ type isGenericEntity
 		  ifTrue: [
 			  self typeInference ifNotNil: [ :inference |
