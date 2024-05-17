@@ -20,7 +20,13 @@ FamixValue2PharoVisitor >> ensureVisited: value [
 		ifAbsentPut: [
 			node := value accept: self.
 			value referenceCount > 1
-				ifTrue: [ self varNameFor: value ]
+				ifTrue: [
+					| name |
+					name := self varNameFor: value.
+					node := RBAssignmentNode
+						        variable: (RBVariableNode named: name)
+						        value: node.
+					name ]
 				ifFalse: [ nil ] ].
 	^ node
 ]
@@ -41,6 +47,12 @@ FamixValue2PharoVisitor >> makeVariableExpression: value [
 FamixValue2PharoVisitor >> statementBlock [
 
 	^ statementBlock ifNil: [ statementBlock := RBSequenceNode new ]
+]
+
+{ #category : #visiting }
+FamixValue2PharoVisitor >> visitClassReference: aFamixValueOfClassReference [
+
+	^ RBVariableNode named: aFamixValueOfClassReference value name
 ]
 
 { #category : #visiting }

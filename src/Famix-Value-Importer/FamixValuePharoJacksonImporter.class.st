@@ -59,7 +59,7 @@ FamixValuePharoJacksonImporter >> importClassReference: rawValue of: type [
 	The raw value contains the fully qualified name of the referenced class."
 
 	^ self model newOfClassReference
-		  value: (self loadTypeNamed: rawValue);
+		  value: (self loadTypeNamed: (rawValue at: 'name'));
 		  type: type
 ]
 
@@ -74,7 +74,6 @@ FamixValuePharoJacksonImporter >> importCollection: rawValue of: type [
 
 { #category : #importing }
 FamixValuePharoJacksonImporter >> importDictionary: rawValue of: type [
-	"infer from type arguments, e.g. Map<String, MyClass>"
 
 	| dictionary assoc |
 	dictionary := self model newOfDictionary type: type.
