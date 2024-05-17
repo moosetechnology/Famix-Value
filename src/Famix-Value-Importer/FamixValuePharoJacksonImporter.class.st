@@ -59,7 +59,7 @@ FamixValuePharoJacksonImporter >> importClassReference: rawValue of: type [
 	The raw value contains the fully qualified name of the referenced class."
 
 	^ self model newOfClassReference
-		  value: (self loadTypeNamed: rawValue);
+		  value: (self loadTypeNamed: (rawValue at: 'name'));
 		  type: type
 ]
 
