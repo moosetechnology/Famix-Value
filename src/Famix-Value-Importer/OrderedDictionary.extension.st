@@ -13,3 +13,26 @@ OrderedDictionary >> asJavaJacksonValueOn: importer [
 		  ifTrue: [ importer importDictionary: self of: type ]
 		  ifFalse: [ importer importObject: self of: type ]
 ]
+
+{ #category : #'*Famix-Value-Importer' }
+OrderedDictionary >> asPharoJacksonValueOn: importer [
+
+	^ (self removeKey: importer typeKey ifAbsent: nil)
+		  ifNotNil: [ :className | "object of an unloaded class"
+			  className = 'Class'
+				  ifTrue: [
+					  importer
+						  importClassReference: self
+						  of: (importer loadTypeNamed: className) ]
+				  ifFalse: [
+				  importer
+					  importObject: self
+					  of: (importer loadTypeNamed: className) ] ]
+		  ifNil: [ "species of dictionary"
+			  (self removeKey: importer refKey ifAbsent: nil)
+				  ifNotNil: [ :refId | "if @ref"
+					  importer
+						  getObjectFromIdentity: refId
+						  ifAbsent: [ Error signal: 'unknown id: ' , refId asString ] ]
+				  ifNil: [ Error signal: 'Unknown state' ] ]
+]

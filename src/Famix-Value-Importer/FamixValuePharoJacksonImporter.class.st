@@ -64,6 +64,15 @@ FamixValuePharoJacksonImporter >> importClassReference: rawValue of: type [
 ]
 
 { #category : #importing }
+FamixValuePharoJacksonImporter >> importClosure: value of: type [
+
+	self flag: #TODO. "handle FullBlockClosure, add FamixValueOfClosure entity with `variables` relation to FamixValueOfType"
+	^ self model newOfUnknownType
+		  value: value;
+		  type: type
+]
+
+{ #category : #importing }
 FamixValuePharoJacksonImporter >> importCollection: rawValue of: type [
 
 	^ objectDict
@@ -88,7 +97,6 @@ FamixValuePharoJacksonImporter >> importDictionary: rawValue of: type [
 
 { #category : #importing }
 FamixValuePharoJacksonImporter >> importObject: rawObject of: type [
-
 
 	self specialTypes
 		at: type name
@@ -157,12 +165,6 @@ FamixValuePharoJacksonImporter >> isPrimitiveType: type [
 		  type isPrimitiveWrapper ]
 ]
 
-{ #category : #importing }
-FamixValuePharoJacksonImporter >> newReader [
-
-	^ NeoJSONReader new
-]
-
 { #category : #parsing }
 FamixValuePharoJacksonImporter >> parseList: serializedValues [
 	"Ignore first element which is the id of the array."
@@ -201,6 +203,9 @@ FamixValuePharoJacksonImporter >> specialTypes [
 			  at: 'Set'
 			  put: [ :value :type |
 			  self importCollection: (value at: 'array') of: type ].
+		  specialTypes
+			  at: 'FullBlockClosure'
+			  put: [ :value :type | self importClosure: value of: type ].
 		  specialTypes ]
 ]
 

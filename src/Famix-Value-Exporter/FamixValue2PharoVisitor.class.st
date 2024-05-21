@@ -101,6 +101,8 @@ FamixValue2PharoVisitor >> visitEnumValue: enumValue [
 FamixValue2PharoVisitor >> visitObject: object [
 
 	| objectNode attributeNodes |
+	object type name = 'FullBlockClosure' ifTrue: [
+		^ self visitClosure: object ].
 	objectNode := RBMessageNode
 		              receiver: (RBVariableNode named: object type name)
 		              selector: #new.
