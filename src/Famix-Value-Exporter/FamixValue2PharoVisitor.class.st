@@ -56,6 +56,25 @@ FamixValue2PharoVisitor >> visitClassReference: aFamixValueOfClassReference [
 ]
 
 { #category : #visiting }
+FamixValue2PharoVisitor >> visitClosure: object [
+
+	| objectNode attributeNodes |
+	object value detect: [ :a | a attribute isNil ].
+	objectNode := RBMessageNode
+		              receiver: (RBVariableNode named: object type name)
+		              selector: #new.
+	attributeNodes := (object value
+		                   collect: [ :attribute |
+		                   self visitObjectAttribute: attribute ]
+		                   as: OrderedCollection) reject: #isNil.
+	attributeNodes ifEmpty: [ ^ objectNode ].
+	attributeNodes first receiver: objectNode.
+	attributeNodes add:
+		(RBMessageNode receiver: RBVariableNode new selector: #yourself).
+	^ RBCascadeNode messages: attributeNodes
+]
+
+{ #category : #visiting }
 FamixValue2PharoVisitor >> visitCollection: collection [
 
 	| collectionNode |
