@@ -129,7 +129,7 @@ FamixValuePharoJacksonImporter >> refKey: aString [
 	refKey := aString
 ]
 
-{ #category : #importing }
+{ #category : #accessing }
 FamixValuePharoJacksonImporter >> specialTypes [
 
 	^ specialTypes ifNil: [
