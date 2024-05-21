@@ -10,13 +10,13 @@ Class {
 	#category : #'Famix-Value-Importer'
 }
 
-{ #category : #importing }
+{ #category : #enumerating }
 FamixValuePharoJacksonImporter >> getDefaultUnknownType [
 
 	^ self getUnknownTypeNamed: 'Object'
 ]
 
-{ #category : #importing }
+{ #category : #enumerating }
 FamixValuePharoJacksonImporter >> getObjectIdentity: rawObject [
 	"Keep track of objects by using the id given by Jackson.
 	References to previously seen objects are serialized by using this id."
@@ -24,13 +24,13 @@ FamixValuePharoJacksonImporter >> getObjectIdentity: rawObject [
 	^ rawObject removeKey: self idKey ifAbsent: nil
 ]
 
-{ #category : #importing }
+{ #category : #accessing }
 FamixValuePharoJacksonImporter >> idKey [
 
 	^ idKey ifNil: [ idKey := '@id' ]
 ]
 
-{ #category : #importing }
+{ #category : #accessing }
 FamixValuePharoJacksonImporter >> idKey: aString [
 
 	idKey := aString
@@ -105,64 +105,9 @@ FamixValuePharoJacksonImporter >> importObject: rawObject of: type [
 ]
 
 { #category : #importing }
-FamixValuePharoJacksonImporter >> importObjectAttribute: rawValue of: type named: name [
-
-	| attribute |
-	(attribute := type findAttributeNamed: name).
-	^ self
-		  withTypeInference:
-		  (attribute ifNotNil: [ attribute declaredType ])
-		  do: [
-			  self model newOfObjectAttribute
-				  value: (self importValue: rawValue);
-				  attribute: attribute ]
-]
-
-{ #category : #importing }
-FamixValuePharoJacksonImporter >> importSpecialObject: rawValue of: type [
-	"Some objects have special rules for serialization.
-	They should have a corresponding type wrapper that knows how to handle them."
-
-	self specialTypes
-		at: type mooseNameWithDots
-		ifPresent: [ :typeWrapper |
-			^ typeWrapper import: rawValue wrapping: type on: self ].
-	^ nil
-]
-
-{ #category : #importing }
 FamixValuePharoJacksonImporter >> importValue: rawValue [
 
 	^ rawValue asPharoJacksonValueOn: self
-]
-
-{ #category : #importing }
-FamixValuePharoJacksonImporter >> importValueFromList: rawValue of: type [
-	"Jackson can serialize different types of values in a list, so we need to find out which it is."
-
-	rawValue isCollection ifTrue: [
-		^ self importCollection: rawValue of: type ].
-	type isUnknownType ifTrue: [
-		^ self model newOfUnknownType
-			  value: rawValue;
-			  type: type ].
-	(type usesFamixTrait: FamixTEnum) ifTrue: [
-		^ self importEnumValue: rawValue of: type ].
-	(self isPrimitiveType: type) ifTrue: [
-		^ self model newOfPrimitiveType
-			  value: rawValue;
-			  type: type ].
-	type isClass ifTrue: [ "might be a special object"
-		(self importSpecialObject: rawValue of: type) ifNotNil: [ :object |
-			^ object ] ].
-	self error: 'Unknown type: ' , type mooseNameWithDots
-]
-
-{ #category : #importing }
-FamixValuePharoJacksonImporter >> isPrimitiveType: type [
-
-	^ type isPrimitiveType or: [ "Classes wrapping primitives are also considered primitives."
-		  type isPrimitiveWrapper ]
 ]
 
 { #category : #parsing }
@@ -172,13 +117,13 @@ FamixValuePharoJacksonImporter >> parseList: serializedValues [
 	^ (super parseList: serializedValues) allButFirst
 ]
 
-{ #category : #importing }
+{ #category : #accessing }
 FamixValuePharoJacksonImporter >> refKey [
 
 	^ refKey ifNil: [ refKey := '@ref' ]
 ]
 
-{ #category : #importing }
+{ #category : #accessing }
 FamixValuePharoJacksonImporter >> refKey: aString [
 
 	refKey := aString
@@ -209,13 +154,13 @@ FamixValuePharoJacksonImporter >> specialTypes [
 		  specialTypes ]
 ]
 
-{ #category : #importing }
+{ #category : #accessing }
 FamixValuePharoJacksonImporter >> typeKey [
 
 	^ typeKey ifNil: [ typeKey := '@type' ]
 ]
 
-{ #category : #importing }
+{ #category : #accessing }
 FamixValuePharoJacksonImporter >> typeKey: aString [
 
 	typeKey := aString

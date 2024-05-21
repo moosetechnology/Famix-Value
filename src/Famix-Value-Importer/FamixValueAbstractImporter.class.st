@@ -79,10 +79,10 @@ FamixValueAbstractImporter >> importDictionary: rawValue of: type [
 	| dictionary keyType valueType assoc |
 	dictionary := self model newOfDictionary type: type.
 	(self parametricTypeInferencesOf: type)
-		ifNotNil: [ :paramTypeInferences |
+		ifNotEmpty: [ :paramTypeInferences |
 			keyType := paramTypeInferences at: 1.
 			valueType := paramTypeInferences at: 2 ]
-		ifNil: [ keyType := valueType := nil ].
+		ifEmpty: [ keyType := valueType := nil ].
 	rawValue associationsDo: [ :rawAssoc |
 		assoc := self model newOfDictionaryAssociation dictionary:
 			         dictionary.
@@ -194,7 +194,7 @@ FamixValueAbstractImporter >> parametricTypeInferencesOf: type [
 	type isParametricEntity ifFalse: [ ^ {  } ].
 	^ type isGenericEntity
 		  ifTrue: [
-			  self typeInference ifNotNil: [ :inference |
+			  self typeInference ifNil: [ {  } ] ifNotNil: [ :inference |
 				  (inference isDictionaryType and: [
 					   inference concreteParameters size = 1 ])
 					  ifTrue: [
