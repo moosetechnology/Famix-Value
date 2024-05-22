@@ -67,8 +67,8 @@ FamixValuePharoJacksonImporter >> importClassReference: rawValue of: type [
 FamixValuePharoJacksonImporter >> importClosure: value of: type [
 
 	self flag: #TODO. "handle FullBlockClosure, add FamixValueOfClosure entity with `variables` relation to FamixValueOfType"
-	^ self model newOfUnknownType
-		  value: value;
+	^ self model newOfPrimitiveType
+		  value: nil;
 		  type: type
 ]
 
@@ -105,9 +105,26 @@ FamixValuePharoJacksonImporter >> importObject: rawObject of: type [
 ]
 
 { #category : #importing }
+FamixValuePharoJacksonImporter >> importSymbol: rawObject of: type [
+
+	^ objectDict
+		  at: (self getObjectIdentity: rawObject)
+		  put: (self model newOfPrimitiveType
+				   value: (rawObject at: 'value') asSymbol;
+				   type: type)
+]
+
+{ #category : #importing }
 FamixValuePharoJacksonImporter >> importValue: rawValue [
 
 	^ rawValue asPharoJacksonValueOn: self
+]
+
+{ #category : #importing }
+FamixValuePharoJacksonImporter >> newReader [
+
+	^ super newReader.
+	"^ STONReader new acceptUnknownClasses: true"
 ]
 
 { #category : #parsing }
@@ -151,6 +168,12 @@ FamixValuePharoJacksonImporter >> specialTypes [
 		  specialTypes
 			  at: 'FullBlockClosure'
 			  put: [ :value :type | self importClosure: value of: type ].
+		  specialTypes
+			  at: 'ByteSymbol'
+			  put: [ :value :type | self importSymbol: value of: type ].
+		  specialTypes
+			  at: 'WideSymbol'
+			  put: [ :value :type | self importSymbol: value of: type ].
 		  specialTypes ]
 ]
 
