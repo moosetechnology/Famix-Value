@@ -37,6 +37,15 @@ FamixValuePharoJacksonImporter >> idKey: aString [
 ]
 
 { #category : #importing }
+FamixValuePharoJacksonImporter >> importArray: rawValue of: type [
+
+	^ objectDict
+		  at: rawValue first
+		  ifAbsentPut: [
+		  super importCollection: rawValue allButFirst of: type ]
+]
+
+{ #category : #importing }
 FamixValuePharoJacksonImporter >> importAssociation: rawValue of: type [
 
 	| association |
@@ -75,23 +84,23 @@ FamixValuePharoJacksonImporter >> importClosure: value of: type [
 { #category : #importing }
 FamixValuePharoJacksonImporter >> importCollection: rawValue of: type [
 
-	^ objectDict
-		  at: rawValue first
-		  ifAbsentPut: [
-		  super importCollection: rawValue allButFirst of: type ]
+	| collection |
+	collection := self model newOfCollection type: type.
+	objectDict at: (self getObjectIdentity: rawValue) put: collection.
+	(rawValue at: '@') do: [ :rawElement |
+		collection addValue: (self model newOfCollectionElement value:
+				 (self importValue: rawElement)) ].
+	^ collection
 ]
 
 { #category : #importing }
 FamixValuePharoJacksonImporter >> importDictionary: rawValue of: type [
 
-	| dictionary assoc |
+	| dictionary |
 	dictionary := self model newOfDictionary type: type.
 	objectDict at: (self getObjectIdentity: rawValue) put: dictionary.
-	rawValue associationsDo: [ :rawAssoc |
-		assoc := self model newOfDictionaryAssociation dictionary:
-			         dictionary.
-		assoc key: (self importValue: rawAssoc key).
-		assoc value: (self importValue: rawAssoc value) ].
+	(rawValue at: '@') do: [ :rawAssoc |
+		(rawAssoc asPharoJacksonValueOn: self) dictionary: dictionary ].
 	^ dictionary
 ]
 
@@ -159,12 +168,10 @@ FamixValuePharoJacksonImporter >> specialTypes [
 			  put: [ :value :type | self importAssociation: value of: type ].
 		  specialTypes
 			  at: 'OrderedCollection'
-			  put: [ :value :type |
-			  self importCollection: (value at: 'array') of: type ].
+			  put: [ :value :type | self importCollection: value of: type ].
 		  specialTypes
 			  at: 'Set'
-			  put: [ :value :type |
-			  self importCollection: (value at: 'array') of: type ].
+			  put: [ :value :type | self importCollection: value of: type ].
 		  specialTypes
 			  at: 'FullBlockClosure'
 			  put: [ :value :type | self importClosure: value of: type ].
@@ -174,6 +181,12 @@ FamixValuePharoJacksonImporter >> specialTypes [
 		  specialTypes
 			  at: 'WideSymbol'
 			  put: [ :value :type | self importSymbol: value of: type ].
+		  specialTypes
+			  at: 'Dictionary'
+			  put: [ :value :type | self importDictionary: value of: type ].
+		  specialTypes
+			  at: 'OrderedDictionary'
+			  put: [ :value :type | self importDictionary: value of: type ].
 		  specialTypes ]
 ]
 

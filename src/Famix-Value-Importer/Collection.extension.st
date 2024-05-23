@@ -27,7 +27,7 @@ Collection >> asJavaJacksonValueOn: importer [
 Collection >> asPharoJacksonValueOn: importer [
 
 	^ importer
-		  importCollection: self
+		  importArray: self
 		  of: (importer loadTypeNamed: self className)
 ]
 
