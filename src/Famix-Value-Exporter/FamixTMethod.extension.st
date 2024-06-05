@@ -56,7 +56,7 @@ FamixTMethod >> mapConstructorParametersToAttributes [
 			   access accessedAttributesOf: parentType ])
 			  ifNotEmpty: [ :attributes |
 				  attributes size = 1
-					  ifTrue: [ attributes at: 1 ]
+					  ifTrue: [ attributes anyOne ]
 					  ifFalse: [ self error: 'Expected only one attribute.' ] ]
-			  ifEmpty: [ nil ] ]
+			  ifEmpty: [ "parameter is not mapped to an attribute" nil ] ]
 ]

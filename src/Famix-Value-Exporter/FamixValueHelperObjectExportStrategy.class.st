@@ -33,7 +33,10 @@ FamixValueHelperObjectExportStrategy >> buildMethodFor: object withParametersFor
 		          on: visitor.
 	"make the method body: instantiate object, set attributes and return it"
 	visitor constructObject: object.
-	self makeSetterInvocationsFor: attributes on: visitor.
+	self
+		makeSetterInvocationsFor:
+		(visitor filterAttributesToSet: attributes for: object)
+		on: visitor.
 	visitor statementBlock addStatement:
 		(model newReturnStatement expression:
 			 (model newVariableExpression name: (visitor varNameFor: object))).

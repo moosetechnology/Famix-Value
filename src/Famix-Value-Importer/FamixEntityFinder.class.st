@@ -36,7 +36,7 @@ FamixEntityFinder >> findMethodWithSignature: signature in: class [
 	| candidates |
 	class methods
 		detect: [ :method | method signature = signature ]
-		ifOne: [ :method | ^ method ].
+		ifFound: [ :method | ^ method ].
 	"signature might not exactly match due to representation format"
 	candidates := self
 		              findMethodsWithName:

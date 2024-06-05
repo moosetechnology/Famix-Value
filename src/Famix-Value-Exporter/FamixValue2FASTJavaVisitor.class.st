@@ -16,7 +16,8 @@ Class {
 		'markedForReflection',
 		'constructorCache',
 		'staticAttributesCache',
-		'objectExportStrategy'
+		'objectExportStrategy',
+		'setterCache'
 	],
 	#category : #'Famix-Value-Exporter'
 }
@@ -29,21 +30,21 @@ FamixValue2FASTJavaVisitor >> addAttributesFrom: object asArgumentsTo: newExpres
 		 ifAbsentPut: [ constructor mapConstructorParametersToAttributes ])
 		withIndexDo: [ :paramAttribute :index |
 			newExpression addArgument: (paramAttribute
-					 ifNil: [
+					 ifNil: [ "constructor parameter is not mapped to an attribute"
 						 (constructor parameters at: index) declaredType
 							 asFASTJavaDefaultValueOn: self model ]
 					 ifNotNil: [
 						 object value
-							 detect: [ :objAttribute |
-							 objAttribute attribute == paramAttribute ]
-							 ifOne: [ :objAttribute |
+							 detect: [ :objAttribute | "find the matching value attribute"
+								 objAttribute attribute == paramAttribute ]
+							 ifFound: [ :objAttribute |
 							 self makeVariableExpression: objAttribute value ]
 							 ifNone: [ "the object does not have the attribute set"
 								 paramAttribute declaredType asFASTJavaDefaultValueOn:
 									 self model ] ]) ]
 ]
 
-{ #category : #initialization }
+{ #category : #accessing }
 FamixValue2FASTJavaVisitor >> builder [
 
 	^ builder ifNil: [ builder := FASTJavaBuilder new model: self model ]
@@ -64,7 +65,28 @@ FamixValue2FASTJavaVisitor >> constructObject: object [
 					addAttributesFrom: object
 					asArgumentsTo: varDecl declarators first expression
 					usingConstructor: constructor ] ]
-		ifTrue: [ "use reflection" self halt ]
+		ifTrue: [ "use reflection" self shouldBeImplemented ]
+]
+
+{ #category : #accessing }
+FamixValue2FASTJavaVisitor >> filterAttributesToSet: attributes for: object [
+	"No need to set attributes that are set in the constructor."
+
+	^ (setterCache at: object type ifAbsentPut: [
+		   | famixAttributes |
+		   famixAttributes := attributes collect: [ :attribute |
+			                      attribute attribute ].
+		   constructorCache
+			   at: object type
+			   ifPresent: [ :constructor |
+				   constructorCache
+					   at: constructor
+					   ifPresent: [ :constructorAttributes |
+						   famixAttributes difference: constructorAttributes ]
+					   ifAbsent: [ famixAttributes ] ]
+			   ifAbsent: [ famixAttributes ] ]) ifNotEmpty: [ :famixAttributes |
+		  attributes select: [ :attribute |
+			  famixAttributes includes: attribute attribute ] ]
 ]
 
 { #category : #private }
@@ -114,6 +136,7 @@ FamixValue2FASTJavaVisitor >> findStaticAttributeMatching: object [
 FamixValue2FASTJavaVisitor >> initialize [
 
 	constructorCache := IdentityDictionary new.
+	setterCache := IdentityDictionary new.
 	staticAttributesCache := IdentityDictionary new
 ]
 
@@ -284,7 +307,7 @@ FamixValue2FASTJavaVisitor >> makeVarDeclStatement: value [
 		  yourself
 ]
 
-{ #category : #visiting }
+{ #category : #ast }
 FamixValue2FASTJavaVisitor >> makeVarDeclStatement: object usingStaticAttribute: attribute [
 	"Declare a variable for object, initialized with the value of the given static attribute.
 	For example: MyClass myClass = MyClass.MY_STATIC_ATTRIBUTE;"
