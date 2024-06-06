@@ -3,7 +3,7 @@ Extension { #name : #Dictionary }
 { #category : #'*Famix-Value-Importer' }
 Dictionary >> asPharoJacksonValueOn: importer [
 
-	^ (self removeKey: importer typeKey ifAbsent: nil)
+	^ (importer getObjectType: self)
 		  ifNotNil: [ :className | "object of an unloaded class"
 			  className = 'Class'
 				  ifTrue: [
@@ -15,7 +15,7 @@ Dictionary >> asPharoJacksonValueOn: importer [
 					  importObject: self
 					  of: (importer loadTypeNamed: className) ] ]
 		  ifNil: [ "species of dictionary"
-			  (self removeKey: importer refKey ifAbsent: nil)
+			  (importer getObjectReference: self)
 				  ifNotNil: [ :refId | "if @ref"
 					  importer
 						  getObjectFromIdentity: refId

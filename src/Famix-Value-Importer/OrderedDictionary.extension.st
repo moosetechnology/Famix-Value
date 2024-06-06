@@ -4,11 +4,11 @@ Extension { #name : #OrderedDictionary }
 OrderedDictionary >> asJavaJacksonValueOn: importer [
 
 	| type |
-	(self removeKey: importer typeKey ifAbsent: nil)
-		ifNotNil: [ :typeName | type := importer loadTypeNamed: typeName ]
-		ifNil: [
-			(type := importer typeInference) ifNil: [
-				self error: 'Cannot determine type.' ] ].
+	type := (importer getObjectType: self)
+		        ifNotNil: [ :typeName | importer loadTypeNamed: typeName ]
+		        ifNil: [
+			        importer typeInference ifNil: [
+				        Error signal: 'Cannot determine type.' ] ].
 	^ (type isUnknownType or: [ type isDictionaryType ])
 		  ifTrue: [ importer importDictionary: self of: type ]
 		  ifFalse: [ importer importObject: self of: type ]
@@ -17,7 +17,7 @@ OrderedDictionary >> asJavaJacksonValueOn: importer [
 { #category : #'*Famix-Value-Importer' }
 OrderedDictionary >> asPharoJacksonValueOn: importer [
 
-	^ (self removeKey: importer typeKey ifAbsent: nil)
+	^ (importer getObjectType: self)
 		  ifNotNil: [ :className | "object of an unloaded class"
 			  className = 'Class'
 				  ifTrue: [
@@ -29,7 +29,7 @@ OrderedDictionary >> asPharoJacksonValueOn: importer [
 					  importObject: self
 					  of: (importer loadTypeNamed: className) ] ]
 		  ifNil: [ "species of dictionary"
-			  (self removeKey: importer refKey ifAbsent: nil)
+			  (importer getObjectReference: self)
 				  ifNotNil: [ :refId | "if @ref"
 					  importer
 						  getObjectFromIdentity: refId

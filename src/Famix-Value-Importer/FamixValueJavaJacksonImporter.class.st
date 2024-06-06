@@ -36,6 +36,12 @@ FamixValueJavaJacksonImporter >> getObjectIdentity: rawObject [
 	^ rawObject removeKey: self idKey ifAbsent: nil
 ]
 
+{ #category : #enumerating }
+FamixValueJavaJacksonImporter >> getObjectType: rawObject [
+
+	^ rawObject removeKey: self typeKey ifAbsent: nil
+]
+
 { #category : #accessing }
 FamixValueJavaJacksonImporter >> idKey [
 

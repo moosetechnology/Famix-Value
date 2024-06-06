@@ -24,6 +24,18 @@ FamixValuePharoJacksonImporter >> getObjectIdentity: rawObject [
 	^ rawObject removeKey: self idKey ifAbsent: nil
 ]
 
+{ #category : #enumerating }
+FamixValuePharoJacksonImporter >> getObjectReference: rawObject [
+
+	^ rawObject removeKey: self refKey ifAbsent: nil
+]
+
+{ #category : #enumerating }
+FamixValuePharoJacksonImporter >> getObjectType: rawObject [
+
+	^ rawObject removeKey: self typeKey ifAbsent: nil
+]
+
 { #category : #accessing }
 FamixValuePharoJacksonImporter >> idKey [
 
