@@ -10,7 +10,7 @@ Class {
 		'id',
 		'statementBlock'
 	],
-	#category : #'Famix-Value-Exporter'
+	#category : #'Famix-Value-Exporter-Visitors'
 }
 
 { #category : #testing }

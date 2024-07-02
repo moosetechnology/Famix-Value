@@ -1,12 +1,12 @@
 "
-A visitor for exporting a FamixValue model to FASTJava.
+A visitor to export a FamixValue model to FASTJava.
 The generated code is a block statement with a variable declared for each value.
 
 Object attributes are initialized by finding the corresponding setters.
-Collections and Dictionaries are constructed with the `add(element)` and `put(key, value)` methods respectively.
+Collections and Dictionaries are constructed with the methods `add(element)` and `put(key, value)` respectively.
 
-When exporting a `FamixValueOfObjectAttribute`, if the setter for its `FamixTAttribute` cannot be found, they are set using the Java Reflection API.
-All attributes that fall in this category are added as `markedForReflection`.
+When exporting a `FamixValueOfObjectAttribute`, if the setter for its `FamixTAttribute` cannot be found, it is set using the Java Reflection API.
+All attributes that fall into this category are added as `markedForReflection`.
 "
 Class {
 	#name : #FamixValue2FASTJavaVisitor,
@@ -18,7 +18,7 @@ Class {
 		'staticAttributesCache',
 		'objectExportStrategy'
 	],
-	#category : #'Famix-Value-Exporter'
+	#category : #'Famix-Value-Exporter-Visitors'
 }
 
 { #category : #private }

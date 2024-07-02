@@ -1,3 +1,7 @@
+"
+I generate the code to recreate objects in helper functions.
+For each object, a dedicated function is generated that takes no arguments and returns the recreated object.
+"
 Class {
 	#name : #FamixValueHelperObjectExportStrategy,
 	#superclass : #FamixValueAbstractObjectExportStrategy,

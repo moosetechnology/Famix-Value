@@ -1,3 +1,7 @@
+"
+I recreate objects inline.
+The context of the visitor will contain the code to recreate the objects.
+"
 Class {
 	#name : #FamixValueInlineObjectExportStrategy,
 	#superclass : #FamixValueAbstractObjectExportStrategy,
