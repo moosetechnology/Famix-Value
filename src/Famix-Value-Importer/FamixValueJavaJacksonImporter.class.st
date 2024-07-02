@@ -36,6 +36,12 @@ FamixValueJavaJacksonImporter >> getObjectIdentity: rawObject [
 	^ rawObject removeKey: self idKey ifAbsent: nil
 ]
 
+{ #category : #enumerating }
+FamixValueJavaJacksonImporter >> getObjectType: rawObject [
+
+	^ rawObject removeKey: self typeKey ifAbsent: nil
+]
+
 { #category : #accessing }
 FamixValueJavaJacksonImporter >> idKey [
 
@@ -62,6 +68,10 @@ FamixValueJavaJacksonImporter >> importClassReference: rawValue of: type [
 FamixValueJavaJacksonImporter >> importObjectAttribute: rawValue of: type named: name [
 
 	| attribute |
+	type isInterface ifTrue: [
+		Error signal:
+			'Cannot find attributes in interfaces. Signaled for attribute `'
+			, name , '` and interface `' , type name , '`.' ].
 	(attribute := type findAttributeNamed: name) ifNotNil: [ "Skip transient attributes."
 		attribute isTransient ifTrue: [ ^ nil ] ].
 	^ self
