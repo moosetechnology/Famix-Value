@@ -70,27 +70,6 @@ FamixValueOfType >> addValueInDictionary: anObject [
 	^ self valueInDictionaries add: anObject
 ]
 
-{ #category : #'ston persistence' }
-FamixValueOfType >> asJsonString [
-	"Currently does not work. Ideas:
-	- Find a way to serialize any object while handling circular dependencies.
-	- Use the json stored in the root value to read it into raw objects and traverse the path to this value."
-
-	self flag: #TODO.
-	^ self asNeoJSONObject asString
-]
-
-{ #category : #'ston persistence' }
-FamixValueOfType >> asNeoJSONObject [
-
-	self flag: #TODO. "see #asJsonString"
-	^ self typedEntity
-		  ifNotNil: [ "at root"
-			  NeoJSONObject fromString: (self cacheAt: #json ifAbsent: '{}') ]
-		  ifNil: [ "how to iterate until root?"
-			  NeoJSONObject fromString: (self cacheAt: #json ifAbsent: '{}') ]
-]
-
 { #category : #accessing }
 FamixValueOfType >> attributeInObjects [
 	"Relation named: #attributeInObjects type: #FamixValueOfObjectAttribute opposite: #value"

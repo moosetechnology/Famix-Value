@@ -186,49 +186,7 @@ FamixValue2FASTJavaVisitor >> makeHelperClass [
 							    expression:
 								    (model newNewExpression type:
 										     (model newClassTypeExpression typeName:
-												      (model newTypeName name: 'ObjectMapper')))) }).
-				  (model newMethodEntity
-					   typeParameters:
-						   { (model newTypeParameterExpression name: 'T') };
-					   type:
-						   (model newClassTypeExpression typeName:
-								    (model newTypeName name: 'T'));
-					   name: 'deserialize';
-					   parameters: {
-							   (model newParameter
-								    variable: (model newVariableExpression name: 'json');
-								    type: (model newClassTypeExpression typeName:
-											     (model newTypeName name: 'String'))).
-							   (model newParameter
-								    variable: (model newVariableExpression name: 'clazz');
-								    type: (model newClassTypeExpression
-										     typeName: (model newTypeName name: 'Class');
-										     arguments: { (model newClassTypeExpression typeName:
-													      (model newTypeName name: 'T')) })) };
-					   modifiers: {
-							   (model newModifier token: 'public').
-							   (model newModifier token: 'static') };
-					   statementBlock: (model newStatementBlock statements: {
-								    (model newTryCatchStatement
-									     try: (model newStatementBlock statements:
-												      { (model newReturnStatement expression:
-														       (model newMethodInvocation
-															        receiver: (model newIdentifier name: 'mapper');
-															        name: 'readValue';
-															        arguments: {
-																	        (model newVariableExpression name: 'json').
-																	        (model newVariableExpression name: 'clazz') })) });
-									     catches: { (model newCatchPartStatement
-											      catchedTypes:
-												      { (model newClassTypeExpression typeName:
-														       (model newTypeName name: 'IOException')) };
-											      body: (model newStatementBlock statements:
-														       { (model newExpressionStatement expression:
-																        (model newMethodInvocation
-																	         receiver: (model newIdentifier name: 'e');
-																	         name: 'printStackTrace')) });
-											      parameter: (model newVariableExpression name: 'e')) }).
-								    (model newReturnStatement expression: model newNullLiteral) })) }
+												      (model newTypeName name: 'ObjectMapper')))) }) }
 ]
 
 { #category : #ast }
@@ -450,20 +408,9 @@ FamixValue2FASTJavaVisitor >> visitObjectOfRegularType: object [
 
 { #category : #visiting }
 FamixValue2FASTJavaVisitor >> visitObjectStub: object [
+	"Previously tried to recreate stubs by deserializing their JSON representation, but getting a correct JSON string is a challenge."
 
-	self statementBlock addStatement: (self model newVarDeclStatement
-			 type: (object asFASTJavaTypeExpressionOn: self);
-			 addDeclarator: (self model newVariableDeclarator
-					  variable: (self makeVariableExpression: object);
-					  expression: (model newMethodInvocation
-							   name: 'deserialize';
-							   arguments: {
-									   (model newStringLiteral primitiveValue:
-											    object asJsonString).
-									   (model newClassProperty
-										    type: (object asFASTJavaTypeExpressionOn: self);
-										    fieldName: 'class') }));
-			 yourself)
+	self shouldBeImplemented
 ]
 
 { #category : #visiting }
