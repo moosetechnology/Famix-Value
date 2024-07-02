@@ -16,8 +16,7 @@ Class {
 		'markedForReflection',
 		'constructorCache',
 		'staticAttributesCache',
-		'objectExportStrategy',
-		'setterCache'
+		'objectExportStrategy'
 	],
 	#category : #'Famix-Value-Exporter'
 }
@@ -74,21 +73,16 @@ FamixValue2FASTJavaVisitor >> constructObject: object [
 FamixValue2FASTJavaVisitor >> filterAttributesToSet: attributes for: object [
 	"No need to set attributes that are set in the constructor."
 
-	^ (setterCache at: object type ifAbsentPut: [
-		   | famixAttributes |
-		   famixAttributes := attributes collect: [ :attribute |
-			                      attribute attribute ].
-		   constructorCache
-			   at: object type
-			   ifPresent: [ :constructor |
-				   constructorCache
-					   at: constructor
-					   ifPresent: [ :constructorAttributes |
-						   famixAttributes difference: constructorAttributes ]
-					   ifAbsent: [ famixAttributes ] ]
-			   ifAbsent: [ famixAttributes ] ]) ifNotEmpty: [ :famixAttributes |
-		  attributes select: [ :attribute |
-			  famixAttributes includes: attribute attribute ] ]
+	^ constructorCache
+		  at: object type
+		  ifPresent: [ :constructor |
+			  constructorCache
+				  at: constructor
+				  ifPresent: [ :constructorAttributes |
+					  attributes reject: [ :attribute |
+						  constructorAttributes includes: attribute attribute ] ]
+				  ifAbsent: [ attributes ] ]
+		  ifAbsent: [ attributes ]
 ]
 
 { #category : #private }
@@ -138,7 +132,6 @@ FamixValue2FASTJavaVisitor >> findStaticAttributeMatching: object [
 FamixValue2FASTJavaVisitor >> initialize [
 
 	constructorCache := IdentityDictionary new.
-	setterCache := IdentityDictionary new.
 	staticAttributesCache := IdentityDictionary new
 ]
 
