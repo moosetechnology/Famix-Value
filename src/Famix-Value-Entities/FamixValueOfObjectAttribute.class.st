@@ -78,11 +78,3 @@ FamixValueOfObjectAttribute >> value: anObject [
 	<generated>
 	value := anObject
 ]
-
-{ #category : #generate }
-FamixValueOfObjectAttribute >> varName [
-
-	^ self attribute
-		  ifNotNil: [ :attribute | attribute name ]
-		  ifNil: [ value varName ]
-]

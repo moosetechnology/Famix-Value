@@ -133,3 +133,11 @@ FamixValueHelperObjectExportStrategy >> makeSetterInvocationsFor: attributes on:
 					named: attribute varName ]
 			ifNil: [ visitor makeReflectionSetterInvocation: attribute ] ]
 ]
+
+{ #category : #ast }
+FamixValueHelperObjectExportStrategy >> makeVariableExpression: value on: visitor [
+	"Used when constructing an object to correctly name the argument variable.
+	For helpers, the var name is the same as the helper method parameter."
+
+	^ visitor model newVariableExpression name: value varName
+]

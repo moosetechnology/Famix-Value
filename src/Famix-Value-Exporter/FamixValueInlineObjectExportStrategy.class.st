@@ -11,3 +11,11 @@ FamixValueInlineObjectExportStrategy >> export: object on: visitor [
 	(visitor filterAttributesToSet: object relevantAttributes for: object)
 		do: [ :attribute | visitor visitObjectAttribute: attribute ]
 ]
+
+{ #category : #ast }
+FamixValueInlineObjectExportStrategy >> makeVariableExpression: value on: visitor [
+	"Used when constructing an object to correctly name the argument variable.
+	When inline, the visitor can handle naming the variable on its own."
+
+	^ visitor makeVariableExpression: value
+]

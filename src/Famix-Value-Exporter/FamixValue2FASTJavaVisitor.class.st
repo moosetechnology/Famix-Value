@@ -37,8 +37,10 @@ FamixValue2FASTJavaVisitor >> addAttributesFrom: object asArgumentsTo: newExpres
 						 object value
 							 detect: [ :objAttribute | "find the matching value attribute"
 								 objAttribute attribute == paramAttribute ]
-							 ifFound: [ :objAttribute |
-							 self makeVariableExpression: objAttribute value ]
+							 ifFound: [ :objAttribute | "dispatch for var naming context"
+								 objectExportStrategy
+									 makeVariableExpression: objAttribute value
+									 on: self ]
 							 ifNone: [ "the object does not have the attribute set"
 								 paramAttribute declaredType asFASTJavaDefaultValueOn:
 									 self model ] ]) ]
