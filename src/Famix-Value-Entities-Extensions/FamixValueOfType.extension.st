@@ -13,6 +13,21 @@ FamixValueOfType >> containsObject [
 ]
 
 { #category : #'*Famix-Value-Entities-Extensions' }
+FamixValueOfType >> isReferencedInLoop [
+
+	| count |
+	count := self referenceCount.
+	^ count > 1 or: [ self isRoot and: [ count = 1 ] ]
+]
+
+{ #category : #'*Famix-Value-Entities-Extensions' }
+FamixValueOfType >> isRoot [
+
+	^ self argumentInSpan isNotNil or: [
+		  self resultInSpan isNotNil or: [ self receiverInSpan isNotNil ] ]
+]
+
+{ #category : #'*Famix-Value-Entities-Extensions' }
 FamixValueOfType >> mooseNameOn: aStream [
 
 	self printTypeOn: aStream.

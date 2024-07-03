@@ -10,25 +10,36 @@ Class {
 	#category : #'Famix-Value-Exporter'
 }
 
+{ #category : #visiting }
+FamixValue2PharoVisitor >> addParenthesis: aNode [
+	"add parenthesis when the node as multiple references"
+
+	| receiver newNode |
+	receiver := RBAssignmentNode new
+		            variable: aNode variable;
+		            value: (aNode value messages at: 1) receiver.
+	newNode := aNode value.
+	(newNode messages at: 1) receiver: receiver.
+	^ newNode
+]
+
 { #category : #testing }
 FamixValue2PharoVisitor >> ensureVisited: value [
 
-	| node |
-	self varNameDict
-		at: value
-		ifPresent: [ :name | ^ RBVariableNode named: name ]
-		ifAbsentPut: [
-			node := value accept: self.
-			value referenceCount > 1
-				ifTrue: [
-					| name |
-					name := self varNameFor: value.
-					node := RBAssignmentNode
-						        variable: (RBVariableNode named: name)
-						        value: node.
-					name ]
-				ifFalse: [ nil ] ].
-	^ node
+	^ self varNameDict
+		  at: value
+		  ifPresent: [ :name | RBVariableNode named: name ]
+		  ifAbsent: [
+			  | name node |
+			  value isOfPrimitiveType ifFalse: [
+				  self varNameDict at: value put: (name := self varNameFor: value) ].
+			  node := value accept: self.
+			  value isReferencedInLoop
+				  ifTrue: [
+				  RBAssignmentNode
+					  variable: (RBVariableNode named: name)
+					  value: node ]
+				  ifFalse: [ node ] ]
 ]
 
 { #category : #ast }
@@ -80,7 +91,12 @@ FamixValue2PharoVisitor >> visitCollection: collection [
 	| collectionNode |
 	collectionNode := RBArrayNode statements:
 		                  (collection value collect: [ :element |
-			                   self ensureVisited: element value ]).
+			                   | newNode |
+			                   newNode := self ensureVisited: element value.
+			                   (element value isReferencedInLoop and: [
+				                    newNode isVariable not ])
+				                   ifTrue: [ newNode addParenthesisToVariable]
+				                   ifFalse: [ newNode ] ]).
 	^ collection type name = 'Array'
 		  ifTrue: [ collectionNode ]
 		  ifFalse: [
@@ -139,20 +155,25 @@ FamixValue2PharoVisitor >> visitObject: object [
 { #category : #visiting }
 FamixValue2PharoVisitor >> visitObjectAttribute: attribute [
 
+	| newNode |
 	attribute attribute ifNil: [ "ignore unknown attributes" ^ nil ].
-	^ (attribute object type findSetterOf: attribute attribute)
-		  ifNotNil: [ :setter |
-			  RBMessageNode
-				  receiver: RBVariableNode new
-				  selector: setter name
-				  arguments: { (self ensureVisited: attribute value) } ]
-		  ifNil: [ "Use reflectivity"
-			  RBMessageNode
-				  receiver: RBVariableNode new
-				  selector: #instVarNamed:put:
-				  arguments: {
-						  (RBVariableNode named: '#' , attribute attribute name).
-						  (self ensureVisited: attribute value) } ]
+	(attribute object type findSetterOf: attribute attribute)
+		ifNotNil: [ :setter |
+			newNode := RBMessageNode
+				           receiver: RBVariableNode new
+				           selector: setter name
+				           arguments: { (self ensureVisited: attribute value) } ]
+		ifNil: [ "Use reflectivity"
+			newNode := RBMessageNode
+				           receiver: RBVariableNode new
+				           selector: #instVarNamed:put:
+				           arguments: {
+						           (RBVariableNode named: '#' , attribute attribute name).
+						           (self ensureVisited: attribute value) } ].
+
+	attribute value isReferencedInLoop ifTrue: [
+		^ newNode addParenthesisToVariable].
+	^ newNode
 ]
 
 { #category : #visiting }
