@@ -1,13 +1,14 @@
 "
-A visitor for exporting a FamixValue model to the Pharo AST, see `RBEntity` and `RBNode`.
+A visitor for exporting a FamixValue model to the Pharo AST, see `RBNode`.
 
 Object attributes are initialized by finding the corresponding setters.
-Collections and Dictionaries are constructed with the `withAll:` class method.
+Collections are constructed using the `withAll:` class method.
+Dictionaries are constructed using the `newFrom:` class method.
 "
 Class {
 	#name : #FamixValue2PharoVisitor,
 	#superclass : #FamixValue2ASTVisitor,
-	#category : #'Famix-Value-Exporter'
+	#category : #'Famix-Value-Exporter-Visitors'
 }
 
 { #category : #visiting }

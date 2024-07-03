@@ -1,12 +1,12 @@
 "
-A visitor for exporting a FamixValue model to FASTJava.
+A visitor to export a FamixValue model to FASTJava.
 The generated code is a block statement with a variable declared for each value.
 
 Object attributes are initialized by finding the corresponding setters.
-Collections and Dictionaries are constructed with the `add(element)` and `put(key, value)` methods respectively.
+Collections and Dictionaries are constructed with the methods `add(element)` and `put(key, value)` respectively.
 
-When exporting a `FamixValueOfObjectAttribute`, if the setter for its `FamixTAttribute` cannot be found, they are set using the Java Reflection API.
-All attributes that fall in this category are added as `markedForReflection`.
+When exporting a `FamixValueOfObjectAttribute`, if the setter for its `FamixTAttribute` cannot be found, it is set using the Java Reflection API.
+All attributes that fall into this category are added as `markedForReflection`.
 "
 Class {
 	#name : #FamixValue2FASTJavaVisitor,
@@ -16,10 +16,9 @@ Class {
 		'markedForReflection',
 		'constructorCache',
 		'staticAttributesCache',
-		'objectExportStrategy',
-		'setterCache'
+		'objectExportStrategy'
 	],
-	#category : #'Famix-Value-Exporter'
+	#category : #'Famix-Value-Exporter-Visitors'
 }
 
 { #category : #private }
@@ -37,8 +36,10 @@ FamixValue2FASTJavaVisitor >> addAttributesFrom: object asArgumentsTo: newExpres
 						 object value
 							 detect: [ :objAttribute | "find the matching value attribute"
 								 objAttribute attribute == paramAttribute ]
-							 ifFound: [ :objAttribute |
-							 self makeVariableExpression: objAttribute value ]
+							 ifFound: [ :objAttribute | "dispatch for var naming context"
+								 objectExportStrategy
+									 makeVariableExpression: objAttribute value
+									 on: self ]
 							 ifNone: [ "the object does not have the attribute set"
 								 paramAttribute declaredType asFASTJavaDefaultValueOn:
 									 self model ] ]) ]
@@ -72,21 +73,16 @@ FamixValue2FASTJavaVisitor >> constructObject: object [
 FamixValue2FASTJavaVisitor >> filterAttributesToSet: attributes for: object [
 	"No need to set attributes that are set in the constructor."
 
-	^ (setterCache at: object type ifAbsentPut: [
-		   | famixAttributes |
-		   famixAttributes := attributes collect: [ :attribute |
-			                      attribute attribute ].
-		   constructorCache
-			   at: object type
-			   ifPresent: [ :constructor |
-				   constructorCache
-					   at: constructor
-					   ifPresent: [ :constructorAttributes |
-						   famixAttributes difference: constructorAttributes ]
-					   ifAbsent: [ famixAttributes ] ]
-			   ifAbsent: [ famixAttributes ] ]) ifNotEmpty: [ :famixAttributes |
-		  attributes select: [ :attribute |
-			  famixAttributes includes: attribute attribute ] ]
+	^ constructorCache
+		  at: object type
+		  ifPresent: [ :constructor |
+			  constructorCache
+				  at: constructor
+				  ifPresent: [ :constructorAttributes |
+					  attributes reject: [ :attribute |
+						  constructorAttributes includes: attribute attribute ] ]
+				  ifAbsent: [ attributes ] ]
+		  ifAbsent: [ attributes ]
 ]
 
 { #category : #private }
@@ -136,7 +132,6 @@ FamixValue2FASTJavaVisitor >> findStaticAttributeMatching: object [
 FamixValue2FASTJavaVisitor >> initialize [
 
 	constructorCache := IdentityDictionary new.
-	setterCache := IdentityDictionary new.
 	staticAttributesCache := IdentityDictionary new
 ]
 
@@ -191,49 +186,7 @@ FamixValue2FASTJavaVisitor >> makeHelperClass [
 							    expression:
 								    (model newNewExpression type:
 										     (model newClassTypeExpression typeName:
-												      (model newTypeName name: 'ObjectMapper')))) }).
-				  (model newMethodEntity
-					   typeParameters:
-						   { (model newTypeParameterExpression name: 'T') };
-					   type:
-						   (model newClassTypeExpression typeName:
-								    (model newTypeName name: 'T'));
-					   name: 'deserialize';
-					   parameters: {
-							   (model newParameter
-								    variable: (model newVariableExpression name: 'json');
-								    type: (model newClassTypeExpression typeName:
-											     (model newTypeName name: 'String'))).
-							   (model newParameter
-								    variable: (model newVariableExpression name: 'clazz');
-								    type: (model newClassTypeExpression
-										     typeName: (model newTypeName name: 'Class');
-										     arguments: { (model newClassTypeExpression typeName:
-													      (model newTypeName name: 'T')) })) };
-					   modifiers: {
-							   (model newModifier token: 'public').
-							   (model newModifier token: 'static') };
-					   statementBlock: (model newStatementBlock statements: {
-								    (model newTryCatchStatement
-									     try: (model newStatementBlock statements:
-												      { (model newReturnStatement expression:
-														       (model newMethodInvocation
-															        receiver: (model newIdentifier name: 'mapper');
-															        name: 'readValue';
-															        arguments: {
-																	        (model newVariableExpression name: 'json').
-																	        (model newVariableExpression name: 'clazz') })) });
-									     catches: { (model newCatchPartStatement
-											      catchedTypes:
-												      { (model newClassTypeExpression typeName:
-														       (model newTypeName name: 'IOException')) };
-											      body: (model newStatementBlock statements:
-														       { (model newExpressionStatement expression:
-																        (model newMethodInvocation
-																	         receiver: (model newIdentifier name: 'e');
-																	         name: 'printStackTrace')) });
-											      parameter: (model newVariableExpression name: 'e')) }).
-								    (model newReturnStatement expression: model newNullLiteral) })) }
+												      (model newTypeName name: 'ObjectMapper')))) }) }
 ]
 
 { #category : #ast }
@@ -455,20 +408,9 @@ FamixValue2FASTJavaVisitor >> visitObjectOfRegularType: object [
 
 { #category : #visiting }
 FamixValue2FASTJavaVisitor >> visitObjectStub: object [
+	"Previously tried to recreate stubs by deserializing their JSON representation, but getting a correct JSON string is a challenge."
 
-	self statementBlock addStatement: (self model newVarDeclStatement
-			 type: (object asFASTJavaTypeExpressionOn: self);
-			 addDeclarator: (self model newVariableDeclarator
-					  variable: (self makeVariableExpression: object);
-					  expression: (model newMethodInvocation
-							   name: 'deserialize';
-							   arguments: {
-									   (model newStringLiteral primitiveValue:
-											    object asJsonString).
-									   (model newClassProperty
-										    type: (object asFASTJavaTypeExpressionOn: self);
-										    fieldName: 'class') }));
-			 yourself)
+	self shouldBeImplemented
 ]
 
 { #category : #visiting }

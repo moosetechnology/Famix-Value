@@ -9,3 +9,11 @@ FamixValueOfObjectAttribute >> mooseNameOn: aStream [
 		 ifNil: [ '<attribute>' ]) << $=.
 	value printValueOn: aStream
 ]
+
+{ #category : #'*Famix-Value-Entities-Extensions' }
+FamixValueOfObjectAttribute >> varName [
+
+	^ self attribute
+		  ifNotNil: [ :attribute | attribute name ]
+		  ifNil: [ value varName ]
+]

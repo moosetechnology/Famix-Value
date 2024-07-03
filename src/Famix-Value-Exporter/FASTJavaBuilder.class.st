@@ -1,10 +1,13 @@
+"
+I am used to handle Java type references and imports.
+"
 Class {
 	#name : #FASTJavaBuilder,
 	#superclass : #FASTBuilder,
 	#instVars : [
 		'typeNameDictionary'
 	],
-	#category : #'Famix-Value-Exporter'
+	#category : #'Famix-Value-Exporter-Helpers'
 }
 
 { #category : #ast }

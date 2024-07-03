@@ -1,3 +1,7 @@
+"
+I generate the code to recreate objects in helper functions.
+For each object, a dedicated function is generated that takes no arguments and returns the recreated object.
+"
 Class {
 	#name : #FamixValueHelperObjectExportStrategy,
 	#superclass : #FamixValueAbstractObjectExportStrategy,
@@ -132,4 +136,12 @@ FamixValueHelperObjectExportStrategy >> makeSetterInvocationsFor: attributes on:
 					for: attribute
 					named: attribute varName ]
 			ifNil: [ visitor makeReflectionSetterInvocation: attribute ] ]
+]
+
+{ #category : #ast }
+FamixValueHelperObjectExportStrategy >> makeVariableExpression: value on: visitor [
+	"Used when constructing an object to correctly name the argument variable.
+	For helpers, the var name is the same as the helper method parameter."
+
+	^ visitor model newVariableExpression name: value varName
 ]

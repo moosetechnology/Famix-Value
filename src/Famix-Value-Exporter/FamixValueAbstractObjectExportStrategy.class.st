@@ -1,3 +1,7 @@
+"
+I am a strategy for exporting objects used by the `FamixValue2ASTVisitor` hierarchy of classes.
+Objects can be complex to recreate due to deep nesting and circular dependencies, resulting in a lot of code. My subclasses define where that code goes.
+"
 Class {
 	#name : #FamixValueAbstractObjectExportStrategy,
 	#superclass : #Object,
