@@ -23,7 +23,8 @@ Class {
 		'tType',
 		'collectionElement',
 		'objectAttribute',
-		'classReference'
+		'classReference',
+		'closure'
 	],
 	#category : #'Famix-Value-Generator'
 }
@@ -79,7 +80,6 @@ FamixValueGenerator >> defineClasses [
 	dictionary := (builder
 		               newClassNamed: #OfDictionary
 		               comment: 'A value of a dictionary type.') withTesting.
-
 	dictionaryAssociation := builder
 		                         newClassNamed: #OfDictionaryAssociation
 		                         comment:
@@ -87,6 +87,9 @@ FamixValueGenerator >> defineClasses [
 	classReference := builder
 		                  newClassNamed: #OfClassReference
 		                  comment: 'A reference to a class.'.
+	closure := builder
+		           newClassNamed: #OfClosure
+		           comment: 'A lexical closure.'.
 	ofUnknownType := (builder
 		                  newClassNamed: #OfUnknownType
 		                  comment: 'A value of an unknwon type.')
@@ -100,14 +103,16 @@ FamixValueGenerator >> defineClasses [
 FamixValueGenerator >> defineHierarchy [
 
 	object --|> value.
+	closure --|> value.
 	primitive --|> value.
 	enumValue --|> value.
 	collection --|> value.
 	dictionary --|> value.
-	classReference --|> value.
 	ofUnknownType --|> value.
+	classReference --|> value.
 	dictionaryAssociation --|> value.
 
+	closure --|> tWithValueProperty. "for the code"
 	primitive --|> tWithValueProperty.
 	ofUnknownType --|> tWithValueProperty.
 
@@ -154,7 +159,9 @@ FamixValueGenerator >> defineRelations [
 
 	(classReference property: #value)
 	*- ((self remoteTrait: #TClass withPrefix: #Famix) property:
-			 #valueReferences)
+			 #valueReferences).
+
+	(closure property: #value) *- (value property: #closure)
 ]
 
 { #category : #definition }

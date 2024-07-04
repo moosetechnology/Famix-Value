@@ -8,6 +8,7 @@ Abstract superclass of all ValueOf_Type_ entities.
 | Relation | Origin | Opposite | Type | Comment |
 |---|
 | `attributeInObjects` | `FamixValueOfType` | `value` | `FamixValueOfObjectAttribute` | |
+| `closure` | `FamixValueOfType` | `value` | `FamixValueOfClosure` | |
 | `elementInCollections` | `FamixValueOfType` | `value` | `FamixValueOfCollectionElement` | |
 | `keyInDictionaries` | `FamixValueOfType` | `key` | `FamixValueOfDictionaryAssociation` | |
 | `type` | `FamixValueOfType` | `values` | `FamixTType` | |
@@ -22,6 +23,7 @@ Class {
 	#superclass : #FamixValueEntity,
 	#instVars : [
 		'#attributeInObjects => FMMany type: #FamixValueOfObjectAttribute opposite: #value',
+		'#closure => FMMany type: #FamixValueOfClosure opposite: #value',
 		'#elementInCollections => FMMany type: #FamixValueOfCollectionElement opposite: #value',
 		'#keyInDictionaries => FMMany type: #FamixValueOfDictionaryAssociation opposite: #key',
 		'#valueInDictionaries => FMMany type: #FamixValueOfDictionaryAssociation opposite: #value'
@@ -50,6 +52,12 @@ FamixValueOfType class >> isAbstract [
 FamixValueOfType >> addAttributeInObject: anObject [
 	<generated>
 	^ self attributeInObjects add: anObject
+]
+
+{ #category : #adding }
+FamixValueOfType >> addClosure: anObject [
+	<generated>
+	^ self closure add: anObject
 ]
 
 { #category : #adding }
@@ -84,6 +92,22 @@ FamixValueOfType >> attributeInObjects: anObject [
 
 	<generated>
 	attributeInObjects value: anObject
+]
+
+{ #category : #accessing }
+FamixValueOfType >> closure [
+	"Relation named: #closure type: #FamixValueOfClosure opposite: #value"
+
+	<generated>
+	<derived>
+	^ closure
+]
+
+{ #category : #accessing }
+FamixValueOfType >> closure: anObject [
+
+	<generated>
+	closure value: anObject
 ]
 
 { #category : #accessing }

@@ -26,6 +26,13 @@ FamixValueTEntityCreator >> newOfClassReference [
 ]
 
 { #category : #'entity creation' }
+FamixValueTEntityCreator >> newOfClosure [
+
+	<generated>
+	^ self add: FamixValueOfClosure new
+]
+
+{ #category : #'entity creation' }
 FamixValueTEntityCreator >> newOfCollection [
 
 	<generated>
