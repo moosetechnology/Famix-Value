@@ -24,7 +24,8 @@ Class {
 		'collectionElement',
 		'objectAttribute',
 		'classReference',
-		'closure'
+		'closure',
+		'closureVariable'
 	],
 	#category : #'Famix-Value-Generator'
 }
@@ -90,6 +91,10 @@ FamixValueGenerator >> defineClasses [
 	closure := builder
 		           newClassNamed: #OfClosure
 		           comment: 'A lexical closure.'.
+	closureVariable := builder
+		                   newClassNamed: #OfClosureVariable
+		                   comment:
+		                   'A variable binding in a lexical closure.'.
 	ofUnknownType := (builder
 		                  newClassNamed: #OfUnknownType
 		                  comment: 'A value of an unknwon type.')
@@ -112,7 +117,6 @@ FamixValueGenerator >> defineHierarchy [
 	classReference --|> value.
 	dictionaryAssociation --|> value.
 
-	closure --|> tWithValueProperty. "for the code"
 	primitive --|> tWithValueProperty.
 	ofUnknownType --|> tWithValueProperty.
 
@@ -123,7 +127,12 @@ FamixValueGenerator >> defineHierarchy [
 FamixValueGenerator >> defineProperties [
 
 	(tWithValueProperty property: #value type: #Object) comment:
-		'Value data represented as a native Smalltalk object.'
+		'Value data represented as a native Smalltalk object.'.
+
+	(closure property: #sourceCode type: #String) comment:
+		'The source code of the lexical closure.'.
+	(closureVariable property: #name type: #String) comment:
+		'Name of the variable bound to the closure.'
 ]
 
 { #category : #definition }
@@ -161,7 +170,10 @@ FamixValueGenerator >> defineRelations [
 	*- ((self remoteTrait: #TClass withPrefix: #Famix) property:
 			 #valueReferences).
 
-	(closure property: #value) *- (value property: #closure)
+	(closure property: #variables)
+	-* (closureVariable property: #closure).
+	(closureVariable property: #value)
+	*- (value property: #variableInClosures)
 ]
 
 { #category : #definition }

@@ -1,6 +1,12 @@
 Extension { #name : #FamixValueUnknownType }
 
 { #category : #'*Famix-Value-Entities-Extensions' }
+FamixValueUnknownType >> acceptValueVisitor: visitor forObject: object [
+
+	self error: 'Exporting an unknown type is not (yet?) supported.'
+]
+
+{ #category : #'*Famix-Value-Entities-Extensions' }
 FamixValueUnknownType >> baseName [
 
 	^ name

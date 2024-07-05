@@ -33,6 +33,13 @@ FamixValueTEntityCreator >> newOfClosure [
 ]
 
 { #category : #'entity creation' }
+FamixValueTEntityCreator >> newOfClosureVariable [
+
+	<generated>
+	^ self add: FamixValueOfClosureVariable new
+]
+
+{ #category : #'entity creation' }
 FamixValueTEntityCreator >> newOfCollection [
 
 	<generated>

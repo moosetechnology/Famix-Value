@@ -7,7 +7,7 @@ A lexical closure.
 ### Other
 | Relation | Origin | Opposite | Type | Comment |
 |---|
-| `value` | `FamixValueOfClosure` | `closure` | `FamixValueOfType` | |
+| `variables` | `FamixValueOfClosure` | `closure` | `FamixValueOfClosureVariable` | |
 
 
 ## Properties
@@ -15,16 +15,15 @@ A lexical closure.
 
 | Name | Type | Default value | Comment |
 |---|
-| `value` | `Object` | nil | Value data represented as a native Smalltalk object.|
+| `sourceCode` | `String` | nil | The source code of the lexical closure.|
 
 "
 Class {
 	#name : #FamixValueOfClosure,
 	#superclass : #FamixValueOfType,
-	#traits : 'FamixValueTWithValueProperty',
-	#classTraits : 'FamixValueTWithValueProperty classTrait',
 	#instVars : [
-		'#value => FMOne type: #FamixValueOfType opposite: #closure'
+		'#sourceCode => FMProperty',
+		'#variables => FMMany type: #FamixValueOfClosureVariable opposite: #closure'
 	],
 	#category : #'Famix-Value-Entities-Entities'
 }
@@ -38,17 +37,39 @@ FamixValueOfClosure class >> annotation [
 	^ self
 ]
 
-{ #category : #accessing }
-FamixValueOfClosure >> value [
-	"Relation named: #value type: #FamixValueOfType opposite: #closure"
-
+{ #category : #adding }
+FamixValueOfClosure >> addVariable: anObject [
 	<generated>
-	^ value
+	^ self variables add: anObject
 ]
 
 { #category : #accessing }
-FamixValueOfClosure >> value: anObject [
+FamixValueOfClosure >> sourceCode [
+
+	<FMProperty: #sourceCode type: #String>
+	<generated>
+	<FMComment: 'The source code of the lexical closure.'>
+	^ sourceCode
+]
+
+{ #category : #accessing }
+FamixValueOfClosure >> sourceCode: anObject [
+	<generated>
+	sourceCode := anObject
+]
+
+{ #category : #accessing }
+FamixValueOfClosure >> variables [
+	"Relation named: #variables type: #FamixValueOfClosureVariable opposite: #closure"
 
 	<generated>
-	value := anObject
+	<derived>
+	^ variables
+]
+
+{ #category : #accessing }
+FamixValueOfClosure >> variables: anObject [
+
+	<generated>
+	variables value: anObject
 ]

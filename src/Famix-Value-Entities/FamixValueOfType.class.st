@@ -8,12 +8,12 @@ Abstract superclass of all ValueOf_Type_ entities.
 | Relation | Origin | Opposite | Type | Comment |
 |---|
 | `attributeInObjects` | `FamixValueOfType` | `value` | `FamixValueOfObjectAttribute` | |
-| `closure` | `FamixValueOfType` | `value` | `FamixValueOfClosure` | |
 | `elementInCollections` | `FamixValueOfType` | `value` | `FamixValueOfCollectionElement` | |
 | `keyInDictionaries` | `FamixValueOfType` | `key` | `FamixValueOfDictionaryAssociation` | |
 | `type` | `FamixValueOfType` | `values` | `FamixTType` | |
 | `typedEntity` | `FamixValueOfType` | `values` | `FamixTTypedEntity` | |
 | `valueInDictionaries` | `FamixValueOfType` | `value` | `FamixValueOfDictionaryAssociation` | |
+| `variableInClosures` | `FamixValueOfType` | `value` | `FamixValueOfClosureVariable` | |
 
 
 
@@ -23,10 +23,10 @@ Class {
 	#superclass : #FamixValueEntity,
 	#instVars : [
 		'#attributeInObjects => FMMany type: #FamixValueOfObjectAttribute opposite: #value',
-		'#closure => FMMany type: #FamixValueOfClosure opposite: #value',
 		'#elementInCollections => FMMany type: #FamixValueOfCollectionElement opposite: #value',
 		'#keyInDictionaries => FMMany type: #FamixValueOfDictionaryAssociation opposite: #key',
-		'#valueInDictionaries => FMMany type: #FamixValueOfDictionaryAssociation opposite: #value'
+		'#valueInDictionaries => FMMany type: #FamixValueOfDictionaryAssociation opposite: #value',
+		'#variableInClosures => FMMany type: #FamixValueOfClosureVariable opposite: #value'
 	],
 	#category : #'Famix-Value-Entities-Entities'
 }
@@ -55,12 +55,6 @@ FamixValueOfType >> addAttributeInObject: anObject [
 ]
 
 { #category : #adding }
-FamixValueOfType >> addClosure: anObject [
-	<generated>
-	^ self closure add: anObject
-]
-
-{ #category : #adding }
 FamixValueOfType >> addElementInCollection: anObject [
 	<generated>
 	^ self elementInCollections add: anObject
@@ -78,6 +72,12 @@ FamixValueOfType >> addValueInDictionary: anObject [
 	^ self valueInDictionaries add: anObject
 ]
 
+{ #category : #adding }
+FamixValueOfType >> addVariableInClosure: anObject [
+	<generated>
+	^ self variableInClosures add: anObject
+]
+
 { #category : #accessing }
 FamixValueOfType >> attributeInObjects [
 	"Relation named: #attributeInObjects type: #FamixValueOfObjectAttribute opposite: #value"
@@ -92,22 +92,6 @@ FamixValueOfType >> attributeInObjects: anObject [
 
 	<generated>
 	attributeInObjects value: anObject
-]
-
-{ #category : #accessing }
-FamixValueOfType >> closure [
-	"Relation named: #closure type: #FamixValueOfClosure opposite: #value"
-
-	<generated>
-	<derived>
-	^ closure
-]
-
-{ #category : #accessing }
-FamixValueOfType >> closure: anObject [
-
-	<generated>
-	closure value: anObject
 ]
 
 { #category : #accessing }
@@ -195,4 +179,20 @@ FamixValueOfType >> valueInDictionaries: anObject [
 
 	<generated>
 	valueInDictionaries value: anObject
+]
+
+{ #category : #accessing }
+FamixValueOfType >> variableInClosures [
+	"Relation named: #variableInClosures type: #FamixValueOfClosureVariable opposite: #value"
+
+	<generated>
+	<derived>
+	^ variableInClosures
+]
+
+{ #category : #accessing }
+FamixValueOfType >> variableInClosures: anObject [
+
+	<generated>
+	variableInClosures value: anObject
 ]
