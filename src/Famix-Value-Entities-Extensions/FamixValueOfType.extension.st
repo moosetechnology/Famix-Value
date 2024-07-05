@@ -62,18 +62,6 @@ FamixValueOfType >> referenceCount [
 ]
 
 { #category : #'*Famix-Value-Entities-Extensions' }
-FamixValueOfType >> value [
-
-	self subclassResponsibility
-]
-
-{ #category : #'*Famix-Value-Entities-Extensions' }
-FamixValueOfType >> value: anObject [
-
-	self subclassResponsibility
-]
-
-{ #category : #'*Famix-Value-Entities-Extensions' }
 FamixValueOfType >> varName [
 	"Basic variable name of a value."
 
