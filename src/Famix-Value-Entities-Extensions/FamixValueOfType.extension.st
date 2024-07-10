@@ -59,6 +59,7 @@ FamixValueOfType >> referenceCount [
 
 	^ attributeInObjects size + elementInCollections size
 	  + keyInDictionaries size + valueInDictionaries size
+	  + variableInClosures size
 ]
 
 { #category : #'*Famix-Value-Entities-Extensions' }

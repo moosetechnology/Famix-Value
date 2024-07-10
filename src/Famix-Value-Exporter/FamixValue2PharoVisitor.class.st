@@ -32,8 +32,9 @@ FamixValue2PharoVisitor >> ensureVisited: value [
 		  ifPresent: [ :name | RBVariableNode named: name ]
 		  ifAbsent: [
 			  | name node |
+			  name := self varNameFor: value.
 			  value isOfPrimitiveType ifFalse: [
-				  self varNameDict at: value put: (name := self varNameFor: value) ].
+				  self varNameDict at: value put: name ].
 			  node := value accept: self.
 			  value isReferencedInLoop
 				  ifTrue: [
@@ -70,20 +71,17 @@ FamixValue2PharoVisitor >> visitClassReference: aFamixValueOfClassReference [
 { #category : #visiting }
 FamixValue2PharoVisitor >> visitClosure: object [
 
-	| objectNode attributeNodes |
-	object value detect: [ :a | a attribute isNil ].
-	objectNode := RBMessageNode
-		              receiver: (RBVariableNode named: object type name)
-		              selector: #new.
-	attributeNodes := (object value
-		                   collect: [ :attribute |
-		                   self visitObjectAttribute: attribute ]
-		                   as: OrderedCollection) reject: #isNil.
-	attributeNodes ifEmpty: [ ^ objectNode ].
-	attributeNodes first receiver: objectNode.
-	attributeNodes add:
-		(RBMessageNode receiver: RBVariableNode new selector: #yourself).
-	^ RBCascadeNode messages: attributeNodes
+	object variables do: [ :var |
+		| visitedVar |
+		visitedVar := self ensureVisited: var value.
+		statementBlock addNodeFirst: (RBAssignmentNode
+				 variable: (RBVariableNode named: var name)
+				 value: visitedVar) ].
+	^ [ RBParser parseExpression: object sourceCode ]
+		  on: SyntaxErrorNotification
+		  do: [ :error | "TODO: fix reflective opperation on block when metalink is installed"
+			  Transcript crShow: error description.
+			  error pass ]
 ]
 
 { #category : #visiting }
@@ -95,8 +93,9 @@ FamixValue2PharoVisitor >> visitCollection: collection [
 			                   | newNode |
 			                   newNode := self ensureVisited: element value.
 			                   (element value isReferencedInLoop and: [
-				                    newNode isVariable not ])
-				                   ifTrue: [ newNode addParenthesisToVariable]
+				                    newNode isVariable not and: [
+					                    newNode value isLiteralNode not ] ])
+				                   ifTrue: [ newNode addParenthesisToVariable ]
 				                   ifFalse: [ newNode ] ]).
 	^ collection type name = 'Array'
 		  ifTrue: [ collectionNode ]

@@ -1,6 +1,12 @@
 Extension { #name : #FamixStMethod }
 
 { #category : #'*Famix-Value-Exporter' }
+FamixStMethod >> isSetterLax [
+
+	^ self isSetter
+]
+
+{ #category : #'*Famix-Value-Exporter' }
 FamixStMethod >> varName [
 
 	| varName |

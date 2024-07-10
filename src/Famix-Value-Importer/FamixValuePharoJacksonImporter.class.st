@@ -5,7 +5,8 @@ Class {
 		'typeKey',
 		'idKey',
 		'refKey',
-		'specialTypes'
+		'specialTypes',
+		'closureSources'
 	],
 	#category : #'Famix-Value-Importer'
 }
@@ -87,16 +88,31 @@ FamixValuePharoJacksonImporter >> importClassReference: rawValue of: type [
 { #category : #importing }
 FamixValuePharoJacksonImporter >> importClosure: value of: type [
 
-	self flag: #TODO. "handle FullBlockClosure, add FamixValueOfClosure entity with `variables` relation to FamixValueOfType"
-	^ self model newOfPrimitiveType
-		  value: nil;
-		  type: type
+	| closure compiledBlock source |
+	compiledBlock := value at: 'compiledBlock'.
+	source := compiledBlock
+		          at: '@ref'
+		          ifPresent: [ :id | closureSources at: id ]
+		          ifAbsent: [
+			          closureSources
+				          at: (self getObjectIdentity: compiledBlock)
+				          put: (compiledBlock at: 'source') ].
+	closure := self model newOfClosure
+		           type: type;
+		           sourceCode: source.
+	value at: 'vars' ifPresent: [ :vars |
+		vars associationsDo: [ :assoc |
+			closure addVariable: (self model newOfClosureVariable
+					 name: assoc key;
+					 value: (self importValue: assoc value)) ] ].
+	^ closure
 ]
 
 { #category : #importing }
 FamixValuePharoJacksonImporter >> importCollection: rawValue of: type [
 
 	| collection |
+	type name = 'Array2D' ifTrue: [ self halt ].
 	collection := self model newOfCollection type: type.
 	objectDict at: (self getObjectIdentity: rawValue) put: collection.
 	(rawValue at: '@') do: [ :rawElement |
@@ -139,6 +155,14 @@ FamixValuePharoJacksonImporter >> importSymbol: rawObject of: type [
 FamixValuePharoJacksonImporter >> importValue: rawValue [
 
 	^ rawValue asPharoJacksonValueOn: self
+]
+
+{ #category : #initialization }
+FamixValuePharoJacksonImporter >> initialize [
+
+	super initialize.
+
+	closureSources := Dictionary new
 ]
 
 { #category : #importing }
@@ -184,6 +208,11 @@ FamixValuePharoJacksonImporter >> specialTypes [
 		  specialTypes
 			  at: 'Set'
 			  put: [ :value :type | self importCollection: value of: type ].
+			  specialTypes
+			  at: 'ConstantBlockClosure'
+			  put: [ :value :type | self importClosure: value of: type ].  specialTypes
+			  at: 'CleanBlockClosure'
+			  put: [ :value :type | self importClosure: value of: type ].
 		  specialTypes
 			  at: 'FullBlockClosure'
 			  put: [ :value :type | self importClosure: value of: type ].
