@@ -8,6 +8,9 @@ Dictionaries are constructed using the `newFrom:` class method.
 Class {
 	#name : #FamixValue2PharoVisitor,
 	#superclass : #FamixValue2ASTVisitor,
+	#instVars : [
+		'definedValues'
+	],
 	#category : #'Famix-Value-Exporter-Visitors'
 }
 
@@ -27,21 +30,47 @@ FamixValue2PharoVisitor >> addParenthesis: aNode [
 { #category : #testing }
 FamixValue2PharoVisitor >> ensureVisited: value [
 
+	value isOfPrimitiveType ifTrue: [ ^ value accept: self ].
 	^ self varNameDict
 		  at: value
-		  ifPresent: [ :name | RBVariableNode named: name ]
+		  ifPresent: [ :name |
+			  | varName |
+			  varName := RBVariableNode named: name.
+			  (definedValues includes: value)
+				  ifTrue: [ varName ]
+				  ifFalse: [
+					  definedValues add: value.
+					  RBAssignmentNode
+						  variable: varName
+						  value: value asPharoInitializationAST ] ]
 		  ifAbsent: [
 			  | name node |
 			  name := self varNameFor: value.
-			  value isOfPrimitiveType ifFalse: [
-				  self varNameDict at: value put: name ].
 			  node := value accept: self.
 			  value isReferencedInLoop
 				  ifTrue: [
-				  RBAssignmentNode
-					  variable: (RBVariableNode named: name)
-					  value: node ]
+					  (node isCascade and: [
+						   node messages first receiver isAssignment not ])
+						  ifTrue: [ "add parenthesis"
+							  | receiver |
+							  receiver := node messages first receiver.
+							  node messages first receiver: (RBAssignmentNode
+									   variable: (RBVariableNode named: name)
+									   value: receiver).
+							  node ]
+						  ifFalse: [
+						  RBAssignmentNode
+							  variable: (RBVariableNode named: name)
+							  value: node ] ]
 				  ifFalse: [ node ] ]
+]
+
+{ #category : #initialization }
+FamixValue2PharoVisitor >> initialize [
+
+	super initialize.
+
+	definedValues := IdentitySet new
 ]
 
 { #category : #ast }
@@ -72,11 +101,24 @@ FamixValue2PharoVisitor >> visitClassReference: aFamixValueOfClassReference [
 FamixValue2PharoVisitor >> visitClosure: object [
 
 	object variables do: [ :var |
-		| visitedVar |
-		visitedVar := self ensureVisited: var value.
+		| varNode value newNode |
+		value := var value.
+		newNode := self ensureVisited: value.
+
+		(value isOfObject or: [
+			 value isOfCollection or: [ value isOfDictionary ] ])
+			ifTrue: [
+				| name |
+				name := self varNameFor: value.
+				self statementBlock addNode: (RBAssignmentNode
+						 variable: (RBVariableNode named: name)
+						 value: newNode).
+				varNode := RBVariableNode named: name ]
+			ifFalse: [ varNode := newNode ].
+
 		statementBlock addNodeFirst: (RBAssignmentNode
 				 variable: (RBVariableNode named: var name)
-				 value: visitedVar) ].
+				 value: varNode) ].
 	^ [ RBParser parseExpression: object sourceCode ]
 		  on: SyntaxErrorNotification
 		  do: [ :error | "TODO: fix reflective opperation on block when metalink is installed"
@@ -90,13 +132,27 @@ FamixValue2PharoVisitor >> visitCollection: collection [
 	| collectionNode |
 	collectionNode := RBArrayNode statements:
 		                  (collection value collect: [ :element |
-			                   | newNode |
-			                   newNode := self ensureVisited: element value.
-			                   (element value isReferencedInLoop and: [
-				                    newNode isVariable not and: [
-					                    newNode value isLiteralNode not ] ])
-				                   ifTrue: [ newNode addParenthesisToVariable ]
-				                   ifFalse: [ newNode ] ]).
+			                   | newNode elementNode value |
+			                   value := element value.
+			                   newNode := self ensureVisited: value.
+			                   (value isOfObject or: [
+				                    value isOfCollection or: [
+					                    value isOfDictionary ] ])
+				                   ifTrue: [
+					                   | name |
+					                   name := self varNameFor: value.
+					                   self statementBlock addNode:
+						                   (RBAssignmentNode
+							                    variable: (RBVariableNode named: name)
+							                    value: newNode).
+					                   elementNode := RBVariableNode named: name ]
+				                   ifFalse: [ elementNode := newNode ].
+			                   (value isReferencedInLoop and: [
+				                    elementNode isAssignment and: [
+					                    elementNode isVariable not and: [
+						                    elementNode value isLiteralNode not ] ] ])
+				                   ifTrue: [ elementNode addParenthesisToVariable ]
+				                   ifFalse: [ elementNode ] ]).
 	^ collection type name = 'Array'
 		  ifTrue: [ collectionNode ]
 		  ifFalse: [
@@ -120,10 +176,37 @@ FamixValue2PharoVisitor >> visitDictionary: dictionary [
 { #category : #visiting }
 FamixValue2PharoVisitor >> visitDictionaryAssociation: association [
 
+	| key value keyNode valueNode newNode |
+	key := association key.
+	value := association value.
+
+	newNode := self ensureVisited: key.
+	(key isOfObject or: [ key isOfCollection or: [ key isOfDictionary ] ])
+		ifTrue: [
+			| name |
+			name := self varNameFor: value.
+			self statementBlock addNode: (RBAssignmentNode
+					 variable: (RBVariableNode named: name)
+					 value: newNode).
+			keyNode := RBVariableNode named: name ]
+		ifFalse: [ keyNode := newNode ].
+
+	newNode := self ensureVisited: value.
+	(value isOfObject or: [
+		 value isOfCollection or: [ value isOfDictionary ] ])
+		ifTrue: [
+			| name |
+			name := self varNameFor: value.
+			self statementBlock addNode: (RBAssignmentNode
+					 variable: (RBVariableNode named: name)
+					 value: newNode).
+			valueNode := RBVariableNode named: name ]
+		ifFalse: [ valueNode := newNode ].
+
 	^ RBMessageNode
-		  receiver: (self ensureVisited: association key)
+		  receiver: keyNode
 		  selector: #'->'
-		  arguments: { (self ensureVisited: association value) }
+		  arguments: { valueNode }
 ]
 
 { #category : #visiting }
@@ -136,11 +219,13 @@ FamixValue2PharoVisitor >> visitEnumValue: enumValue [
 FamixValue2PharoVisitor >> visitObject: object [
 
 	| objectNode attributeNodes |
-	object type name = 'FullBlockClosure' ifTrue: [
-		^ self visitClosure: object ].
-	objectNode := RBMessageNode
-		              receiver: (RBVariableNode named: object type name)
-		              selector: #new.
+	objectNode := object isReferencedInLoop
+		              ifTrue: [
+		              RBVariableNode named: (self varNameFor: object) ]
+		              ifFalse: [
+			              RBMessageNode
+				              receiver: (RBVariableNode named: object type name)
+				              selector: #new ].
 	attributeNodes := (object value
 		                   collect: [ :attribute |
 		                   self visitObjectAttribute: attribute ]
@@ -155,24 +240,39 @@ FamixValue2PharoVisitor >> visitObject: object [
 { #category : #visiting }
 FamixValue2PharoVisitor >> visitObjectAttribute: attribute [
 
-	| newNode |
+	| newNode value attributeNode |
 	attribute attribute ifNil: [ "ignore unknown attributes" ^ nil ].
+	value := attribute value.
+	newNode := self ensureVisited: value.
+	(value isOfObject or: [
+		 value isOfCollection or: [ value isOfDictionary ] ])
+		ifTrue: [
+			| name |
+			name := self varNameFor: value.
+			self statementBlock addNode: (RBAssignmentNode
+					 variable: (RBVariableNode named: name)
+					 value: newNode).
+			attributeNode := RBVariableNode named: name ]
+		ifFalse: [ attributeNode := newNode ].
 	(attribute object type findSetterOf: attribute attribute)
 		ifNotNil: [ :setter |
 			newNode := RBMessageNode
 				           receiver: RBVariableNode new
 				           selector: setter name
-				           arguments: { (self ensureVisited: attribute value) } ]
+				           arguments: { attributeNode } ]
 		ifNil: [ "Use reflectivity"
 			newNode := RBMessageNode
 				           receiver: RBVariableNode new
 				           selector: #instVarNamed:put:
 				           arguments: {
 						           (RBVariableNode named: '#' , attribute attribute name).
-						           (self ensureVisited: attribute value) } ].
+						           attributeNode } ].
 
-	attribute value isReferencedInLoop ifTrue: [
-		^ newNode addParenthesisToVariable].
+	(attribute value isReferencedInLoop and: [
+		 newNode isVariable not and: [
+			 newNode value isLiteralNode not and: [
+				 newNode isMessage not and: [ newNode isAssignment ] ] ] ])
+		ifTrue: [ ^ newNode addParenthesisToVariable ].
 	^ newNode
 ]
 

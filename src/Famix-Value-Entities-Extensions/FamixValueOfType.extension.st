@@ -17,7 +17,7 @@ FamixValueOfType >> isReferencedInLoop [
 
 	| count |
 	count := self referenceCount.
-	^ count > 1 or: [ self isRoot and: [ count = 1 ] ]
+	^ count > 1 or: [ count = 1 and: [ self isRoot ] ]
 ]
 
 { #category : #'*Famix-Value-Entities-Extensions' }
