@@ -31,6 +31,12 @@ FamixValueUnknownType >> isPrimitiveType [
 ]
 
 { #category : #'*Famix-Value-Entities-Extensions' }
+FamixValueUnknownType >> methods [
+
+	^ {  }
+]
+
+{ #category : #'*Famix-Value-Entities-Extensions' }
 FamixValueUnknownType >> typeName [
 
 	^ name
