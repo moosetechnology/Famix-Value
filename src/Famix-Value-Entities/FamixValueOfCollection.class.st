@@ -36,6 +36,14 @@ FamixValueOfCollection >> addValue: anObject [
 	^ self value add: anObject
 ]
 
+{ #category : #converting }
+FamixValueOfCollection >> asPharoInitializationAST [
+
+	^ RBMessageNode
+		  receiver: (RBVariableNode named: self type name)
+		  selector: #basicNew
+]
+
 { #category : #testing }
 FamixValueOfCollection >> isOfCollection [
 

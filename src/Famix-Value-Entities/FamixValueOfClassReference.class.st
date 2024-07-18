@@ -27,6 +27,13 @@ FamixValueOfClassReference class >> annotation [
 	^ self
 ]
 
+{ #category : #testing }
+FamixValueOfClassReference >> isOfClassReference [
+
+	<generated>
+	^ true
+]
+
 { #category : #accessing }
 FamixValueOfClassReference >> value [
 	"Relation named: #value type: #FamixTClass opposite: #valueReferences"

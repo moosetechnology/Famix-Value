@@ -41,7 +41,7 @@ FamixValueOfObject >> asPharoInitializationAST [
 
 	^ RBMessageNode
 		  receiver: (RBVariableNode named: self type name)
-		  selector: #new
+		  selector: #basicNew
 ]
 
 { #category : #testing }

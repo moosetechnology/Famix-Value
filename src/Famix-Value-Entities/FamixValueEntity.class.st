@@ -29,6 +29,20 @@ FamixValueEntity class >> metamodel [
 ]
 
 { #category : #testing }
+FamixValueEntity >> isOfClassReference [
+
+	<generated>
+	^ false
+]
+
+{ #category : #testing }
+FamixValueEntity >> isOfClosure [
+
+	<generated>
+	^ false
+]
+
+{ #category : #testing }
 FamixValueEntity >> isOfCollection [
 
 	<generated>
