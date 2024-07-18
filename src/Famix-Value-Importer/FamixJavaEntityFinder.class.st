@@ -46,8 +46,8 @@ FamixJavaEntityFinder >> parseTypeName: name [
 		        ifTrue: [ "Search by translating the type name to a mooseName."
 			        self findTypeWithMooseName:
 				        ((typeName allButLast: dimensions * 2)
-					         copyWithRegex: '\.|\$'
-					         matchesReplacedWith: '::') ].
+					         copyReplaceAll: '.'
+					         with: '::') ].
 	^ dimensions > 0
 		  ifFalse: [ type ]
 		  ifTrue: [
