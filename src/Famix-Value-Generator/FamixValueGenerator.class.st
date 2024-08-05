@@ -85,12 +85,12 @@ FamixValueGenerator >> defineClasses [
 		                         newClassNamed: #OfDictionaryAssociation
 		                         comment:
 		                         'A key-value pair belonging to a dictionary.'.
-	classReference := builder
-		                  newClassNamed: #OfClassReference
-		                  comment: 'A reference to a class.'.
-	closure := builder
-		           newClassNamed: #OfClosure
-		           comment: 'A lexical closure.'.
+	classReference := (builder
+		                   newClassNamed: #OfClassReference
+		                   comment: 'A reference to a class.') withTesting.
+	closure := (builder
+		            newClassNamed: #OfClosure
+		            comment: 'A lexical closure.') withTesting.
 	closureVariable := builder
 		                   newClassNamed: #OfClosureVariable
 		                   comment:

@@ -43,6 +43,13 @@ FamixValueOfClosure >> addVariable: anObject [
 	^ self variables add: anObject
 ]
 
+{ #category : #testing }
+FamixValueOfClosure >> isOfClosure [
+
+	<generated>
+	^ true
+]
+
 { #category : #accessing }
 FamixValueOfClosure >> sourceCode [
 
