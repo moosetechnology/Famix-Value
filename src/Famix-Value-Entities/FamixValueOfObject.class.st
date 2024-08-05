@@ -36,14 +36,6 @@ FamixValueOfObject >> addValue: anObject [
 	^ self value add: anObject
 ]
 
-{ #category : #converting }
-FamixValueOfObject >> asPharoInitializationAST [
-
-	^ RBMessageNode
-		  receiver: (RBVariableNode named: self type name)
-		  selector: #new
-]
-
 { #category : #testing }
 FamixValueOfObject >> isOfObject [
 
