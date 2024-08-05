@@ -5,3 +5,9 @@ FamixValueOfClosure >> accept: visitor [
 
 	^ visitor visitClosure: self
 ]
+
+{ #category : #'*Famix-Value-Exporter' }
+FamixValueOfClosure >> asFASTJavaExpressionOn: visitor [
+
+	self shouldBeImplemented
+]
