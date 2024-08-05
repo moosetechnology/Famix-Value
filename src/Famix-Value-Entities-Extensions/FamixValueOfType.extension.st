@@ -23,7 +23,7 @@ FamixValueOfType >> isReferencedInLoop [
 { #category : #'*Famix-Value-Entities-Extensions' }
 FamixValueOfType >> isRoot [
 
-	^ self argumentInSpan isNotNil or: [
+	^ self argumentInSpans isEmpty or: [
 		  self resultInSpan isNotNil or: [ self receiverInSpan isNotNil ] ]
 ]
 
