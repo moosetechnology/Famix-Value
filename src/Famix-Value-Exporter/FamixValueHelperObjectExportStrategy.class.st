@@ -6,17 +6,17 @@ Class {
 	#name : #FamixValueHelperObjectExportStrategy,
 	#superclass : #FamixValueAbstractObjectExportStrategy,
 	#instVars : [
-		'helperMethods'
+		'declarations'
 	],
 	#category : #'Famix-Value-Exporter-Strategies'
 }
 
 { #category : #ast }
 FamixValueHelperObjectExportStrategy >> addToHelper: helperClass [
-	"Must be called when building the helper class to add the generated helper methods."
+	"Must be called when building the helper class to add the generated helper declarations."
 
-	helperMethods valuesDo: [ :method |
-		helperClass addDeclaration: method ]
+	declarations valuesDo: [ :declaration |
+		helperClass addDeclaration: declaration ]
 ]
 
 { #category : #ast }
@@ -49,6 +49,12 @@ FamixValueHelperObjectExportStrategy >> buildMethodFor: object withParametersFor
 	^ helper
 ]
 
+{ #category : #initialization }
+FamixValueHelperObjectExportStrategy >> declarations [
+
+	^ declarations
+]
+
 { #category : #ast }
 FamixValueHelperObjectExportStrategy >> dependencyImportsOn: aFASTModel [
 
@@ -70,11 +76,13 @@ FamixValueHelperObjectExportStrategy >> export: object on: visitor [
 	"check if the object was not set up in the previous step"
 	(visitor varNameDict includesKey: object) ifTrue: [ ^ self ].
 	"get the helper method, or build it if it does not exist"
-	helper := helperMethods at: object type ifAbsentPut: [
-		          self
-			          buildMethodFor: object
-			          withParametersFor: attributes
-			          on: visitor ].
+	helper := declarations
+		          at: object constructorSignature
+		          ifAbsentPut: [
+			          self
+				          buildMethodFor: object
+				          withParametersFor: attributes
+				          on: visitor ].
 	"call the helper method to build the object and store it in a variable"
 	model := visitor model.
 	visitor statementBlock addStatement: (model newVarDeclStatement
@@ -93,7 +101,7 @@ FamixValueHelperObjectExportStrategy >> export: object on: visitor [
 { #category : #initialization }
 FamixValueHelperObjectExportStrategy >> initialize [
 
-	helperMethods := IdentityDictionary new
+	declarations := Dictionary new
 ]
 
 { #category : #ast }

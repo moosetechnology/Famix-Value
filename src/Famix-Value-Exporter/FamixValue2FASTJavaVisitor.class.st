@@ -13,22 +13,22 @@ Class {
 	#superclass : #FamixValue2ASTVisitor,
 	#instVars : [
 		'builder',
-		'markedForReflection',
 		'constructorCache',
 		'staticAttributesCache',
-		'objectExportStrategy'
+		'objectExportStrategy',
+		'reflections'
 	],
 	#category : #'Famix-Value-Exporter-Visitors'
 }
 
 { #category : #private }
-FamixValue2FASTJavaVisitor >> addAttributesFrom: object asArgumentsTo: newExpression usingConstructor: constructor [
+FamixValue2FASTJavaVisitor >> addAttributesFrom: object asArgumentsTo: invocation usingConstructor: constructor [
 
 	(constructorCache
 		 at: constructor
 		 ifAbsentPut: [ constructor mapConstructorParametersToAttributes ])
 		withIndexDo: [ :paramAttribute :index |
-			newExpression addArgument: (paramAttribute
+			invocation addArgument: (paramAttribute
 					 ifNil: [ "constructor parameter is not mapped to an attribute"
 						 (constructor parameters at: index) declaredType
 							 asFASTJavaDefaultValueOn: self model ]
@@ -54,22 +54,328 @@ FamixValue2FASTJavaVisitor >> builder [
 { #category : #private }
 FamixValue2FASTJavaVisitor >> constructObject: object [
 
-	| constructor |
+	| constructor invocation |
 	constructor := self findConstructorFor: object.
-	(self markedForReflection includes: constructor)
-		ifFalse: [
-			| varDecl |
-			varDecl := self statementBlock addStatement:
-				           (self makeVarDeclStatement: object).
-			constructor parameters ifNotEmpty: [
-				self
-					addAttributesFrom: object
-					asArgumentsTo: varDecl declarators first expression
-					usingConstructor: constructor ] ]
-		ifTrue: [ "use reflection" self shouldBeImplemented ]
+	self reflections
+		at: constructor
+		ifPresent: [ :varName | "reflective constructor call, the variable contains the Constructor object"
+			invocation := model newMethodInvocation name: 'instantiate'.
+			invocation addArgument: (model newVariableExpression name: varName).
+			(self statementBlock addStatement: self model newVarDeclStatement)
+				type: (self builder referType: object type);
+				addDeclarator: (model newVariableDeclarator
+						 variable: (self makeVariableExpression: object);
+						 expression: invocation) ]
+		ifAbsent: [ "regular constructor call"
+			invocation := (self statementBlock addStatement:
+				               (self makeVarDeclStatement: object)) declarators
+				              first expression ].
+	"call with arguments to match constructor parameters"
+	constructor parameters ifNotEmpty: [
+		self
+			addAttributesFrom: object
+			asArgumentsTo: invocation
+			usingConstructor: constructor ]
 ]
 
-{ #category : #accessing }
+{ #category : #private }
+FamixValue2FASTJavaVisitor >> ensureReflection [
+	"Ensure that the infrastructure needed to use reflection is generated.
+	A static method called `initializeReflection` is created and will be populated by calls to `ensureReflectionField:` and `ensureReflectionConstructor:`.
+	To handle exceptions that can be thrown by these operations, a static initializer calls this method with a trycatch.
+	Finally, the convenience methods `setField` and `instantiate` are created to handle exceptions during reflexive operations: .
+	Return the statement block of `initializeReflection` for callers to populate."
+
+	| declarations declaration initStatementBlock |
+	declarations := self objectExportStrategy declarations. "does not work for inline strategy..."
+	self reflections ifNotEmpty: [
+		^ (declarations at: -3) statementBlock ].
+
+	"static {
+		try {
+			initializeReflection();
+		} catch (NoSuchFieldException | SecurityException e) {
+			new RuntimeException(e);
+		}
+	}"
+	declaration := self model newInitializer isStatic: true.
+	declaration attributeAt: 'order' put: -4.
+	declarations at: -4 put: declaration.
+	declaration statementBlock:
+		(model newStatementBlock statements: { (model newTryCatchStatement
+				  try: (model newStatementBlock statements:
+							   { (model newExpressionStatement expression:
+									    (model newMethodInvocation name: 'initializeReflection')) });
+				  catches: { (model newCatchPartStatement
+						   catchedTypes: {
+								   (model newClassTypeExpression typeName:
+										    (model newTypeName name: 'NoSuchFieldException')).
+								   (model newClassTypeExpression typeName:
+										    (model newTypeName name: 'SecurityException')).
+								   (model newClassTypeExpression typeName:
+										    (model newTypeName name: 'NoSuchMethodException')) };
+						   body: (model newStatementBlock statements:
+									    { (model newThrowStatement expression:
+											     (model newNewExpression
+												      type: (model newClassTypeExpression typeName:
+															       (model newTypeName name: 'RuntimeException'));
+												      arguments:
+													      { (model newVariableExpression name: 'e') })) });
+						   parameter: (model newVariableExpression name: 'e')) }) }).
+
+	"private static void initializeReflection() throws NoSuchFieldException, SecurityException {
+		// fields will be obtained and set as accessible here
+	}"
+	declaration := model newMethodEntity name: 'initializeReflection'.
+	declaration attributeAt: 'order' put: -3.
+	declarations at: -3 put: declaration.
+	declaration
+		type: (model newVoidTypeExpression name: 'void');
+		modifiers: {
+				(model newModifier token: 'private').
+				(model newModifier token: 'static') };
+		throws: {
+				(model newClassTypeExpression typeName:
+						 (model newTypeName name: 'NoSuchFieldException')).
+				(model newClassTypeExpression typeName:
+						 (model newTypeName name: 'SecurityException')).
+				(model newClassTypeExpression typeName:
+						 (model newTypeName name: 'NoSuchMethodException')) };
+		statementBlock: (initStatementBlock := model newStatementBlock).
+
+	"public static void setField(Object object, Field field, Object value) {
+		try {
+			field.set(object, value);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		}
+	}"
+	declaration := model newMethodEntity name: 'setField'.
+	declaration attributeAt: 'order' put: -2.
+	declarations at: -2 put: declaration.
+	declaration
+		type: (model newVoidTypeExpression name: 'void');
+		parameters: {
+				(model newParameter
+					 variable: (model newVariableExpression name: 'object');
+					 type: (model newClassTypeExpression typeName:
+								  (model newTypeName name: 'Object'))).
+				(model newParameter
+					 variable: (model newVariableExpression name: 'field');
+					 type: (model newClassTypeExpression typeName:
+								  (model newTypeName name: 'Field'))).
+				(model newParameter
+					 variable: (model newVariableExpression name: 'value');
+					 type: (model newClassTypeExpression typeName:
+								  (model newTypeName name: 'Object'))) };
+		modifiers: {
+				(model newModifier token: 'public').
+				(model newModifier token: 'static') };
+		statementBlock:
+			(model newStatementBlock statements: { (model newTryCatchStatement
+					  try: (model newStatementBlock statements:
+								   { (model newExpressionStatement expression:
+										    (model newMethodInvocation
+											     receiver: (model newVariableExpression name: 'field');
+											     name: 'set';
+											     arguments: {
+													     (model newVariableExpression name: 'object').
+													     (model newVariableExpression name: 'value') })) });
+					  catches: { (model newCatchPartStatement
+							   catchedTypes: { (model newClassTypeExpression typeName:
+										    (model newTypeName name: 'IllegalAccessException')) };
+							   body: (model newStatementBlock statements:
+										    { (model newThrowStatement expression:
+												     (model newNewExpression
+													      type: (model newClassTypeExpression typeName:
+																       (model newTypeName name: 'RuntimeException'));
+													      arguments:
+														      { (model newVariableExpression name: 'e') })) });
+							   parameter: (model newVariableExpression name: 'e')) }) }).
+
+	"private static <T> T instantiate(Constructor<T> constructor, Object... arguments) {
+		T instance;
+		try {
+			instance = constructor.newInstance(arguments);
+		} catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+			throw new RuntimeException(e);
+		}
+		return instance;
+	}"
+	declaration := model newMethodEntity name: 'instantiate'.
+	declaration attributeAt: 'order' put: -1.
+	declarations at: -1 put: declaration.
+	declaration
+		typeParameters: { (model newTypeParameterExpression name: 'T') };
+		type:
+			(model newClassTypeExpression typeName:
+					 (model newTypeName name: 'T'));
+		parameters: {
+				(model newParameter
+					 variable: (model newVariableExpression name: 'constructor');
+					 type: (model newClassTypeExpression
+							  arguments: { (model newClassTypeExpression typeName:
+										   (model newTypeName name: 'T')) };
+							  typeName: (model newTypeName name: 'Constructor'))).
+				(model newParameter
+					 variable: (model newVariableExpression name: 'arguments');
+					 type: (model newClassTypeExpression typeName:
+								  (model newTypeName name: 'Object'));
+					 hasVariableArguments: true) };
+		modifiers: {
+				(model newModifier token: 'private').
+				(model newModifier token: 'static') };
+		statementBlock: (model newStatementBlock statements: {
+					 (model newVarDeclStatement
+						  type:
+							  (model newClassTypeExpression typeName:
+									   (model newTypeName name: 'T'));
+						  declarators: { (model newVariableDeclarator variable:
+									   (model newVariableExpression name: 'instance')) }).
+					 (model newTryCatchStatement
+						  try: (model newStatementBlock statements:
+									   { (model newExpressionStatement expression:
+											    (model newAssignmentExpression
+												     variable:
+													     (model newVariableExpression name: 'instance');
+												     expression: (model newMethodInvocation
+														      receiver:
+															      (model newIdentifier name: 'constructor');
+														      name: 'newInstance';
+														      arguments:
+															      { (model newVariableExpression name: 'arguments') });
+												     operator: '=')) });
+						  catches: { (model newCatchPartStatement
+								   catchedTypes: {
+										   (model newClassTypeExpression typeName:
+												    (model newTypeName name: 'InstantiationException')).
+										   (model newClassTypeExpression typeName:
+												    (model newTypeName name: 'IllegalAccessException')).
+										   (model newClassTypeExpression typeName:
+												    (model newTypeName name: 'InvocationTargetException')) };
+								   body: (model newStatementBlock statements:
+											    { (model newThrowStatement expression:
+													     (model newNewExpression
+														      type: (model newClassTypeExpression typeName:
+																	       (model newTypeName name: 'RuntimeException'));
+														      arguments:
+															      { (model newVariableExpression name: 'e') })) });
+								   parameter: (model newVariableExpression name: 'e')) }).
+					 (model newReturnStatement expression:
+						  (model newVariableExpression name: 'instance')) }).
+
+	^ initStatementBlock
+]
+
+{ #category : #private }
+FamixValue2FASTJavaVisitor >> ensureReflectionConstructor: aFamixJavaMethod [
+
+	| declarations initStatementBlock varName |
+	declarations := self objectExportStrategy declarations.
+	initStatementBlock := self ensureReflection.
+	varName := aFamixJavaMethod name asUppercase.
+	self reflections at: aFamixJavaMethod put: varName.
+
+	declarations
+		at: varName
+		ifPresent: [ "handle naming collisions, some ideas:
+				- use fully qualified type name (only when necessary?)
+				- use a HashMap to store the fields based on class and attribute name"
+			self shouldBeImplemented ]
+		ifAbsentPut: [
+			model newVarDeclStatement
+				type: (model newClassTypeExpression
+						 typeName: (model newTypeName name: 'Constructor');
+						 arguments:
+							 { (self builder referType: aFamixJavaMethod parentType) });
+				modifiers: {
+						(model newModifier token: 'private').
+						(model newModifier token: 'static') };
+				declarators: { (model newVariableDeclarator variable:
+						 (model newVariableExpression name: varName)) } ].
+
+	"add the code in `initializeReflection` to get the Field and set it as accessible:
+	CLASSNAME = CLASS.class.getDeclaredConstructor(PARAMETER_CLASSES);
+	CLASSNAME.setAccessible(true);"
+	initStatementBlock addStatement:
+		(model newExpressionStatement expression:
+			 (model newAssignmentExpression
+				  variable: (model newVariableExpression name: varName);
+				  expression: (model newMethodInvocation
+						   receiver: (model newClassProperty
+								    type:
+									    (self builder referType: aFamixJavaMethod parentType);
+								    fieldName: 'class');
+						   name: 'getDeclaredConstructor';
+						   arguments:
+							   (aFamixJavaMethod sortedParameters collect: [ :parameter |
+								    model newClassProperty
+									    type: (self builder referType: parameter declaredType);
+									    fieldName: 'class' ]));
+				  operator: '=')).
+	initStatementBlock addStatement:
+		(model newExpressionStatement expression:
+			 (model newMethodInvocation
+				  receiver: (model newVariableExpression name: varName);
+				  name: 'setAccessible';
+				  arguments: { (model newBooleanLiteral primitiveValue: 'true') }))
+]
+
+{ #category : #private }
+FamixValue2FASTJavaVisitor >> ensureReflectionField: attribute [
+	"Ensure an attribute exists to hold the java.lang.reflect.Field for the given attribute."
+
+	^ self reflections at: attribute attribute ifAbsentPut: [
+		  | declarations initStatementBlock varName |
+		  declarations := self objectExportStrategy declarations.
+		  initStatementBlock := self ensureReflection.
+		  varName := attribute attribute parentType name asUppercase , '_'
+		             , attribute attribute name asUppercase.
+		  declarations
+			  at: varName
+			  ifPresent: [ "handle naming collisions, some ideas:
+				- use fully qualified type name (only when necessary?)
+				- use a HashMap to store the fields based on class and attribute name"
+				  self shouldBeImplemented ]
+			  ifAbsentPut: [
+				  model newVarDeclStatement
+					  type: (model newClassTypeExpression typeName:
+								   (model newTypeName name: 'Field'));
+					  modifiers: {
+							  (model newModifier token: 'private').
+							  (model newModifier token: 'static') };
+					  declarators: { (model newVariableDeclarator variable:
+								   (model newVariableExpression name: varName)) } ].
+
+		  "add the code in `initializeReflection` to get the Field and set it as accessible:
+		  CLASSNAME_FIELDNAME = CLASS.class.getDeclaredField(FIELDNAME);
+		  CLASSNAME.setAccessible(true);"
+		  initStatementBlock addStatement:
+			  (model newExpressionStatement expression:
+				   (model newAssignmentExpression
+					    variable: (model newVariableExpression name: varName);
+					    expression: (model newMethodInvocation
+							     receiver: (model newClassProperty
+									      type:
+										      (self builder referType:
+												       attribute attribute parentType);
+									      fieldName: 'class');
+							     name: 'getDeclaredField';
+							     arguments:
+							     { (model newStringLiteral primitiveValue:
+								      attribute attribute name) });
+					    operator: '=')).
+		  initStatementBlock addStatement:
+			  (model newExpressionStatement expression:
+				   (model newMethodInvocation
+					    receiver: (model newVariableExpression name: varName);
+					    name: 'setAccessible';
+					    arguments:
+						    { (model newBooleanLiteral primitiveValue: 'true') })).
+		  varName ]
+]
+
+{ #category : #private }
 FamixValue2FASTJavaVisitor >> filterAttributesToSet: attributes for: object [
 	"No need to set attributes that are set in the constructor."
 
@@ -99,8 +405,11 @@ FamixValue2FASTJavaVisitor >> findConstructorFor: object [
 			  ifNotEmpty: [ :constructors |
 				  constructors
 					  detect: [ :constructor | constructor isPublic ]
-					  ifNone: [ "fallback to using reflection"
-						  self markedForReflection add: constructors first ] ] ]
+					  ifNone: [ "fallback to using reflection with constructor with best score"
+						  | constructor |
+						  constructor := constructors first.
+						  self ensureReflectionConstructor: constructor.
+						  constructor ] ] ]
 ]
 
 { #category : #private }
@@ -147,46 +456,39 @@ FamixValue2FASTJavaVisitor >> makeHelper [
 	"The helper should always be generated, regardless of strategy.
 	This method must be called after all of the other value exports are done."
 
-	| helperClass |
-	self model newCompilationUnit
+	| helperClass compilationUnit |
+	helperClass := self makeHelperClass.
+	(compilationUnit := self model newCompilationUnit)
 		packageDeclaration: (model newPackageDeclaration qualifiedName:
 					 (model newQualifiedName name: 'fr.evref.modest'));
 		importDeclarations: self builder makeImportDeclarations;
-		addImportDeclaration: (model newImportDeclaration qualifiedName:
-					 (model newQualifiedName name: 'java.io.IOException'));
-		addImportDeclaration: (model newImportDeclaration qualifiedName:
-					 (model newQualifiedName name:
-							  'com.fasterxml.jackson.databind.ObjectMapper'));
-		addClassDeclaration: (helperClass := self makeHelperClass).
+		addClassDeclaration: helperClass.
+
+	reflections ifNotNil: [
+		compilationUnit
+			addImportDeclaration: (model newImportDeclaration qualifiedName:
+						 (model newQualifiedName name: 'java.lang.reflect.Field'));
+			addImportDeclaration: (model newImportDeclaration qualifiedName:
+						 (model newQualifiedName name: 'java.lang.reflect.Constructor'));
+			addImportDeclaration: (model newImportDeclaration qualifiedName:
+						 (model newQualifiedName name:
+								  'java.lang.reflect.InvocationTargetException')) ].
+
 	self objectExportStrategy addToHelper: helperClass
 ]
 
 { #category : #ast }
 FamixValue2FASTJavaVisitor >> makeHelperClass [
-	"The helper class has static methods used for creating objects.
-	It has a private constructor, a Jackson ObjectMapper and a `deserialize` method to handle stubs."
+	"The helper class should not be instantiated so it has a private constructor."
 
 	^ self model newClassDeclaration
 		  name: 'ModestHelper';
 		  addModifier: (model newModifier token: 'public');
-		  declarations: {
-				  (model newMethodEntity
-					   name: 'ModestHelper';
-					   modifiers: { (model newModifier token: 'private') };
-					   statementBlock: model newStatementBlock).
-				  (model newVarDeclStatement
-					   type: (model newClassTypeExpression typeName:
-								    (model newTypeName name: 'ObjectMapper'));
-					   modifiers: {
-							   (model newModifier token: 'private').
-							   (model newModifier token: 'static').
-							   (model newModifier token: 'final') };
-					   declarators: { (model newVariableDeclarator
-							    variable: (model newVariableExpression name: 'mapper');
-							    expression:
-								    (model newNewExpression type:
-										     (model newClassTypeExpression typeName:
-												      (model newTypeName name: 'ObjectMapper')))) }) }
+		  addDeclaration: (model newMethodEntity
+				   name: 'ModestHelper';
+				   modifiers: { (model newModifier token: 'private') };
+				   statementBlock: model newStatementBlock);
+		  yourself
 ]
 
 { #category : #ast }
@@ -205,7 +507,7 @@ FamixValue2FASTJavaVisitor >> makeReflectionFieldGetter: attribute [
 				   type:
 					   (self makeClassTypeExpression: attribute object type typeName);
 				   fieldName: 'class');
-		  name: 'getField';
+		  name: 'getDeclaredField';
 		  addArgument:
 		  (model newStringLiteral primitiveValue: attribute attribute name);
 		  yourself
@@ -215,19 +517,16 @@ FamixValue2FASTJavaVisitor >> makeReflectionFieldGetter: attribute [
 FamixValue2FASTJavaVisitor >> makeReflectionSetterInvocation: attribute [
 	"Use reflection to set an attribute on an object."
 
-	self flag: #TODO. "we need to make a variable to hold the field, make it accessible, then use it to set the value."
-	self halt. "current implementation does not work"
-	self markedForReflection add: attribute attribute.
+	| fieldName |
+	fieldName := self ensureReflectionField: attribute.
 	self statementBlock addStatement:
 		(self model newExpressionStatement expression:
 			 (model newMethodInvocation
-				  receiver: (self makeReflectionFieldGetter: attribute);
-				  name: (attribute value type isPrimitiveType
-						   ifTrue: [ 'set' , attribute value type name capitalized ]
-						   ifFalse: [ 'set' ]);
-				  addArgument: (self makeVariableExpression: attribute object);
-				  addArgument: (self makeVariableExpression: attribute value);
-				  yourself))
+				  name: 'setField';
+				  arguments: {
+						  (self makeVariableExpression: attribute object).
+						  (model newVariableExpression name: fieldName).
+						  (model newVariableExpression name: attribute value varName) }))
 ]
 
 { #category : #ast }
@@ -290,13 +589,6 @@ FamixValue2FASTJavaVisitor >> makeVariableExpression: value [
 ]
 
 { #category : #accessing }
-FamixValue2FASTJavaVisitor >> markedForReflection [
-
-	^ markedForReflection ifNil: [
-		  markedForReflection := IdentitySet new ]
-]
-
-{ #category : #accessing }
 FamixValue2FASTJavaVisitor >> model [
 
 	^ model ifNil: [ model := FASTJavaModel new ]
@@ -313,6 +605,12 @@ FamixValue2FASTJavaVisitor >> objectExportStrategy [
 FamixValue2FASTJavaVisitor >> objectExportStrategy: anObjectExportStrategy [
 
 	objectExportStrategy := anObjectExportStrategy
+]
+
+{ #category : #accessing }
+FamixValue2FASTJavaVisitor >> reflections [
+
+	^ reflections ifNil: [ reflections := IdentityDictionary new ]
 ]
 
 { #category : #accessing }
