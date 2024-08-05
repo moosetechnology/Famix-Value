@@ -147,11 +147,11 @@ FamixValueJavaJacksonImporter >> parseList: serializedValues [
 FamixValueJavaJacksonImporter >> specialTypes [
 
 	^ specialTypes ifNil: [
-		  specialTypes := Dictionary new.
-		  specialTypes at: 'java.util.Date' put: FamixValueJavaDate.
-		  specialTypes at: 'java.sql.Timestamp' put: FamixValueJavaDate.
-		  specialTypes at: 'java.sql.Date' put: FamixValueJavaSQLDate.
-		  specialTypes ]
+		  (specialTypes := Dictionary new)
+			  at: 'java.util.Date' put: FamixValueJavaDate;
+			  at: 'java.sql.Date' put: FamixValueJavaSQLDate;
+			  at: 'java.sql.Timestamp' put: FamixValueJavaDate;
+			  yourself ]
 ]
 
 { #category : #accessing }
