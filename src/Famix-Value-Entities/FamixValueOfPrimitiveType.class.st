@@ -26,12 +26,6 @@ FamixValueOfPrimitiveType class >> annotation [
 	^ self
 ]
 
-{ #category : #converting }
-FamixValueOfPrimitiveType >> asPharoInitializationAST [
-
-	^ RBLiteralNode value: self value
-]
-
 { #category : #testing }
 FamixValueOfPrimitiveType >> isOfPrimitiveType [
 

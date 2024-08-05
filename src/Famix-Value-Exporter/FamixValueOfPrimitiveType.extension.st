@@ -11,3 +11,9 @@ FamixValueOfPrimitiveType >> asFASTJavaExpressionOn: visitor [
 
 	^ value asFASTJavaExpressionOn: visitor of: self type
 ]
+
+{ #category : #'*Famix-Value-Exporter' }
+FamixValueOfPrimitiveType >> asPharoInitializationAST [
+
+	^ RBLiteralNode value: self value
+]

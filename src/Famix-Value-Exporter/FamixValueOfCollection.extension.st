@@ -11,3 +11,11 @@ FamixValueOfCollection >> asFASTJavaExpressionOn: visitor [
 
 	^ visitor makeNewExpression: self
 ]
+
+{ #category : #'*Famix-Value-Exporter' }
+FamixValueOfCollection >> asPharoInitializationAST [
+
+	^ RBMessageNode
+		  receiver: (RBVariableNode named: self type name)
+		  selector: #basicNew
+]
