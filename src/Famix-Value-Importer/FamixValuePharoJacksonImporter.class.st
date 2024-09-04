@@ -132,6 +132,21 @@ FamixValuePharoJacksonImporter >> importObject: rawObject of: type [
 ]
 
 { #category : 'importing' }
+FamixValuePharoJacksonImporter >> importObjectAttribute: rawValue of: type named: name [
+
+	name = '@' ifFalse: [ "regular attribute"
+		^ super importObjectAttribute: rawValue of: type named: name ].
+	"The object is indexable *and* has instance variables.
+	There is nothing to represent this in the Value model (yet), so instead use a placeholder attribute with a collection."
+	^ self model newOfObjectAttribute
+		  attribute: (FamixStAttribute named: '@');
+		  value:
+			  (model newOfCollection value: (rawValue collect: [ :rawElement |
+							    model newOfCollectionElement value:
+									    (self importValue: rawElement) ]))
+]
+
+{ #category : 'importing' }
 FamixValuePharoJacksonImporter >> importSymbol: rawObject of: type [
 
 	^ objectDict

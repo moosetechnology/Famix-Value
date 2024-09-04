@@ -38,8 +38,13 @@ FamixValue2PharoVisitor >> ensureVisited: value [
 		  at: value
 		  ifPresent: [ :name | self makeVariableNamed: name ]
 		  ifAbsent: [
-			  self varNameFor: value.
-			  value accept: self ]
+			  | name node |
+			  name := self varNameFor: value.
+			  node := value accept: self.
+			  "if the value is not inlined (prim or type ref), it was created during the visit so just reference its variable"
+			  (value isOfPrimitiveType or: [ value isOfTypeReference ])
+				  ifTrue: [ node ]
+				  ifFalse: [ self makeVariableNamed: name ] ]
 ]
 
 { #category : 'initialization' }
@@ -52,8 +57,11 @@ FamixValue2PharoVisitor >> initialize [
 ]
 
 { #category : 'testing' }
-FamixValue2PharoVisitor >> makeAssignmentFor: aVariableName and: aValue [
-	"^ RBAssignmentNode variable: (self makeVariableNamed: aVariableName) value: aValue"
+FamixValue2PharoVisitor >> makeAssignment: aValue to: aVariableName [
+	"The number of temporary variables is limited by the stack size limit.
+	We use a dictionary to hold all variables to avoid compilation errors.
+
+	^ RBAssignmentNode variable: (self makeVariableNamed: aVariableName) value: aValue"
 
 	^ RBMessageNode
 		  receiver: (RBVariableNode named: 'vars')
@@ -94,12 +102,14 @@ FamixValue2PharoVisitor >> statementBlock [
 { #category : 'visiting' }
 FamixValue2PharoVisitor >> visitClosure: closure [
 
+	self flag: #TODO.
 	closure variables do: [ :var | self ensureVisited: var value ].
 
-	[
+	[ "TODO how to reference variables now that everything is in a dictionary?
+	-> probably need to rewrite source..."
 	self statementBlock addNode: (self
-			 makeAssignmentFor: (self varNameFor: closure)
-			 and: (RBParser parseExpression: closure sourceCode)) ]
+			 makeAssignment: (RBParser parseExpression: closure sourceCode)
+			 to: (self varNameFor: closure)) ]
 		on: SyntaxErrorNotification
 		do: [ :error | "TODO: fix reflective opperation on block when metalink is installed"
 			Transcript crShow: error description.
@@ -111,11 +121,13 @@ FamixValue2PharoVisitor >> visitCollection: collection [
 
 	| name isArrayed |
 	name := self varNameFor: collection.
-	self statementBlock addNode:
-		(self makeAssignmentFor: name and: (RBMessageNode
-				  receiver: (RBVariableNode named: collection type name)
-				  selector: #new:
-				  arguments: { (RBLiteralValueNode value: collection value size) })).
+	self statementBlock addNode: (self
+			 makeAssignment: (RBMessageNode
+					  receiver: (RBVariableNode named: collection type name)
+					  selector: #new:
+					  arguments:
+					  { (RBLiteralValueNode value: collection value size) })
+			 to: name).
 	collection value ifEmpty: [ ^ self statementBlock statements last ].
 
 	isArrayed := collection type superclassHierarchy anySatisfy: [
@@ -123,10 +135,6 @@ FamixValue2PharoVisitor >> visitCollection: collection [
 	collection value withIndexDo: [ :element :index |
 		| elementNode |
 		elementNode := self ensureVisited: element value.
-		(element value isOfPrimitiveType or: [
-			 element value isOfClassReference ]) ifFalse: [
-			elementNode := self makeVariableNamed:
-				               (self varNameFor: element value) ].
 		self statementBlock addNode: (isArrayed
 				 ifTrue: [
 					 RBMessageNode
@@ -146,12 +154,12 @@ FamixValue2PharoVisitor >> visitCollection: collection [
 FamixValue2PharoVisitor >> visitDictionary: dictionary [
 
 	self statementBlock addNode: (self
-			 makeAssignmentFor: (self varNameFor: dictionary)
-			 and: (RBMessageNode
+			 makeAssignment: (RBMessageNode
 					  receiver: (RBVariableNode named: dictionary type name)
 					  selector: #new:
 					  arguments:
-					  { (RBLiteralValueNode value: dictionary value size) })).
+					  { (RBLiteralValueNode value: dictionary value size) })
+			 to: (self varNameFor: dictionary)).
 	dictionary value ifEmpty: [ ^ self statementBlock statements last ].
 	dictionary value do: [ :assoc |
 		self visitDictionaryAssociation: assoc ]
@@ -165,17 +173,22 @@ FamixValue2PharoVisitor >> visitDictionaryAssociation: association [
 	value := association value.
 	keyNode := self ensureVisited: key.
 	valueNode := self ensureVisited: value.
-	self statementBlock addNode: (RBMessageNode
-			 receiver:
-			 (self makeVariableNamed: (self varNameFor: association dictionary))
-			 selector: #at:put:
-			 arguments: {
-					 ((key isOfPrimitiveType or: [ key isOfClassReference ])
-						  ifTrue: [ keyNode ]
-						  ifFalse: [ self makeVariableNamed: (self varNameFor: key) ]).
-					 ((value isOfPrimitiveType or: [ value isOfClassReference ])
-						  ifTrue: [ valueNode ]
-						  ifFalse: [ self makeVariableNamed: (self varNameFor: value) ]) })
+	self statementBlock addNode: (association dictionary
+			 ifNotNil: [ :dictionary | "part of a dictionary"
+				 RBMessageNode
+					 receiver:
+					 (self makeVariableNamed: (self varNameFor: dictionary))
+					 selector: #at:put:
+					 arguments: {
+							 keyNode.
+							 valueNode } ]
+			 ifNil: [ "standalone association"
+				 self
+					 makeAssignment: (RBMessageNode
+							  receiver: keyNode
+							  selector: #'->'
+							  arguments: { valueNode })
+					 to: (self varNameFor: association) ])
 ]
 
 { #category : 'visiting' }
@@ -185,13 +198,29 @@ FamixValue2PharoVisitor >> visitEnumValue: enumValue [
 ]
 
 { #category : 'visiting' }
+FamixValue2PharoVisitor >> visitIndexableObjectElements: attribute [
+	"The owner is an indexable object with instance variables, and this attribute holds its elements.
+	See comment of FamixValuePharoJacksonImporter>>#importObjectAttribute:of:named:"
+
+	| objectName |
+	objectName := self varNameFor: attribute object.
+	attribute value value withIndexDo: [ :value :index |
+		self statementBlock addStatement: (RBMessageNode
+				 receiver: (self makeVariableNamed: objectName)
+				 selector: #basicAt:put:
+				 arguments: {
+						 (RBLiteralValueNode value: index).
+						 (self ensureVisited: value) }) ]
+]
+
+{ #category : 'visiting' }
 FamixValue2PharoVisitor >> visitObject: object [
 
 	self statementBlock addNode: (self
-			 makeAssignmentFor: (self varNameFor: object)
-			 and: (RBMessageNode
+			 makeAssignment: (RBMessageNode
 					  receiver: (RBVariableNode named: object type name)
-					  selector: #basicNew)).
+					  selector: #basicNew)
+			 to: (self varNameFor: object)).
 	object value ifEmpty: [ ^ self statementBlock statements last ].
 	object value do: [ :attribute | self visitObjectAttribute: attribute ]
 ]
@@ -199,14 +228,15 @@ FamixValue2PharoVisitor >> visitObject: object [
 { #category : 'visiting' }
 FamixValue2PharoVisitor >> visitObjectAttribute: attribute [
 
-	| value attributeNode |
-	attribute attribute ifNil: [ "ignore unknown attributes" ^ nil ].
+	| famixAttribute value attributeNode |
+	(famixAttribute := attribute attribute) ifNil: [ ^ nil ]. "ignore unknown Famix attributes"
+	famixAttribute name = '@' ifTrue: [
+		^ self visitIndexableObjectElements: attribute ].
+	"exporting a regular object attribute using a setter or reflection"
 	value := attribute value.
 	attributeNode := self ensureVisited: value.
-	(value isOfPrimitiveType or: [ value isOfClassReference ]) ifFalse: [ "TODO?"
-		attributeNode := self makeVariableNamed: (self varNameFor: value) ].
 	self statementBlock addNode:
-		((attribute object type findSetterOf: attribute attribute)
+		((attribute object type findSetterOf: famixAttribute)
 			 ifNotNil: [ :setter |
 				 RBMessageNode
 					 receiver:
@@ -219,7 +249,7 @@ FamixValue2PharoVisitor >> visitObjectAttribute: attribute [
 					 (self makeVariableNamed: (self varNameFor: attribute object))
 					 selector: #instVarNamed:put:
 					 arguments: {
-							 (RBVariableNode named: '#' , attribute attribute name).
+							 (RBVariableNode named: '#' , famixAttribute name).
 							 attributeNode } ])
 ]
 
