@@ -1,12 +1,12 @@
-Extension { #name : #Association }
+Extension { #name : 'Association' }
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 Association >> asPharoJacksonValueOn: importer [
 
 	^ importer importAssociation: self
 ]
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 Association >> asPharoSTONValueOn: importer [
 
 	^ importer model newOfDictionaryAssociation

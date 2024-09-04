@@ -1,6 +1,6 @@
-Extension { #name : #FamixJavaType }
+Extension { #name : 'FamixJavaType' }
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 FamixJavaType >> isDictionaryType [
 
 	^ #( 'Map' 'HashMap' 'LinkedHashMap' ) includes: self baseName

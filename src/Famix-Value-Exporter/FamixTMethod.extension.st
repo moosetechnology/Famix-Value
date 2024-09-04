@@ -1,6 +1,6 @@
-Extension { #name : #FamixTMethod }
+Extension { #name : 'FamixTMethod' }
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixTMethod >> allAccessedAttributes [
 
 	^ self cacheAt: #allAccessedAttributes ifAbsentPut: [
@@ -9,7 +9,7 @@ FamixTMethod >> allAccessedAttributes [
 			  seen: IdentitySet new ]
 ]
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixTMethod >> allAccessedAttributesOn: collection seen: seen [
 
 	(seen includes: self) ifTrue: [ ^ collection ].
@@ -31,7 +31,7 @@ FamixTMethod >> allAccessedAttributesOn: collection seen: seen [
 	^ collection
 ]
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixTMethod >> constructorScore [
 	"Arbitrary score to evaluate the effectiveness of a constructor."
 
@@ -44,7 +44,7 @@ FamixTMethod >> constructorScore [
 		  parameterCount * self allAccessedAttributes size / parameterCount ]
 ]
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixTMethod >> mapConstructorParametersToAttributes [
 	"Return the list of the attribute set by each of my parameters, e.g. if I were:
 	MyClass(int theFoo, String someBar) { this.foo = theFoo; setBar(someBar); }

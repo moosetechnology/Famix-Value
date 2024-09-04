@@ -1,6 +1,6 @@
-Extension { #name : #FamixJavaParameterType }
+Extension { #name : 'FamixJavaParameterType' }
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixJavaParameterType >> needsJavaImport [
 
 	^ false

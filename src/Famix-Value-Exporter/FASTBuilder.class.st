@@ -2,27 +2,29 @@
 I am a helper for the `FamixValue2ASTVisitor` hierarchy of classes to build AST.
 "
 Class {
-	#name : #FASTBuilder,
-	#superclass : #Object,
+	#name : 'FASTBuilder',
+	#superclass : 'Object',
 	#instVars : [
 		'model'
 	],
-	#category : #'Famix-Value-Exporter-Helpers'
+	#category : 'Famix-Value-Exporter-Helpers',
+	#package : 'Famix-Value-Exporter',
+	#tag : 'Helpers'
 }
 
-{ #category : #testing }
+{ #category : 'testing' }
 FASTBuilder class >> isAbstract [
 
 	^ self == FASTBuilder
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FASTBuilder >> model [
 
 	^ model ifNil: [ model := FASTJavaModel new ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FASTBuilder >> model: aFASTModel [
 
 	model := aFASTModel

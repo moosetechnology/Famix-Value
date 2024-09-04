@@ -1,6 +1,6 @@
-Extension { #name : #FamixValueOfClosure }
+Extension { #name : 'FamixValueOfClosure' }
 
-{ #category : #'*Famix-Value-Entities-Extensions' }
+{ #category : '*Famix-Value-Entities-Extensions' }
 FamixValueOfClosure >> mooseNameOn: aStream [
 
 	sourceCode

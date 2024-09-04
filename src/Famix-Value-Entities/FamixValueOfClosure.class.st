@@ -19,16 +19,18 @@ A lexical closure.
 
 "
 Class {
-	#name : #FamixValueOfClosure,
-	#superclass : #FamixValueOfType,
+	#name : 'FamixValueOfClosure',
+	#superclass : 'FamixValueOfType',
 	#instVars : [
 		'#sourceCode => FMProperty',
 		'#variables => FMMany type: #FamixValueOfClosureVariable opposite: #closure'
 	],
-	#category : #'Famix-Value-Entities-Entities'
+	#category : 'Famix-Value-Entities-Entities',
+	#package : 'Famix-Value-Entities',
+	#tag : 'Entities'
 }
 
-{ #category : #meta }
+{ #category : 'meta' }
 FamixValueOfClosure class >> annotation [
 
 	<FMClass: #OfClosure super: #FamixValueOfType>
@@ -37,20 +39,20 @@ FamixValueOfClosure class >> annotation [
 	^ self
 ]
 
-{ #category : #adding }
+{ #category : 'adding' }
 FamixValueOfClosure >> addVariable: anObject [
 	<generated>
 	^ self variables add: anObject
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 FamixValueOfClosure >> isOfClosure [
 
 	<generated>
 	^ true
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfClosure >> sourceCode [
 
 	<FMProperty: #sourceCode type: #String>
@@ -59,13 +61,13 @@ FamixValueOfClosure >> sourceCode [
 	^ sourceCode
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfClosure >> sourceCode: anObject [
 	<generated>
 	sourceCode := anObject
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfClosure >> variables [
 	"Relation named: #variables type: #FamixValueOfClosureVariable opposite: #closure"
 
@@ -74,7 +76,7 @@ FamixValueOfClosure >> variables [
 	^ variables
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfClosure >> variables: anObject [
 
 	<generated>

@@ -1,6 +1,6 @@
-Extension { #name : #FamixTType }
+Extension { #name : 'FamixTType' }
 
-{ #category : #'*Famix-Value-Entities-Extensions' }
+{ #category : '*Famix-Value-Entities-Extensions' }
 FamixTType >> isUnknownType [
 
 	^ false

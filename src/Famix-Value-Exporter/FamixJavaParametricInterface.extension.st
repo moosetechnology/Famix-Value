@@ -1,6 +1,6 @@
-Extension { #name : #FamixJavaParametricInterface }
+Extension { #name : 'FamixJavaParametricInterface' }
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixJavaParametricInterface >> concreteTypeNameOn: stream [
 
 	(#( Map Set ) includes: name)

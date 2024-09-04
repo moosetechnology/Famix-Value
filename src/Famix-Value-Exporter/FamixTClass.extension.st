@@ -1,6 +1,6 @@
-Extension { #name : #FamixTClass }
+Extension { #name : 'FamixTClass' }
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixTClass >> constructorsOrderedByScore [
 	"Return the constructors ordered by an arbitrary score that determine their effectiveness.
 	The score is roughly the ratio of attributes set over parameter count, see FamixTMethod>>#impactScore."
@@ -9,7 +9,7 @@ FamixTClass >> constructorsOrderedByScore [
 		  a constructorScore > b constructorScore ]
 ]
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixTClass >> findSetterOf: aFamixAttribute [
 
 	(self isParametricEntity and: [ self isConcreteEntity ]) ifTrue: [
@@ -24,7 +24,7 @@ FamixTClass >> findSetterOf: aFamixAttribute [
 				  superclass findSetterOf: aFamixAttribute ] ]
 ]
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixTClass >> publicConstructorsWithMostImpact [
 	"Return the constructors that access the most attributes and have the most parameters."
 

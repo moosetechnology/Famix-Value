@@ -1,6 +1,6 @@
-Extension { #name : #FamixValueOfObject }
+Extension { #name : 'FamixValueOfObject' }
 
-{ #category : #'*Famix-Value-Entities-Extensions' }
+{ #category : '*Famix-Value-Entities-Extensions' }
 FamixValueOfObject >> constructorSignature [
 
 	^ String streamContents: [ :s |
@@ -11,20 +11,20 @@ FamixValueOfObject >> constructorSignature [
 		  s nextPut: $) ]
 ]
 
-{ #category : #'*Famix-Value-Entities-Extensions' }
+{ #category : '*Famix-Value-Entities-Extensions' }
 FamixValueOfObject >> containsCollection [
 
 	^ value anySatisfy: [ :attribute |
 		  attribute value containsCollection ]
 ]
 
-{ #category : #'*Famix-Value-Entities-Extensions' }
+{ #category : '*Famix-Value-Entities-Extensions' }
 FamixValueOfObject >> containsObject [
 
 	^ true
 ]
 
-{ #category : #'*Famix-Value-Entities-Extensions' }
+{ #category : '*Famix-Value-Entities-Extensions' }
 FamixValueOfObject >> printValueOn: aStream [
 
 	aStream << ${ << self value size asString << ' attribute'.
@@ -32,7 +32,7 @@ FamixValueOfObject >> printValueOn: aStream [
 	aStream nextPut: $}
 ]
 
-{ #category : #'*Famix-Value-Entities-Extensions' }
+{ #category : '*Famix-Value-Entities-Extensions' }
 FamixValueOfObject >> relevantAttributes [
 
 	^ value reject: [ :attribute |

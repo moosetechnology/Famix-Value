@@ -1,6 +1,6 @@
-Extension { #name : #Object }
+Extension { #name : 'Object' }
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 Object >> asPharoJacksonValueOn: importer [
 
 	^ importer
@@ -8,7 +8,7 @@ Object >> asPharoJacksonValueOn: importer [
 		  of: (importer loadTypeNamed: self className)
 ]
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 Object >> asPharoSTONValueOn: importer [
 
 	^ importer

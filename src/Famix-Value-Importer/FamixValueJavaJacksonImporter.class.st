@@ -12,23 +12,24 @@ new ObjectMapper().addMixIn(Object.class, MixIn.class);
 ```
 "
 Class {
-	#name : #FamixValueJavaJacksonImporter,
-	#superclass : #FamixValueAbstractImporter,
+	#name : 'FamixValueJavaJacksonImporter',
+	#superclass : 'FamixValueAbstractImporter',
 	#instVars : [
 		'typeKey',
 		'idKey',
 		'specialTypes'
 	],
-	#category : #'Famix-Value-Importer'
+	#category : 'Famix-Value-Importer',
+	#package : 'Famix-Value-Importer'
 }
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 FamixValueJavaJacksonImporter >> getDefaultUnknownType [
 
 	^ self getUnknownTypeNamed: 'Object'
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 FamixValueJavaJacksonImporter >> getObjectIdentity: rawObject [
 	"Keep track of objects by using the id given by Jackson.
 	References to previously seen objects are serialized by using this id."
@@ -36,35 +37,25 @@ FamixValueJavaJacksonImporter >> getObjectIdentity: rawObject [
 	^ rawObject removeKey: self idKey ifAbsent: nil
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 FamixValueJavaJacksonImporter >> getObjectType: rawObject [
 
 	^ rawObject removeKey: self typeKey ifAbsent: nil
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueJavaJacksonImporter >> idKey [
 
 	^ idKey ifNil: [ idKey := '@id' ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueJavaJacksonImporter >> idKey: aString [
 
 	idKey := aString
 ]
 
-{ #category : #importing }
-FamixValueJavaJacksonImporter >> importClassReference: rawValue of: type [
-	"The type has already been loaded during the inference.
-	The raw value contains the fully qualified name of the referenced class."
-
-	^ self model newOfClassReference
-		  value: (self loadTypeNamed: rawValue);
-		  type: type
-]
-
-{ #category : #importing }
+{ #category : 'importing' }
 FamixValueJavaJacksonImporter >> importObjectAttribute: rawValue of: type named: name [
 
 	| attribute |
@@ -83,7 +74,7 @@ FamixValueJavaJacksonImporter >> importObjectAttribute: rawValue of: type named:
 				  attribute: attribute ]
 ]
 
-{ #category : #importing }
+{ #category : 'importing' }
 FamixValueJavaJacksonImporter >> importSpecialObject: rawValue of: type [
 	"Some objects have special rules for serialization.
 	They should have a corresponding type wrapper that knows how to handle them."
@@ -95,7 +86,17 @@ FamixValueJavaJacksonImporter >> importSpecialObject: rawValue of: type [
 	^ nil
 ]
 
-{ #category : #importing }
+{ #category : 'importing' }
+FamixValueJavaJacksonImporter >> importTypeReference: rawValue of: type [
+	"The type has already been loaded during the inference.
+	The raw value contains the fully qualified name of the referenced class."
+
+	^ self model newOfTypeReference
+		  value: (self loadTypeNamed: rawValue);
+		  type: type
+]
+
+{ #category : 'importing' }
 FamixValueJavaJacksonImporter >> importValue: rawValue [
 	"Import a raw value, which has been parsed from JSON in Jackson format.
 	It can be: nil, boolean, integer, string, array or dictionary."
@@ -103,7 +104,7 @@ FamixValueJavaJacksonImporter >> importValue: rawValue [
 	^ rawValue asJavaJacksonValueOn: self
 ]
 
-{ #category : #importing }
+{ #category : 'importing' }
 FamixValueJavaJacksonImporter >> importValueFromList: rawValue of: type [
 	"Jackson can serialize different types of values in a list, so we need to find out which it is."
 
@@ -125,14 +126,14 @@ FamixValueJavaJacksonImporter >> importValueFromList: rawValue of: type [
 	self error: 'Unknown type: ' , type mooseNameWithDots
 ]
 
-{ #category : #'private - utility' }
+{ #category : 'private - utility' }
 FamixValueJavaJacksonImporter >> isPrimitiveType: type [
 
 	^ type isPrimitiveType or: [ "Classes wrapping primitives are also considered primitives."
 		  type isPrimitiveWrapper ]
 ]
 
-{ #category : #parsing }
+{ #category : 'parsing' }
 FamixValueJavaJacksonImporter >> parseList: serializedValues [
 
 	| rawValues |
@@ -143,7 +144,7 @@ FamixValueJavaJacksonImporter >> parseList: serializedValues [
 		  ifFalse: [ rawValues ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueJavaJacksonImporter >> specialTypes [
 
 	^ specialTypes ifNil: [
@@ -154,13 +155,13 @@ FamixValueJavaJacksonImporter >> specialTypes [
 			  yourself ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueJavaJacksonImporter >> typeKey [
 
 	^ typeKey ifNil: [ typeKey := '@type' ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueJavaJacksonImporter >> typeKey: aString [
 
 	typeKey := aString

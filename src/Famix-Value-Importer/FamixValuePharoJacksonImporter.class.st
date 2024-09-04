@@ -1,6 +1,6 @@
 Class {
-	#name : #FamixValuePharoJacksonImporter,
-	#superclass : #FamixValueAbstractImporter,
+	#name : 'FamixValuePharoJacksonImporter',
+	#superclass : 'FamixValueAbstractImporter',
 	#instVars : [
 		'typeKey',
 		'idKey',
@@ -8,16 +8,17 @@ Class {
 		'specialTypes',
 		'closureSources'
 	],
-	#category : #'Famix-Value-Importer'
+	#category : 'Famix-Value-Importer',
+	#package : 'Famix-Value-Importer'
 }
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 FamixValuePharoJacksonImporter >> getDefaultUnknownType [
 
 	^ self getUnknownTypeNamed: 'Object'
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 FamixValuePharoJacksonImporter >> getObjectIdentity: rawObject [
 	"Keep track of objects by using the id given by Jackson.
 	References to previously seen objects are serialized by using this id."
@@ -25,31 +26,31 @@ FamixValuePharoJacksonImporter >> getObjectIdentity: rawObject [
 	^ rawObject removeKey: self idKey ifAbsent: nil
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 FamixValuePharoJacksonImporter >> getObjectReference: rawObject [
 
 	^ rawObject removeKey: self refKey ifAbsent: nil
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 FamixValuePharoJacksonImporter >> getObjectType: rawObject [
 
 	^ rawObject removeKey: self typeKey ifAbsent: nil
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValuePharoJacksonImporter >> idKey [
 
 	^ idKey ifNil: [ idKey := '@id' ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValuePharoJacksonImporter >> idKey: aString [
 
 	idKey := aString
 ]
 
-{ #category : #importing }
+{ #category : 'importing' }
 FamixValuePharoJacksonImporter >> importArray: rawValue of: type [
 
 	^ objectDict
@@ -58,7 +59,7 @@ FamixValuePharoJacksonImporter >> importArray: rawValue of: type [
 		  super importCollection: rawValue allButFirst of: type ]
 ]
 
-{ #category : #importing }
+{ #category : 'importing' }
 FamixValuePharoJacksonImporter >> importAssociation: rawValue of: type [
 
 	| association |
@@ -69,23 +70,13 @@ FamixValuePharoJacksonImporter >> importAssociation: rawValue of: type [
 	^ association
 ]
 
-{ #category : #importing }
+{ #category : 'importing' }
 FamixValuePharoJacksonImporter >> importCharacter: value of: type [
 
 	^ self importPrimitive: (value at: 'value') asCharacter of: type name
 ]
 
-{ #category : #importing }
-FamixValuePharoJacksonImporter >> importClassReference: rawValue of: type [
-	"The type has already been loaded during the inference.
-	The raw value contains the fully qualified name of the referenced class."
-
-	^ self model newOfClassReference
-		  value: (self loadTypeNamed: (rawValue at: 'name'));
-		  type: type
-]
-
-{ #category : #importing }
+{ #category : 'importing' }
 FamixValuePharoJacksonImporter >> importClosure: value of: type [
 
 	| closure compiledBlock source |
@@ -108,11 +99,10 @@ FamixValuePharoJacksonImporter >> importClosure: value of: type [
 	^ closure
 ]
 
-{ #category : #importing }
+{ #category : 'importing' }
 FamixValuePharoJacksonImporter >> importCollection: rawValue of: type [
 
 	| collection |
-	type name = 'Array2D' ifTrue: [ self halt ].
 	collection := self model newOfCollection type: type.
 	objectDict at: (self getObjectIdentity: rawValue) put: collection.
 	(rawValue at: '@') do: [ :rawElement |
@@ -121,7 +111,7 @@ FamixValuePharoJacksonImporter >> importCollection: rawValue of: type [
 	^ collection
 ]
 
-{ #category : #importing }
+{ #category : 'importing' }
 FamixValuePharoJacksonImporter >> importDictionary: rawValue of: type [
 
 	| dictionary |
@@ -132,7 +122,7 @@ FamixValuePharoJacksonImporter >> importDictionary: rawValue of: type [
 	^ dictionary
 ]
 
-{ #category : #importing }
+{ #category : 'importing' }
 FamixValuePharoJacksonImporter >> importObject: rawObject of: type [
 
 	self specialTypes
@@ -141,7 +131,7 @@ FamixValuePharoJacksonImporter >> importObject: rawObject of: type [
 	^ super importObject: rawObject of: type
 ]
 
-{ #category : #importing }
+{ #category : 'importing' }
 FamixValuePharoJacksonImporter >> importSymbol: rawObject of: type [
 
 	^ objectDict
@@ -151,13 +141,23 @@ FamixValuePharoJacksonImporter >> importSymbol: rawObject of: type [
 				   type: type)
 ]
 
-{ #category : #importing }
+{ #category : 'importing' }
+FamixValuePharoJacksonImporter >> importTypeReference: rawValue of: type [
+	"The type has already been loaded during the inference.
+	The raw value contains the fully qualified name of the referenced class."
+
+	^ self model newOfTypeReference
+		  value: (self loadTypeNamed: (rawValue at: 'name'));
+		  type: type
+]
+
+{ #category : 'importing' }
 FamixValuePharoJacksonImporter >> importValue: rawValue [
 
 	^ rawValue asPharoJacksonValueOn: self
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 FamixValuePharoJacksonImporter >> initialize [
 
 	super initialize.
@@ -165,33 +165,33 @@ FamixValuePharoJacksonImporter >> initialize [
 	closureSources := Dictionary new
 ]
 
-{ #category : #importing }
+{ #category : 'importing' }
 FamixValuePharoJacksonImporter >> newReader [
 
 	^ super newReader.
 	"^ STONReader new acceptUnknownClasses: true"
 ]
 
-{ #category : #parsing }
+{ #category : 'parsing' }
 FamixValuePharoJacksonImporter >> parseList: serializedValues [
 	"Ignore first element which is the id of the array."
 
 	^ (super parseList: serializedValues) allButFirst
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValuePharoJacksonImporter >> refKey [
 
 	^ refKey ifNil: [ refKey := '@ref' ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValuePharoJacksonImporter >> refKey: aString [
 
 	refKey := aString
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValuePharoJacksonImporter >> specialTypes [
 
 	^ specialTypes ifNil: [
@@ -231,13 +231,13 @@ FamixValuePharoJacksonImporter >> specialTypes [
 		  specialTypes ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValuePharoJacksonImporter >> typeKey [
 
 	^ typeKey ifNil: [ typeKey := '@type' ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValuePharoJacksonImporter >> typeKey: aString [
 
 	typeKey := aString

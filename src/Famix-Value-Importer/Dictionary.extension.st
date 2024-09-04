@@ -1,6 +1,6 @@
-Extension { #name : #Dictionary }
+Extension { #name : 'Dictionary' }
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 Dictionary >> asPharoJacksonValueOn: importer [
 
 	^ (importer getObjectType: self)
@@ -8,7 +8,7 @@ Dictionary >> asPharoJacksonValueOn: importer [
 			  className = 'Class'
 				  ifTrue: [
 					  importer
-						  importClassReference: self
+						  importTypeReference: self
 						  of: (importer loadTypeNamed: className) ]
 				  ifFalse: [
 				  importer
@@ -23,7 +23,7 @@ Dictionary >> asPharoJacksonValueOn: importer [
 				  ifNil: [ Error signal: 'Unknown state' ] ]
 ]
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 Dictionary >> asPharoSTONValueOn: importer [
 
 	^ (self removeKey: STON classNameKey ifAbsent: nil)

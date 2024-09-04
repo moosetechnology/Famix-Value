@@ -3,15 +3,17 @@ I generate the code to recreate objects in helper functions.
 For each object, a dedicated function is generated that takes no arguments and returns the recreated object.
 "
 Class {
-	#name : #FamixValueHelperObjectExportStrategy,
-	#superclass : #FamixValueAbstractObjectExportStrategy,
+	#name : 'FamixValueHelperObjectExportStrategy',
+	#superclass : 'FamixValueAbstractObjectExportStrategy',
 	#instVars : [
 		'declarations'
 	],
-	#category : #'Famix-Value-Exporter-Strategies'
+	#category : 'Famix-Value-Exporter-Strategies',
+	#package : 'Famix-Value-Exporter',
+	#tag : 'Strategies'
 }
 
-{ #category : #ast }
+{ #category : 'ast' }
 FamixValueHelperObjectExportStrategy >> addToHelper: helperClass [
 	"Must be called when building the helper class to add the generated helper declarations."
 
@@ -19,7 +21,7 @@ FamixValueHelperObjectExportStrategy >> addToHelper: helperClass [
 		helperClass addDeclaration: declaration ]
 ]
 
-{ #category : #ast }
+{ #category : 'ast' }
 FamixValueHelperObjectExportStrategy >> buildMethodFor: object withParametersFor: attributes on: visitor [
 	"Build the helper method to construct objects of the same type as the one given in argument.
 	Use only the relevant attributes that are given, rather than all attributes."
@@ -49,13 +51,13 @@ FamixValueHelperObjectExportStrategy >> buildMethodFor: object withParametersFor
 	^ helper
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 FamixValueHelperObjectExportStrategy >> declarations [
 
 	^ declarations
 ]
 
-{ #category : #ast }
+{ #category : 'ast' }
 FamixValueHelperObjectExportStrategy >> dependencyImportsOn: aFASTModel [
 
 	^ { ((aFASTModel newImportDeclaration qualifiedName:
@@ -65,7 +67,7 @@ FamixValueHelperObjectExportStrategy >> dependencyImportsOn: aFASTModel [
 		   isOnDemand: true) }
 ]
 
-{ #category : #exporting }
+{ #category : 'exporting' }
 FamixValueHelperObjectExportStrategy >> export: object on: visitor [
 	"Use a helper method to instantiate the object and set its attributes."
 
@@ -98,13 +100,13 @@ FamixValueHelperObjectExportStrategy >> export: object on: visitor [
 			 yourself)
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 FamixValueHelperObjectExportStrategy >> initialize [
 
 	declarations := Dictionary new
 ]
 
-{ #category : #ast }
+{ #category : 'ast' }
 FamixValueHelperObjectExportStrategy >> makeMethodFor: aFamixType withParametersFor: attributes on: visitor [
 	"Make the method entity, handles its signature and modifiers."
 
@@ -130,7 +132,7 @@ FamixValueHelperObjectExportStrategy >> makeMethodFor: aFamixType withParameters
 		  statementBlock: visitor statementBlock
 ]
 
-{ #category : #ast }
+{ #category : 'ast' }
 FamixValueHelperObjectExportStrategy >> makeSetterInvocationsFor: attributes on: visitor [
 	"Build the helper method's body: set the value of each argument to the corresponding attribute using setters or reflection."
 
@@ -146,7 +148,7 @@ FamixValueHelperObjectExportStrategy >> makeSetterInvocationsFor: attributes on:
 			ifNil: [ visitor makeReflectionSetterInvocation: attribute ] ]
 ]
 
-{ #category : #ast }
+{ #category : 'ast' }
 FamixValueHelperObjectExportStrategy >> makeVariableExpression: value on: visitor [
 	"Used when constructing an object to correctly name the argument variable.
 	For helpers, the var name is the same as the helper method parameter."

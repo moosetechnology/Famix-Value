@@ -15,17 +15,19 @@ A key-value pair belonging to a dictionary.
 
 "
 Class {
-	#name : #FamixValueOfDictionaryAssociation,
-	#superclass : #FamixValueOfType,
+	#name : 'FamixValueOfDictionaryAssociation',
+	#superclass : 'FamixValueOfType',
 	#instVars : [
 		'#dictionary => FMOne type: #FamixValueOfDictionary opposite: #value',
 		'#key => FMOne type: #FamixValueOfType opposite: #keyInDictionaries',
 		'#value => FMOne type: #FamixValueOfType opposite: #valueInDictionaries'
 	],
-	#category : #'Famix-Value-Entities-Entities'
+	#category : 'Famix-Value-Entities-Entities',
+	#package : 'Famix-Value-Entities',
+	#tag : 'Entities'
 }
 
-{ #category : #meta }
+{ #category : 'meta' }
 FamixValueOfDictionaryAssociation class >> annotation [
 
 	<FMClass: #OfDictionaryAssociation super: #FamixValueOfType>
@@ -34,7 +36,7 @@ FamixValueOfDictionaryAssociation class >> annotation [
 	^ self
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfDictionaryAssociation >> dictionary [
 	"Relation named: #dictionary type: #FamixValueOfDictionary opposite: #value"
 
@@ -42,14 +44,14 @@ FamixValueOfDictionaryAssociation >> dictionary [
 	^ dictionary
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfDictionaryAssociation >> dictionary: anObject [
 
 	<generated>
 	dictionary := anObject
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfDictionaryAssociation >> key [
 	"Relation named: #key type: #FamixValueOfType opposite: #keyInDictionaries"
 
@@ -57,14 +59,14 @@ FamixValueOfDictionaryAssociation >> key [
 	^ key
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfDictionaryAssociation >> key: anObject [
 
 	<generated>
 	key := anObject
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfDictionaryAssociation >> value [
 	"Relation named: #value type: #FamixValueOfType opposite: #valueInDictionaries"
 
@@ -72,7 +74,7 @@ FamixValueOfDictionaryAssociation >> value [
 	^ value
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfDictionaryAssociation >> value: anObject [
 
 	<generated>

@@ -1,6 +1,6 @@
-Extension { #name : #FamixJavaAttribute }
+Extension { #name : 'FamixJavaAttribute' }
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixJavaAttribute >> initializerMatchesValues: objectAttributes [
 	"Assume I have a source and an initializer expression.
 	Return whether the representations of primitive objects, given as argument, match those of my initializer expression, regardless of order.
@@ -21,7 +21,7 @@ FamixJavaAttribute >> initializerMatchesValues: objectAttributes [
 	^ toFind isEmpty
 ]
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixJavaAttribute >> isStaticConstant [
 	"Public static attribute with an initializer."
 

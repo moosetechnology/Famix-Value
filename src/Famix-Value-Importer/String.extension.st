@@ -1,12 +1,12 @@
-Extension { #name : #String }
+Extension { #name : 'String' }
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 String >> asJavaJacksonValueOn: importer [
 
 	| typeInference |
 	typeInference := importer typeInference.
 	^ (typeInference isNotNil and: [ typeInference name = 'Class' ])
-		  ifTrue: [ importer importClassReference: self of: typeInference ]
+		  ifTrue: [ importer importTypeReference: self of: typeInference ]
 		  ifFalse: [ "import regular string, escape special characters"
 			  importer
 				  importPrimitive: (self
@@ -15,19 +15,19 @@ String >> asJavaJacksonValueOn: importer [
 				  of: 'java.lang.String' ]
 ]
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 String >> asPharoJacksonValueOn: importer [
 
 	^ importer importPrimitive: self of: self className
 ]
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 String >> asPharoSTONValueOn: importer [
 
 	^ importer importPrimitive: self of: self className
 ]
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 String >> findClosing: close startingAt: startIndex [
 	"Assume the opening character is given at startIndex. Find the matching closing character, taking nesting into account."
 

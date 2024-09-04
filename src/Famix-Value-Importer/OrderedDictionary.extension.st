@@ -1,6 +1,6 @@
-Extension { #name : #OrderedDictionary }
+Extension { #name : 'OrderedDictionary' }
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 OrderedDictionary >> asJavaJacksonValueOn: importer [
 
 	| type |
@@ -14,7 +14,7 @@ OrderedDictionary >> asJavaJacksonValueOn: importer [
 		  ifFalse: [ importer importObject: self of: type ]
 ]
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 OrderedDictionary >> asPharoJacksonValueOn: importer [
 
 	^ (importer getObjectType: self)
@@ -22,7 +22,7 @@ OrderedDictionary >> asPharoJacksonValueOn: importer [
 			  className = 'Class'
 				  ifTrue: [
 					  importer
-						  importClassReference: self
+						  importTypeReference: self
 						  of: (importer loadTypeNamed: className) ]
 				  ifFalse: [
 				  importer

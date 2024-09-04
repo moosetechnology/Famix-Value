@@ -1,6 +1,6 @@
-Extension { #name : #FamixStMethod }
+Extension { #name : 'FamixStMethod' }
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 FamixStMethod >> isProcedure [
 
 	^ false

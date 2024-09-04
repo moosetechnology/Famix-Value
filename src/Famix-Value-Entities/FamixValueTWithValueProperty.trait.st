@@ -10,14 +10,16 @@ My users have the value data represented by a Smalltalk object as a property.
 
 "
 Trait {
-	#name : #FamixValueTWithValueProperty,
+	#name : 'FamixValueTWithValueProperty',
 	#instVars : [
 		'#value => FMProperty'
 	],
-	#category : #'Famix-Value-Entities-Traits'
+	#category : 'Famix-Value-Entities-Traits',
+	#package : 'Famix-Value-Entities',
+	#tag : 'Traits'
 }
 
-{ #category : #meta }
+{ #category : 'meta' }
 FamixValueTWithValueProperty classSide >> annotation [
 
 	<FMClass: #TWithValueProperty super: #Object>
@@ -26,7 +28,7 @@ FamixValueTWithValueProperty classSide >> annotation [
 	^ self
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueTWithValueProperty >> value [
 
 	<FMProperty: #value type: #Object>
@@ -35,7 +37,7 @@ FamixValueTWithValueProperty >> value [
 	^ value
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueTWithValueProperty >> value: anObject [
 	<generated>
 	value := anObject

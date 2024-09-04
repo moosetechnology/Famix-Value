@@ -1,6 +1,6 @@
-Extension { #name : #FamixValueOfCollectionElement }
+Extension { #name : 'FamixValueOfCollectionElement' }
 
-{ #category : #'*Famix-Value-Entities-Extensions' }
+{ #category : '*Famix-Value-Entities-Extensions' }
 FamixValueOfCollectionElement >> mooseNameOn: aStream [
 
 	aStream nextPut: $[.

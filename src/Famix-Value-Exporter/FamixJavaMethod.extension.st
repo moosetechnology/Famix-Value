@@ -1,6 +1,6 @@
-Extension { #name : #FamixJavaMethod }
+Extension { #name : 'FamixJavaMethod' }
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixJavaMethod >> isSetterLax [
 	"Name begins with set AND
 		Has 1 parameter AND

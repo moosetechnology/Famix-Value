@@ -1,16 +1,17 @@
 Class {
-	#name : #FamixValuePharoSTONImporter,
-	#superclass : #FamixValueAbstractImporter,
-	#category : #'Famix-Value-Importer'
+	#name : 'FamixValuePharoSTONImporter',
+	#superclass : 'FamixValueAbstractImporter',
+	#category : 'Famix-Value-Importer',
+	#package : 'Famix-Value-Importer'
 }
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 FamixValuePharoSTONImporter >> getObjectIdentity: rawObject [
 
 	^ rawObject identityHash
 ]
 
-{ #category : #importing }
+{ #category : 'importing' }
 FamixValuePharoSTONImporter >> importObject: rawObject of: type [
 	"STON objects are fully deserialized, so there is no way of knowing if an object has already been imported without remembering all objects.
 	If a serialized object doesn't have its class loaded in the image, it is reified as a dictionary.
@@ -30,13 +31,13 @@ FamixValuePharoSTONImporter >> importObject: rawObject of: type [
 	^ super importObject: dictionary of: type
 ]
 
-{ #category : #importing }
+{ #category : 'importing' }
 FamixValuePharoSTONImporter >> importValue: rawValue [
 
 	^ rawValue asPharoSTONValueOn: self
 ]
 
-{ #category : #'private - utility' }
+{ #category : 'private - utility' }
 FamixValuePharoSTONImporter >> newReader [
 
 	^ STONReader new acceptUnknownClasses: true

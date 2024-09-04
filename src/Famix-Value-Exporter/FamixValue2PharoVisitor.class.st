@@ -6,16 +6,18 @@ Collections are constructed using the `withAll:` class method.
 Dictionaries are constructed using the `newFrom:` class method.
 "
 Class {
-	#name : #FamixValue2PharoVisitor,
-	#superclass : #FamixValue2ASTVisitor,
+	#name : 'FamixValue2PharoVisitor',
+	#superclass : 'FamixValue2ASTVisitor',
 	#instVars : [
 		'definedValues',
 		'vars'
 	],
-	#category : #'Famix-Value-Exporter-Visitors'
+	#category : 'Famix-Value-Exporter-Visitors',
+	#package : 'Famix-Value-Exporter',
+	#tag : 'Visitors'
 }
 
-{ #category : #visiting }
+{ #category : 'visiting' }
 FamixValue2PharoVisitor >> addParenthesis: aNode [
 	"add parenthesis when the node as multiple references"
 
@@ -28,7 +30,7 @@ FamixValue2PharoVisitor >> addParenthesis: aNode [
 	^ newNode
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 FamixValue2PharoVisitor >> ensureVisited: value [
 
 	value isOfPrimitiveType ifTrue: [ ^ value accept: self ].
@@ -40,7 +42,7 @@ FamixValue2PharoVisitor >> ensureVisited: value [
 			  value accept: self ]
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 FamixValue2PharoVisitor >> initialize [
 
 	super initialize.
@@ -49,7 +51,7 @@ FamixValue2PharoVisitor >> initialize [
 	vars := IdentityDictionary new
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 FamixValue2PharoVisitor >> makeAssignmentFor: aVariableName and: aValue [
 	"^ RBAssignmentNode variable: (self makeVariableNamed: aVariableName) value: aValue"
 
@@ -61,19 +63,19 @@ FamixValue2PharoVisitor >> makeAssignmentFor: aVariableName and: aValue [
 				  aValue }
 ]
 
-{ #category : #ast }
+{ #category : 'ast' }
 FamixValue2PharoVisitor >> makeHelper [
 
 	
 ]
 
-{ #category : #visiting }
+{ #category : 'visiting' }
 FamixValue2PharoVisitor >> makeVariableExpression: value [
 
 	^ RBVariableNode named: (self varNameFor: value)
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 FamixValue2PharoVisitor >> makeVariableNamed: aString [
 	"^ RBVariableNode named: aString"
 
@@ -83,19 +85,13 @@ FamixValue2PharoVisitor >> makeVariableNamed: aString [
 		  arguments: { (RBLiteralNode value: aString) }
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValue2PharoVisitor >> statementBlock [
 
 	^ statementBlock ifNil: [ statementBlock := RBSequenceNode new ]
 ]
 
-{ #category : #visiting }
-FamixValue2PharoVisitor >> visitClassReference: aFamixValueOfClassReference [
-
-	^ RBVariableNode named: aFamixValueOfClassReference value name
-]
-
-{ #category : #visiting }
+{ #category : 'visiting' }
 FamixValue2PharoVisitor >> visitClosure: closure [
 
 	closure variables do: [ :var | self ensureVisited: var value ].
@@ -110,7 +106,7 @@ FamixValue2PharoVisitor >> visitClosure: closure [
 			error pass ]
 ]
 
-{ #category : #visiting }
+{ #category : 'visiting' }
 FamixValue2PharoVisitor >> visitCollection: collection [
 
 	| name isArrayed |
@@ -146,7 +142,7 @@ FamixValue2PharoVisitor >> visitCollection: collection [
 						 arguments: { elementNode } ]) ]
 ]
 
-{ #category : #visiting }
+{ #category : 'visiting' }
 FamixValue2PharoVisitor >> visitDictionary: dictionary [
 
 	self statementBlock addNode: (self
@@ -161,7 +157,7 @@ FamixValue2PharoVisitor >> visitDictionary: dictionary [
 		self visitDictionaryAssociation: assoc ]
 ]
 
-{ #category : #visiting }
+{ #category : 'visiting' }
 FamixValue2PharoVisitor >> visitDictionaryAssociation: association [
 
 	| key value keyNode valueNode |
@@ -182,13 +178,13 @@ FamixValue2PharoVisitor >> visitDictionaryAssociation: association [
 						  ifFalse: [ self makeVariableNamed: (self varNameFor: value) ]) })
 ]
 
-{ #category : #visiting }
+{ #category : 'visiting' }
 FamixValue2PharoVisitor >> visitEnumValue: enumValue [
 
 	self shouldNotImplement
 ]
 
-{ #category : #visiting }
+{ #category : 'visiting' }
 FamixValue2PharoVisitor >> visitObject: object [
 
 	self statementBlock addNode: (self
@@ -200,7 +196,7 @@ FamixValue2PharoVisitor >> visitObject: object [
 	object value do: [ :attribute | self visitObjectAttribute: attribute ]
 ]
 
-{ #category : #visiting }
+{ #category : 'visiting' }
 FamixValue2PharoVisitor >> visitObjectAttribute: attribute [
 
 	| value attributeNode |
@@ -227,8 +223,14 @@ FamixValue2PharoVisitor >> visitObjectAttribute: attribute [
 							 attributeNode } ])
 ]
 
-{ #category : #visiting }
+{ #category : 'visiting' }
 FamixValue2PharoVisitor >> visitPrimitive: primitive [
 
 	^ RBLiteralValueNode value: primitive value
+]
+
+{ #category : 'visiting' }
+FamixValue2PharoVisitor >> visitTypeReference: aFamixValueOfTypeReference [
+
+	^ RBVariableNode named: aFamixValueOfTypeReference value name
 ]

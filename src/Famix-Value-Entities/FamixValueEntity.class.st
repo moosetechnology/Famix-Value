@@ -1,10 +1,12 @@
 Class {
-	#name : #FamixValueEntity,
-	#superclass : #MooseEntity,
-	#category : #'Famix-Value-Entities-Entities'
+	#name : 'FamixValueEntity',
+	#superclass : 'MooseEntity',
+	#category : 'Famix-Value-Entities-Entities',
+	#package : 'Famix-Value-Entities',
+	#tag : 'Entities'
 }
 
-{ #category : #meta }
+{ #category : 'meta' }
 FamixValueEntity class >> annotation [
 
 	<FMClass: #Entity super: #MooseEntity>
@@ -14,98 +16,98 @@ FamixValueEntity class >> annotation [
 	^ self
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 FamixValueEntity class >> isAbstract [
 
 	<generated>
 	^ self == FamixValueEntity
 ]
 
-{ #category : #meta }
+{ #category : 'meta' }
 FamixValueEntity class >> metamodel [
 
 	<generated>
 	^ FamixValueModel metamodel
 ]
 
-{ #category : #testing }
-FamixValueEntity >> isOfClassReference [
-
-	<generated>
-	^ false
-]
-
-{ #category : #testing }
+{ #category : 'testing' }
 FamixValueEntity >> isOfClosure [
 
 	<generated>
 	^ false
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 FamixValueEntity >> isOfCollection [
 
 	<generated>
 	^ false
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 FamixValueEntity >> isOfDictionary [
 
 	<generated>
 	^ false
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 FamixValueEntity >> isOfEnum [
 
 	<generated>
 	^ false
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 FamixValueEntity >> isOfObject [
 
 	<generated>
 	^ false
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 FamixValueEntity >> isOfPrimitiveType [
 
 	<generated>
 	^ false
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 FamixValueEntity >> isOfType [
 
 	<generated>
 	^ false
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
+FamixValueEntity >> isOfTypeReference [
+
+	<generated>
+	^ false
+]
+
+{ #category : 'testing' }
 FamixValueEntity >> isOfUnknownType [
 
 	<generated>
 	^ false
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 FamixValueEntity >> isQueryable [
 
 	<generated>
 	^ false
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 FamixValueEntity >> isType [
 
 	<generated>
 	^ false
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 FamixValueEntity >> isUnknownType [
 
 	<generated>

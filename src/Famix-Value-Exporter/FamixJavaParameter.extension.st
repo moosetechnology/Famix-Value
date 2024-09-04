@@ -1,6 +1,6 @@
-Extension { #name : #FamixJavaParameter }
+Extension { #name : 'FamixJavaParameter' }
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixJavaParameter >> allAccessedAttributesOf: aFamixJavaClass [
 
 	aFamixJavaClass generateFastIfNotDoneAndBind. "need to bind at class level"

@@ -1,6 +1,6 @@
-Extension { #name : #Collection }
+Extension { #name : 'Collection' }
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 Collection >> asJavaJacksonValueOn: importer [
 	"List values are serialized as an array containing [1] the type name and [2] the array of elements."
 
@@ -23,7 +23,7 @@ Collection >> asJavaJacksonValueOn: importer [
 	^ importer importValueFromList: self of: importer loadType
 ]
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 Collection >> asPharoJacksonValueOn: importer [
 
 	^ importer
@@ -31,7 +31,7 @@ Collection >> asPharoJacksonValueOn: importer [
 		  of: (importer loadTypeNamed: self className)
 ]
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 Collection >> asPharoSTONValueOn: importer [
 
 	^ importer
@@ -39,7 +39,7 @@ Collection >> asPharoSTONValueOn: importer [
 		  of: (importer loadTypeNamed: self className)
 ]
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 Collection >> hasJavaJacksonTypeInformation [
 
 	^ self size = 2 and: [

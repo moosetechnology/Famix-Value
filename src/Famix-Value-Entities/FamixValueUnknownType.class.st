@@ -19,6 +19,7 @@ An unknown type.
 |---|
 | `sourceAnchor` | `FamixTSourceEntity` | `element` | `FamixTSourceAnchor` | SourceAnchor entity linking to the original source code for this entity|
 | `typedEntities` | `FamixTType` | `declaredType` | `FamixTTypedEntity` | Entities that have this type as declaredType|
+| `valueReferences` | `FamixTType` | `value` | `FamixValueOfTypeReference` | |
 | `values` | `FamixTType` | `type` | `FamixValueOfType` | |
 
 
@@ -32,14 +33,16 @@ An unknown type.
 
 "
 Class {
-	#name : #FamixValueUnknownType,
-	#superclass : #FamixValueEntity,
+	#name : 'FamixValueUnknownType',
+	#superclass : 'FamixValueEntity',
 	#traits : 'FamixTType',
 	#classTraits : 'FamixTType classTrait',
-	#category : #'Famix-Value-Entities-Entities'
+	#category : 'Famix-Value-Entities-Entities',
+	#package : 'Famix-Value-Entities',
+	#tag : 'Entities'
 }
 
-{ #category : #meta }
+{ #category : 'meta' }
 FamixValueUnknownType class >> annotation [
 
 	<FMClass: #UnknownType super: #FamixValueEntity>
@@ -48,7 +51,7 @@ FamixValueUnknownType class >> annotation [
 	^ self
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 FamixValueUnknownType >> isUnknownType [
 
 	<generated>

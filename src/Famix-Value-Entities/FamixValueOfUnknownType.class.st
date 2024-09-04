@@ -10,14 +10,16 @@ A value of an unknwon type.
 
 "
 Class {
-	#name : #FamixValueOfUnknownType,
-	#superclass : #FamixValueOfType,
+	#name : 'FamixValueOfUnknownType',
+	#superclass : 'FamixValueOfType',
 	#traits : 'FamixValueTWithValueProperty',
 	#classTraits : 'FamixValueTWithValueProperty classTrait',
-	#category : #'Famix-Value-Entities-Entities'
+	#category : 'Famix-Value-Entities-Entities',
+	#package : 'Famix-Value-Entities',
+	#tag : 'Entities'
 }
 
-{ #category : #meta }
+{ #category : 'meta' }
 FamixValueOfUnknownType class >> annotation [
 
 	<FMClass: #OfUnknownType super: #FamixValueOfType>
@@ -26,7 +28,7 @@ FamixValueOfUnknownType class >> annotation [
 	^ self
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 FamixValueOfUnknownType >> isOfUnknownType [
 
 	<generated>

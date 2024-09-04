@@ -9,8 +9,8 @@ When exporting a `FamixValueOfObjectAttribute`, if the setter for its `FamixTAtt
 All attributes that fall into this category are added as `markedForReflection`.
 "
 Class {
-	#name : #FamixValue2FASTJavaVisitor,
-	#superclass : #FamixValue2ASTVisitor,
+	#name : 'FamixValue2FASTJavaVisitor',
+	#superclass : 'FamixValue2ASTVisitor',
 	#instVars : [
 		'builder',
 		'constructorCache',
@@ -18,10 +18,12 @@ Class {
 		'objectExportStrategy',
 		'reflections'
 	],
-	#category : #'Famix-Value-Exporter-Visitors'
+	#category : 'Famix-Value-Exporter-Visitors',
+	#package : 'Famix-Value-Exporter',
+	#tag : 'Visitors'
 }
 
-{ #category : #private }
+{ #category : 'private' }
 FamixValue2FASTJavaVisitor >> addAttributesFrom: object asArgumentsTo: invocation usingConstructor: constructor [
 
 	(constructorCache
@@ -45,13 +47,13 @@ FamixValue2FASTJavaVisitor >> addAttributesFrom: object asArgumentsTo: invocatio
 									 self model ] ]) ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValue2FASTJavaVisitor >> builder [
 
 	^ builder ifNil: [ builder := FASTJavaBuilder new model: self model ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 FamixValue2FASTJavaVisitor >> constructObject: object [
 
 	| constructor invocation |
@@ -78,7 +80,7 @@ FamixValue2FASTJavaVisitor >> constructObject: object [
 			usingConstructor: constructor ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 FamixValue2FASTJavaVisitor >> ensureReflection [
 	"Ensure that the infrastructure needed to use reflection is generated.
 	A static method called `initializeReflection` is created and will be populated by calls to `ensureReflectionField:` and `ensureReflectionConstructor:`.
@@ -267,7 +269,7 @@ FamixValue2FASTJavaVisitor >> ensureReflection [
 	^ initStatementBlock
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 FamixValue2FASTJavaVisitor >> ensureReflectionConstructor: aFamixJavaMethod [
 
 	| declarations initStatementBlock varName |
@@ -321,7 +323,7 @@ FamixValue2FASTJavaVisitor >> ensureReflectionConstructor: aFamixJavaMethod [
 				  arguments: { (model newBooleanLiteral primitiveValue: 'true') }))
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 FamixValue2FASTJavaVisitor >> ensureReflectionField: attribute [
 	"Ensure an attribute exists to hold the java.lang.reflect.Field for the given attribute."
 
@@ -375,7 +377,7 @@ FamixValue2FASTJavaVisitor >> ensureReflectionField: attribute [
 		  varName ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 FamixValue2FASTJavaVisitor >> filterAttributesToSet: attributes for: object [
 	"No need to set attributes that are set in the constructor."
 
@@ -391,7 +393,7 @@ FamixValue2FASTJavaVisitor >> filterAttributesToSet: attributes for: object [
 		  ifAbsent: [ attributes ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 FamixValue2FASTJavaVisitor >> findConstructorFor: object [
 	"Order all constructors according to attributes set and number of parameters, then choose best public one.
 	If no constructor is explicitly declared, use the default constructor. Otherwise, rely on reflection."
@@ -412,7 +414,7 @@ FamixValue2FASTJavaVisitor >> findConstructorFor: object [
 						  constructor ] ] ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 FamixValue2FASTJavaVisitor >> findStaticAttributeMatching: object [
 	"Only try to find static attributes for object composed of only primitive values, for now."
 
@@ -437,21 +439,21 @@ FamixValue2FASTJavaVisitor >> findStaticAttributeMatching: object [
 		  ifNone: nil
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 FamixValue2FASTJavaVisitor >> initialize [
 
 	constructorCache := IdentityDictionary new.
 	staticAttributesCache := IdentityDictionary new
 ]
 
-{ #category : #ast }
+{ #category : 'ast' }
 FamixValue2FASTJavaVisitor >> makeClassTypeExpression: typeName [
 
 	^ self model newClassTypeExpression typeName:
 		  (model newTypeName name: typeName)
 ]
 
-{ #category : #ast }
+{ #category : 'ast' }
 FamixValue2FASTJavaVisitor >> makeHelper [
 	"The helper should always be generated, regardless of strategy.
 	This method must be called after all of the other value exports are done."
@@ -477,7 +479,7 @@ FamixValue2FASTJavaVisitor >> makeHelper [
 	self objectExportStrategy addToHelper: helperClass
 ]
 
-{ #category : #ast }
+{ #category : 'ast' }
 FamixValue2FASTJavaVisitor >> makeHelperClass [
 	"The helper class should not be instantiated so it has a private constructor."
 
@@ -491,7 +493,7 @@ FamixValue2FASTJavaVisitor >> makeHelperClass [
 		  yourself
 ]
 
-{ #category : #ast }
+{ #category : 'ast' }
 FamixValue2FASTJavaVisitor >> makeNewExpression: object [
 
 	^ self model newNewExpression type:
@@ -499,7 +501,7 @@ FamixValue2FASTJavaVisitor >> makeNewExpression: object [
 	"(self makeClassTypeExpression: object type concreteTypeName)"
 ]
 
-{ #category : #ast }
+{ #category : 'ast' }
 FamixValue2FASTJavaVisitor >> makeReflectionFieldGetter: attribute [
 
 	^ self model newMethodInvocation
@@ -513,7 +515,7 @@ FamixValue2FASTJavaVisitor >> makeReflectionFieldGetter: attribute [
 		  yourself
 ]
 
-{ #category : #ast }
+{ #category : 'ast' }
 FamixValue2FASTJavaVisitor >> makeReflectionSetterInvocation: attribute [
 	"Use reflection to set an attribute on an object."
 
@@ -529,7 +531,7 @@ FamixValue2FASTJavaVisitor >> makeReflectionSetterInvocation: attribute [
 						  (model newVariableExpression name: attribute value varName) }))
 ]
 
-{ #category : #ast }
+{ #category : 'ast' }
 FamixValue2FASTJavaVisitor >> makeSetterInvocation: setter for: attribute [
 
 	self
@@ -538,7 +540,7 @@ FamixValue2FASTJavaVisitor >> makeSetterInvocation: setter for: attribute [
 		named: (self varNameFor: attribute value)
 ]
 
-{ #category : #ast }
+{ #category : 'ast' }
 FamixValue2FASTJavaVisitor >> makeSetterInvocation: setter for: attribute named: aString [
 
 	self statementBlock addStatement:
@@ -550,7 +552,7 @@ FamixValue2FASTJavaVisitor >> makeSetterInvocation: setter for: attribute named:
 				  famixMethod: setter))
 ]
 
-{ #category : #ast }
+{ #category : 'ast' }
 FamixValue2FASTJavaVisitor >> makeVarDeclStatement: value [
 
 	^ self model newVarDeclStatement
@@ -559,7 +561,7 @@ FamixValue2FASTJavaVisitor >> makeVarDeclStatement: value [
 		  yourself
 ]
 
-{ #category : #ast }
+{ #category : 'ast' }
 FamixValue2FASTJavaVisitor >> makeVarDeclStatement: object usingStaticAttribute: attribute [
 	"Declare a variable for object, initialized with the value of the given static attribute.
 	For example: MyClass myClass = MyClass.MY_STATIC_ATTRIBUTE;"
@@ -574,7 +576,7 @@ FamixValue2FASTJavaVisitor >> makeVarDeclStatement: object usingStaticAttribute:
 			 yourself)
 ]
 
-{ #category : #ast }
+{ #category : 'ast' }
 FamixValue2FASTJavaVisitor >> makeVariableDeclarator: value [
 
 	^ self model newVariableDeclarator
@@ -582,52 +584,52 @@ FamixValue2FASTJavaVisitor >> makeVariableDeclarator: value [
 		  expression: (value asFASTJavaExpressionOn: self)
 ]
 
-{ #category : #ast }
+{ #category : 'ast' }
 FamixValue2FASTJavaVisitor >> makeVariableExpression: value [
 
 	^ self model newVariableExpression name: (self varNameFor: value)
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValue2FASTJavaVisitor >> model [
 
 	^ model ifNil: [ model := FASTJavaModel new ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValue2FASTJavaVisitor >> objectExportStrategy [
 
 	^ objectExportStrategy ifNil: [
 		  objectExportStrategy := FamixValueInlineObjectExportStrategy new ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValue2FASTJavaVisitor >> objectExportStrategy: anObjectExportStrategy [
 
 	objectExportStrategy := anObjectExportStrategy
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValue2FASTJavaVisitor >> reflections [
 
 	^ reflections ifNil: [ reflections := IdentityDictionary new ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValue2FASTJavaVisitor >> statementBlock [
 
 	^ statementBlock ifNil: [
 		  statementBlock := self model newStatementBlock ]
 ]
 
-{ #category : #visiting }
+{ #category : 'visiting' }
 FamixValue2FASTJavaVisitor >> visitCollection: collection [
 	"Dispatch to type to handle special cases"
 
 	^ collection type acceptValueVisitor: self forCollection: collection
 ]
 
-{ #category : #visiting }
+{ #category : 'visiting' }
 FamixValue2FASTJavaVisitor >> visitCollectionOfRegularType: collection [
 
 	| varName |
@@ -646,7 +648,7 @@ FamixValue2FASTJavaVisitor >> visitCollectionOfRegularType: collection [
 	^ statementBlock
 ]
 
-{ #category : #visiting }
+{ #category : 'visiting' }
 FamixValue2FASTJavaVisitor >> visitDictionary: dictionary [
 
 	| varName |
@@ -667,7 +669,7 @@ FamixValue2FASTJavaVisitor >> visitDictionary: dictionary [
 	^ statementBlock
 ]
 
-{ #category : #visiting }
+{ #category : 'visiting' }
 FamixValue2FASTJavaVisitor >> visitEnumValue: enumValue [
 
 	^ self statementBlock
@@ -675,14 +677,14 @@ FamixValue2FASTJavaVisitor >> visitEnumValue: enumValue [
 		  yourself
 ]
 
-{ #category : #visiting }
+{ #category : 'visiting' }
 FamixValue2FASTJavaVisitor >> visitObject: object [
 	"Dispatch to type to handle special cases"
 
 	^ object type acceptValueVisitor: self forObject: object
 ]
 
-{ #category : #visiting }
+{ #category : 'visiting' }
 FamixValue2FASTJavaVisitor >> visitObjectAttribute: attribute [
 
 	attribute attribute ifNil: [ "ignore unknown attributes" ^ self ].
@@ -692,7 +694,7 @@ FamixValue2FASTJavaVisitor >> visitObjectAttribute: attribute [
 		ifNil: [ self makeReflectionSetterInvocation: attribute ]
 ]
 
-{ #category : #visiting }
+{ #category : 'visiting' }
 FamixValue2FASTJavaVisitor >> visitObjectOfRegularType: object [
 	"Dispatched here from #visitObject: if the object has a regular creation schema:
 	use constructor, then setup each attribute and use setter or reflection."
@@ -704,14 +706,14 @@ FamixValue2FASTJavaVisitor >> visitObjectOfRegularType: object [
 	^ statementBlock
 ]
 
-{ #category : #visiting }
+{ #category : 'visiting' }
 FamixValue2FASTJavaVisitor >> visitObjectStub: object [
 	"Previously tried to recreate stubs by deserializing their JSON representation, but getting a correct JSON string is a challenge."
 
 	self shouldBeImplemented
 ]
 
-{ #category : #visiting }
+{ #category : 'visiting' }
 FamixValue2FASTJavaVisitor >> visitPrimitive: primitive [
 
 	^ self statementBlock
@@ -719,7 +721,7 @@ FamixValue2FASTJavaVisitor >> visitPrimitive: primitive [
 		  yourself
 ]
 
-{ #category : #visiting }
+{ #category : 'visiting' }
 FamixValue2FASTJavaVisitor >> visitValueOfUnknownType: value [
 
 	^ self statementBlock

@@ -1,5 +1,5 @@
 "
-A value of an enumeration.
+A reference to a type.
 
 ## Relations
 ======================
@@ -7,13 +7,13 @@ A value of an enumeration.
 ### Other
 | Relation | Origin | Opposite | Type | Comment |
 |---|
-| `value` | `FamixValueOfEnum` | `valueReferences` | `FamixTEnumValue` | |
+| `value` | `FamixValueOfTypeReference` | `valueReferences` | `FamixTType` | |
 
 
 
 "
 Class {
-	#name : 'FamixValueOfEnum',
+	#name : 'FamixValueOfTypeReference',
 	#superclass : 'FamixValueOfType',
 	#category : 'Famix-Value-Entities-Entities',
 	#package : 'Famix-Value-Entities',
@@ -21,32 +21,32 @@ Class {
 }
 
 { #category : 'meta' }
-FamixValueOfEnum class >> annotation [
+FamixValueOfTypeReference class >> annotation [
 
-	<FMClass: #OfEnum super: #FamixValueOfType>
+	<FMClass: #OfTypeReference super: #FamixValueOfType>
 	<package: #'Famix-Value-Entities'>
 	<generated>
 	^ self
 ]
 
 { #category : 'testing' }
-FamixValueOfEnum >> isOfEnum [
+FamixValueOfTypeReference >> isOfTypeReference [
 
 	<generated>
 	^ true
 ]
 
 { #category : 'accessing' }
-FamixValueOfEnum >> value [
-	"Relation named: #value type: #FamixTEnumValue opposite: #valueReferences"
+FamixValueOfTypeReference >> value [
+	"Relation named: #value type: #FamixTType opposite: #valueReferences"
 
 	<generated>
-	<FMProperty: #value type: #FamixTEnumValue opposite: #valueReferences>
+	<FMProperty: #value type: #FamixTType opposite: #valueReferences>
 	^ self attributeAt: #value ifAbsent: [ nil ]
 ]
 
 { #category : 'accessing' }
-FamixValueOfEnum >> value: anObject [
+FamixValueOfTypeReference >> value: anObject [
 
 	<generated>
 	self attributeAt: #value put: (FMMultivalueLink on: self update: #valueReferences from: self value to: anObject).

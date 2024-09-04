@@ -1,6 +1,6 @@
-Extension { #name : #FamixValueOfObjectAttribute }
+Extension { #name : 'FamixValueOfObjectAttribute' }
 
-{ #category : #'*Famix-Value-Entities-Extensions' }
+{ #category : '*Famix-Value-Entities-Extensions' }
 FamixValueOfObjectAttribute >> mooseNameOn: aStream [
 
 	value printTypeOn: aStream.
@@ -10,7 +10,7 @@ FamixValueOfObjectAttribute >> mooseNameOn: aStream [
 	value printValueOn: aStream
 ]
 
-{ #category : #'*Famix-Value-Entities-Extensions' }
+{ #category : '*Famix-Value-Entities-Extensions' }
 FamixValueOfObjectAttribute >> varName [
 
 	^ self attribute

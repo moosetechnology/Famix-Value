@@ -1,6 +1,6 @@
-Extension { #name : #FamixTClass }
+Extension { #name : 'FamixTClass' }
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 FamixTClass >> findAttributeNamed: attributeName [
 
 	^ (self cacheAt: #resolvedAttributes ifAbsentPut: [ Dictionary new ])
@@ -14,7 +14,7 @@ FamixTClass >> findAttributeNamed: attributeName [
 						  ifNone: [ self findAttributeWithSetterNamed: attributeName ] ] ]
 ]
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 FamixTClass >> findAttributeWithSetterNamed: attributeName [
 	"Useful when the serialized attribute's name does not exactly match the attribute name.
 	I try to find the setter matching the former, then search for the attribute access."

@@ -1,6 +1,6 @@
-Extension { #name : #Text }
+Extension { #name : 'Text' }
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 Text >> asPharoJacksonValueOn: importer [
 
 	^ importer
@@ -8,7 +8,7 @@ Text >> asPharoJacksonValueOn: importer [
 		  of: (importer loadTypeNamed: self className)
 ]
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 Text >> asPharoSTONValueOn: importer [
 
 	^ importer

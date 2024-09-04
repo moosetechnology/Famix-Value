@@ -1,6 +1,6 @@
-Extension { #name : #RunArray }
+Extension { #name : 'RunArray' }
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 RunArray >> asPharoJacksonValueOn: importer [
 
 	^ importer
@@ -8,7 +8,7 @@ RunArray >> asPharoJacksonValueOn: importer [
 		  of: (importer loadTypeNamed: self className)
 ]
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 RunArray >> asPharoSTONValueOn: importer [
 
 	^ importer

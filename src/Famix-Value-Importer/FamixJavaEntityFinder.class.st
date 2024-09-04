@@ -2,15 +2,16 @@
 An importer helper for finding Java types represented by `FamixJavaType` and its subclasses in a FamixJava model.
 "
 Class {
-	#name : #FamixJavaEntityFinder,
-	#superclass : #FamixEntityFinder,
+	#name : 'FamixJavaEntityFinder',
+	#superclass : 'FamixEntityFinder',
 	#classVars : [
 		'FieldDescriptors'
 	],
-	#category : #'Famix-Value-Importer'
+	#category : 'Famix-Value-Importer',
+	#package : 'Famix-Value-Importer'
 }
 
-{ #category : #'class initialization' }
+{ #category : 'class initialization' }
 FamixJavaEntityFinder class >> initialize [
 	"See https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.2"
 
@@ -26,13 +27,13 @@ FamixJavaEntityFinder class >> initialize [
 		at: $Z put: 'boolean'
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 FamixJavaEntityFinder >> methodNameFromSignature: signature [
 
 	^ signature copyUpTo: $(
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 FamixJavaEntityFinder >> parseTypeName: name [
 	"The name may not be fully qualified.
 	Even if we want to find a name in java.lang or java.util packages, we want to search using the mooseName if it is parameterized.
@@ -54,7 +55,7 @@ FamixJavaEntityFinder >> parseTypeName: name [
 		  (FamixValueJavaArray wrapping: type) dimensions: dimensions ]
 ]
 
-{ #category : #matching }
+{ #category : 'matching' }
 FamixJavaEntityFinder >> signatureOf: method matches: signature [
 	"Assume the signature includes the method name and the field descriptors of the parameters, e.g. `main([Ljava.lang.String;)`.
 	Because Famix doesn't represent arrays, use the method's signature string which contains array information.
@@ -75,7 +76,7 @@ FamixJavaEntityFinder >> signatureOf: method matches: signature [
 			   stream nextPut: $) ])
 ]
 
-{ #category : #translating }
+{ #category : 'translating' }
 FamixJavaEntityFinder >> translateFieldDescriptor: fieldDescriptor [
 	"Translate Java field descriptors to a type name used by Moose, e.g. '[I' -> 'int[]'
 	See https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.2"
@@ -99,7 +100,7 @@ FamixJavaEntityFinder >> translateFieldDescriptor: fieldDescriptor [
 	^ typeName
 ]
 
-{ #category : #matching }
+{ #category : 'matching' }
 FamixJavaEntityFinder >> translateFieldDescriptors: parameters on: stream [
 	"Only keep the type's simple name, discard the qualifying prefix."
 

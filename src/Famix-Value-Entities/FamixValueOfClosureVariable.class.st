@@ -20,17 +20,19 @@ A variable binding in a lexical closure.
 
 "
 Class {
-	#name : #FamixValueOfClosureVariable,
-	#superclass : #FamixValueEntity,
+	#name : 'FamixValueOfClosureVariable',
+	#superclass : 'FamixValueEntity',
 	#instVars : [
 		'#name => FMProperty',
 		'#closure => FMOne type: #FamixValueOfClosure opposite: #variables',
 		'#value => FMOne type: #FamixValueOfType opposite: #variableInClosures'
 	],
-	#category : #'Famix-Value-Entities-Entities'
+	#category : 'Famix-Value-Entities-Entities',
+	#package : 'Famix-Value-Entities',
+	#tag : 'Entities'
 }
 
-{ #category : #meta }
+{ #category : 'meta' }
 FamixValueOfClosureVariable class >> annotation [
 
 	<FMClass: #OfClosureVariable super: #FamixValueEntity>
@@ -39,7 +41,7 @@ FamixValueOfClosureVariable class >> annotation [
 	^ self
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfClosureVariable >> closure [
 	"Relation named: #closure type: #FamixValueOfClosure opposite: #variables"
 
@@ -47,14 +49,14 @@ FamixValueOfClosureVariable >> closure [
 	^ closure
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfClosureVariable >> closure: anObject [
 
 	<generated>
 	closure := anObject
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfClosureVariable >> name [
 
 	<FMProperty: #name type: #String>
@@ -63,13 +65,13 @@ FamixValueOfClosureVariable >> name [
 	^ name
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfClosureVariable >> name: anObject [
 	<generated>
 	name := anObject
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfClosureVariable >> value [
 	"Relation named: #value type: #FamixValueOfType opposite: #variableInClosures"
 
@@ -77,14 +79,14 @@ FamixValueOfClosureVariable >> value [
 	^ value
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfClosureVariable >> value: anObject [
 
 	<generated>
 	value := anObject
 ]
 
-{ #category : #generate }
+{ #category : 'generate' }
 FamixValueOfClosureVariable >> varName [
 
 	^ name

@@ -5,11 +5,13 @@ It provides an API for creating entities and adding them to the model.
 
 "
 Trait {
-	#name : #FamixValueTEntityCreator,
-	#category : #'Famix-Value-Entities-Model'
+	#name : 'FamixValueTEntityCreator',
+	#category : 'Famix-Value-Entities-Model',
+	#package : 'Famix-Value-Entities',
+	#tag : 'Model'
 }
 
-{ #category : #meta }
+{ #category : 'meta' }
 FamixValueTEntityCreator classSide >> annotation [
 
 	<FMClass: #TEntityCreator super: #Object>
@@ -18,98 +20,98 @@ FamixValueTEntityCreator classSide >> annotation [
 	^ self
 ]
 
-{ #category : #'entity creation' }
-FamixValueTEntityCreator >> newOfClassReference [
-
-	<generated>
-	^ self add: FamixValueOfClassReference new
-]
-
-{ #category : #'entity creation' }
+{ #category : 'entity creation' }
 FamixValueTEntityCreator >> newOfClosure [
 
 	<generated>
 	^ self add: FamixValueOfClosure new
 ]
 
-{ #category : #'entity creation' }
+{ #category : 'entity creation' }
 FamixValueTEntityCreator >> newOfClosureVariable [
 
 	<generated>
 	^ self add: FamixValueOfClosureVariable new
 ]
 
-{ #category : #'entity creation' }
+{ #category : 'entity creation' }
 FamixValueTEntityCreator >> newOfCollection [
 
 	<generated>
 	^ self add: FamixValueOfCollection new
 ]
 
-{ #category : #'entity creation' }
+{ #category : 'entity creation' }
 FamixValueTEntityCreator >> newOfCollectionElement [
 
 	<generated>
 	^ self add: FamixValueOfCollectionElement new
 ]
 
-{ #category : #'entity creation' }
+{ #category : 'entity creation' }
 FamixValueTEntityCreator >> newOfDictionary [
 
 	<generated>
 	^ self add: FamixValueOfDictionary new
 ]
 
-{ #category : #'entity creation' }
+{ #category : 'entity creation' }
 FamixValueTEntityCreator >> newOfDictionaryAssociation [
 
 	<generated>
 	^ self add: FamixValueOfDictionaryAssociation new
 ]
 
-{ #category : #'entity creation' }
+{ #category : 'entity creation' }
 FamixValueTEntityCreator >> newOfEnum [
 
 	<generated>
 	^ self add: FamixValueOfEnum new
 ]
 
-{ #category : #'entity creation' }
+{ #category : 'entity creation' }
 FamixValueTEntityCreator >> newOfObject [
 
 	<generated>
 	^ self add: FamixValueOfObject new
 ]
 
-{ #category : #'entity creation' }
+{ #category : 'entity creation' }
 FamixValueTEntityCreator >> newOfObjectAttribute [
 
 	<generated>
 	^ self add: FamixValueOfObjectAttribute new
 ]
 
-{ #category : #'entity creation' }
+{ #category : 'entity creation' }
 FamixValueTEntityCreator >> newOfPrimitiveType [
 
 	<generated>
 	^ self add: FamixValueOfPrimitiveType new
 ]
 
-{ #category : #'entity creation' }
+{ #category : 'entity creation' }
+FamixValueTEntityCreator >> newOfTypeReference [
+
+	<generated>
+	^ self add: FamixValueOfTypeReference new
+]
+
+{ #category : 'entity creation' }
 FamixValueTEntityCreator >> newOfUnknownType [
 
 	<generated>
 	^ self add: FamixValueOfUnknownType new
 ]
 
-{ #category : #'entity creation' }
+{ #category : 'entity creation' }
 FamixValueTEntityCreator >> newUnknownType [
 
 	<generated>
 	^ self add: FamixValueUnknownType new
 ]
 
-{ #category : #'entity creation' }
+{ #category : 'entity creation' }
 FamixValueTEntityCreator >> newUnknownTypeNamed: aName [
 
 	<generated>

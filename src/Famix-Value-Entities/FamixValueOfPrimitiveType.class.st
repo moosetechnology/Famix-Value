@@ -10,14 +10,16 @@ A value of a primitive type.
 
 "
 Class {
-	#name : #FamixValueOfPrimitiveType,
-	#superclass : #FamixValueOfType,
+	#name : 'FamixValueOfPrimitiveType',
+	#superclass : 'FamixValueOfType',
 	#traits : 'FamixValueTWithValueProperty',
 	#classTraits : 'FamixValueTWithValueProperty classTrait',
-	#category : #'Famix-Value-Entities-Entities'
+	#category : 'Famix-Value-Entities-Entities',
+	#package : 'Famix-Value-Entities',
+	#tag : 'Entities'
 }
 
-{ #category : #meta }
+{ #category : 'meta' }
 FamixValueOfPrimitiveType class >> annotation [
 
 	<FMClass: #OfPrimitiveType super: #FamixValueOfType>
@@ -26,7 +28,7 @@ FamixValueOfPrimitiveType class >> annotation [
 	^ self
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 FamixValueOfPrimitiveType >> isOfPrimitiveType [
 
 	<generated>

@@ -1,12 +1,12 @@
-Extension { #name : #FASTJavaVariableExpression }
+Extension { #name : 'FASTJavaVariableExpression' }
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FASTJavaVariableExpression >> accessedAttributeName [
 
 	^ name
 ]
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FASTJavaVariableExpression >> accessedAttributesOf: aFamixJavaClass [
 
 	self javaAssignmentExpressionOwner ifNotNil: [ :assign |

@@ -2,15 +2,17 @@
 I am used to handle Java type references and imports.
 "
 Class {
-	#name : #FASTJavaBuilder,
-	#superclass : #FASTBuilder,
+	#name : 'FASTJavaBuilder',
+	#superclass : 'FASTBuilder',
 	#instVars : [
 		'typeNameDictionary'
 	],
-	#category : #'Famix-Value-Exporter-Helpers'
+	#category : 'Famix-Value-Exporter-Helpers',
+	#package : 'Famix-Value-Exporter',
+	#tag : 'Helpers'
 }
 
-{ #category : #ast }
+{ #category : 'ast' }
 FASTJavaBuilder >> fullyQualifiedPackageNameFor: aFamixJavaPackage [
 
 	^ aFamixJavaPackage parentPackage
@@ -21,7 +23,7 @@ FASTJavaBuilder >> fullyQualifiedPackageNameFor: aFamixJavaPackage [
 				  namespace: (self fullyQualifiedPackageNameFor: parentPackage) ]
 ]
 
-{ #category : #ast }
+{ #category : 'ast' }
 FASTJavaBuilder >> fullyQualifiedTypeNameFor: aFamixJavaType [
 
 	^ self model newQualifiedTypeName
@@ -30,20 +32,20 @@ FASTJavaBuilder >> fullyQualifiedTypeNameFor: aFamixJavaType [
 			  (self fullyQualifiedPackageNameFor: aFamixJavaType typeContainer)
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 FASTJavaBuilder >> initialize [
 
 	typeNameDictionary := Dictionary new
 ]
 
-{ #category : #ast }
+{ #category : 'ast' }
 FASTJavaBuilder >> makeImportDeclaration: aFamixType [
 
 	^ self model newImportDeclaration qualifiedName:
 		  (model newQualifiedName name: aFamixType mooseNameWithDots)
 ]
 
-{ #category : #ast }
+{ #category : 'ast' }
 FASTJavaBuilder >> makeImportDeclarations [
 	"Make an import declaration for each type processed by this builder."
 
@@ -51,7 +53,7 @@ FASTJavaBuilder >> makeImportDeclarations [
 		  self makeImportDeclaration: type ]
 ]
 
-{ #category : #ast }
+{ #category : 'ast' }
 FASTJavaBuilder >> makeImportDeclarations: anEntity [
 	"Make import declarations for all types related to the given entity."
 
@@ -60,7 +62,7 @@ FASTJavaBuilder >> makeImportDeclarations: anEntity [
 		  as: OrderedCollection
 ]
 
-{ #category : #processing }
+{ #category : 'processing' }
 FASTJavaBuilder >> processType: aFamixType [
 	"Process the given type and its related types, for example if it has concrete type parameters.
 	This lets the builder know how to refer to the type.
@@ -77,7 +79,7 @@ FASTJavaBuilder >> processType: aFamixType [
 		typeNameDictionary at: type name ifAbsentPut: type ]
 ]
 
-{ #category : #processing }
+{ #category : 'processing' }
 FASTJavaBuilder >> referType: aFamixType [
 	"Process a type and return a FAST expression to reference it.
 	Use its unqualified name when importing the type, otherwise use its fully qualified name."
