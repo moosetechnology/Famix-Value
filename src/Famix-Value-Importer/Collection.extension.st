@@ -5,7 +5,12 @@ Collection >> asJavaJacksonValueOn: importer [
 	"List values are serialized as an array containing [1] the type name and [2] the array of elements."
 
 	| type |
-	type := importer entityFinder findTypeNamed: (self at: 1).
+	type := self hasJavaJacksonTypeInformation ifTrue: [
+		        importer entityFinder findTypeNamed: (self at: 1) ].
+	type ifNil: [ type := importer loadType ].
+
+	type mooseName = 'java::lang::Class' ifTrue: [
+		^ importer importTypeReference: (self at: 2) of: type ].
 
 	"might be an evident Jackson TypeInfo wrapper"
 	self hasJavaJacksonTypeInformation ifTrue: [
@@ -16,11 +21,15 @@ Collection >> asJavaJacksonValueOn: importer [
 		^ importer importEnumValue: (self at: 2) of: type ].
 
 	"might be a special object"
-	(importer importSpecialObject: (self at: 2) of: type) ifNotNil: [
-		:value | ^ value ].
+	type ifNotNil: [
+		(importer importSpecialObject: (self at: 2) of: type) ifNotNil: [
+			:value | ^ value ] ].
+
+	type isPrimitiveType ifTrue: [ "an array of primitives"
+		self shouldBeImplemented ].
 
 	"must be a regular list"
-	^ importer importValueFromList: self of: importer loadType
+	^ importer importValueFromList: self of: type
 ]
 
 { #category : '*Famix-Value-Importer' }
@@ -43,5 +52,10 @@ Collection >> asPharoSTONValueOn: importer [
 Collection >> hasJavaJacksonTypeInformation [
 
 	^ self size = 2 and: [
-		  (self at: 1) isString and: [ (self at: 2) isString not ] ]
+		  (self at: 1) ifNil: [ false ] ifNotNil: [ :first |
+			  first isString and: [
+				  first isNotEmpty and: [
+					  (self at: 2)
+						  ifNil: [ false ]
+						  ifNotNil: [ :second | second isString not ] ] ] ] ]
 ]

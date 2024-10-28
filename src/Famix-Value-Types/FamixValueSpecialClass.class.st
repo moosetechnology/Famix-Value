@@ -4,18 +4,19 @@ FamixValueSpecialClass represents a class that requires custom handling due to i
 My subclasses are responsible for implementing the specific behavior required to handle special classes in a particular language.
 "
 Class {
-	#name : #FamixValueSpecialClass,
-	#superclass : #FamixValueSpecialType,
-	#category : #'Famix-Value-Types'
+	#name : 'FamixValueSpecialClass',
+	#superclass : 'FamixValueSpecialType',
+	#category : 'Famix-Value-Types',
+	#package : 'Famix-Value-Types'
 }
 
-{ #category : #testing }
+{ #category : 'testing' }
 FamixValueSpecialClass class >> isAbstract [
 
 	^ self == FamixValueSpecialClass
 ]
 
-{ #category : #importing }
+{ #category : 'importing' }
 FamixValueSpecialClass >> import: rawValue on: importer [
 	"Wrap the value as a field in an object."
 
@@ -26,7 +27,7 @@ FamixValueSpecialClass >> import: rawValue on: importer [
 		  yourself
 ]
 
-{ #category : #importing }
+{ #category : 'importing' }
 FamixValueSpecialClass >> importSpecial: rawValue on: importer [
 	"By default, let the value import itself.
 	Redefine this method to implement specific import logic."

@@ -49,7 +49,7 @@ FamixEntityFinder >> findMethodWithSignature: signature in: class [
 		              self signatureOf: method matches: signature ].
 	candidates size = 1 ifTrue: [ ^ candidates anyOne ].
 	candidates ifEmpty: [
-		NotFound signalFor: signature in: class methods ].
+		FamixEntityNotFound signalFor: signature in: class ].
 	"consider returning a specific candidate; TODO: better"
 	self error: 'Found multiple methods matching signature: ' , signature
 ]

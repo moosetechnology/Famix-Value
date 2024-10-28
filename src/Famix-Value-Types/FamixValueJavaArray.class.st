@@ -4,15 +4,16 @@ Famix does not take dimensions into account because it is a dependency model.
 However, arrays are required to represent values faithfully, and that is my purpose.
 "
 Class {
-	#name : #FamixValueJavaArray,
-	#superclass : #FamixValueSpecialType,
+	#name : 'FamixValueJavaArray',
+	#superclass : 'FamixValueSpecialType',
 	#instVars : [
 		'dimensions'
 	],
-	#category : #'Famix-Value-Types'
+	#category : 'Famix-Value-Types',
+	#package : 'Famix-Value-Types'
 }
 
-{ #category : #visiting }
+{ #category : 'visiting' }
 FamixValueJavaArray >> acceptValueVisitor: visitor forCollection: array [
 
 	| model arrayType initializer |
@@ -40,30 +41,19 @@ FamixValueJavaArray >> acceptValueVisitor: visitor forCollection: array [
 		  yourself
 ]
 
-{ #category : #visiting }
-FamixValueJavaArray >> decorate: aFamixJavaType asFASTJavaTypeExpressionOn: visitor [
-	"Add array brackets to the type name."
-
-	| expression |
-	expression := aFamixJavaType asFASTJavaTypeExpressionOn: visitor.
-	expression typeName name:
-		expression typeName name , ('[]' repeat: dimensions).
-	^ expression
-]
-
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueJavaArray >> dimensions [
 
 	^ dimensions
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueJavaArray >> dimensions: anInteger [
 
 	dimensions := anInteger
 ]
 
-{ #category : #importing }
+{ #category : 'importing' }
 FamixValueJavaArray >> import: rawValue on: importer [
 
 	self shouldNotImplement

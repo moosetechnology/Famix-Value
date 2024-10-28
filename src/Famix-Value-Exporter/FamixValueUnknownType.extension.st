@@ -7,6 +7,24 @@ FamixValueUnknownType >> asFASTJavaTypeExpressionOn: visitor [
 ]
 
 { #category : '*Famix-Value-Exporter' }
+FamixValueUnknownType >> decorate: aFamixJavaType asFASTJavaTypeExpressionOn: visitor [
+
+	^ self asFASTJavaTypeExpressionOn: visitor
+]
+
+{ #category : '*Famix-Value-Exporter' }
+FamixValueUnknownType >> fullyQualifiedNameOn: aFASTJavaModel [
+
+	^ aFASTJavaModel newQualifiedName name: name
+]
+
+{ #category : '*Famix-Value-Exporter' }
+FamixValueUnknownType >> fullyQualifiedTypeNameOn: aFASTJavaModel [
+
+	^ aFASTJavaModel newQualifiedTypeName name: name
+]
+
+{ #category : '*Famix-Value-Exporter' }
 FamixValueUnknownType >> needsJavaImport [
 
 	^ ((name size = 6 or: [

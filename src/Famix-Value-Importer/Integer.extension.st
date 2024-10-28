@@ -11,6 +11,10 @@ Integer >> asJavaJacksonValueOn: importer [
 			 ifAbsent: [ "might be a special object with missing runtime type information"
 				 importer importSpecialObject: self of: typeInference ])
 			ifNotNil: [ :value | ^ value ] ].
-	"if none of the above holds true, this must be a regular integer"
-	^ importer importPrimitive: self of: 'int'
+	"if none of the above holds true, this must be a regular integer (or long)"
+	^ importer
+		  importPrimitive: self
+		  of: ((self > 2147483647 or: [ self < -2147483648 ])
+				   ifTrue: [ 'long' ]
+				   ifFalse: [ 'int' ])
 ]

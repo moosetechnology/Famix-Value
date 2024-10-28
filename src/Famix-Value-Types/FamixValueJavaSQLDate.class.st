@@ -2,12 +2,13 @@
 A representation of the `java.sql.Date` type which is serialized using a String representation.
 "
 Class {
-	#name : #FamixValueJavaSQLDate,
-	#superclass : #FamixValueJavaDate,
-	#category : #'Famix-Value-Types'
+	#name : 'FamixValueJavaSQLDate',
+	#superclass : 'FamixValueJavaDate',
+	#category : 'Famix-Value-Types',
+	#package : 'Famix-Value-Types'
 }
 
-{ #category : #importing }
+{ #category : 'importing' }
 FamixValueJavaSQLDate >> importSpecial: rawValue on: importer [
 	"The value is the string representation in 'yyyy-mm-dd' format."
 
@@ -16,7 +17,7 @@ FamixValueJavaSQLDate >> importSpecial: rawValue on: importer [
 		  type: (importer entityFinder findTypeNamed: 'String')
 ]
 
-{ #category : #converting }
+{ #category : 'converting' }
 FamixValueJavaSQLDate >> value: date asFASTJavaExpressionOn: visitor [
 	"Call java.sql.Date#valueOf(String) to recreate this date."
 

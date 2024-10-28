@@ -3,12 +3,13 @@ A representation of Java date types such as `java.util.Date` or `java.sql.Timest
 This family of types has a special serialization format: all attributes are transient, and only a `long` is used to measure the distance to the epoch in milliseconds.
 "
 Class {
-	#name : #FamixValueJavaDate,
-	#superclass : #FamixValueSpecialClass,
-	#category : #'Famix-Value-Types'
+	#name : 'FamixValueJavaDate',
+	#superclass : 'FamixValueSpecialClass',
+	#category : 'Famix-Value-Types',
+	#package : 'Famix-Value-Types'
 }
 
-{ #category : #visiting }
+{ #category : 'visiting' }
 FamixValueJavaDate >> acceptValueVisitor: visitor forObject: object [
 	"Skip visiting the attribute, it is added as a constructor argument."
 
@@ -17,7 +18,7 @@ FamixValueJavaDate >> acceptValueVisitor: visitor forObject: object [
 		  yourself
 ]
 
-{ #category : #importing }
+{ #category : 'importing' }
 FamixValueJavaDate >> importSpecial: rawValue on: importer [
 	"The value is the distance to the epoch in milliseconds, represented with a long."
 
@@ -26,7 +27,7 @@ FamixValueJavaDate >> importSpecial: rawValue on: importer [
 		  type: (importer entityFinder findTypeNamed: 'long')
 ]
 
-{ #category : #converting }
+{ #category : 'converting' }
 FamixValueJavaDate >> value: date asFASTJavaExpressionOn: visitor [
 	"Add epoch time attribute as constructor argument."
 

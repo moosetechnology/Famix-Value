@@ -25,11 +25,13 @@ FASTJavaBuilder >> fullyQualifiedPackageNameFor: aFamixJavaPackage [
 
 { #category : 'ast' }
 FASTJavaBuilder >> fullyQualifiedTypeNameFor: aFamixJavaType [
+	"A type can be in another type or a package"
 
 	^ self model newQualifiedTypeName
 		  name: aFamixJavaType baseName;
 		  namespace:
-			  (self fullyQualifiedPackageNameFor: aFamixJavaType typeContainer)
+			  (aFamixJavaType typeContainer fullyQualifiedTypeNameOn:
+					   self model)
 ]
 
 { #category : 'initialization' }
@@ -42,7 +44,7 @@ FASTJavaBuilder >> initialize [
 FASTJavaBuilder >> makeImportDeclaration: aFamixType [
 
 	^ self model newImportDeclaration qualifiedName:
-		  (model newQualifiedName name: aFamixType mooseNameWithDots)
+		  (aFamixType fullyQualifiedNameOn: self model)
 ]
 
 { #category : 'ast' }

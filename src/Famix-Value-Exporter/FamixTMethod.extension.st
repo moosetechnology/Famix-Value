@@ -55,8 +55,19 @@ FamixTMethod >> mapConstructorParametersToAttributes [
 		  (parameter fastAccesses flatCollectAsSet: [ :access |
 			   access accessedAttributesOf: parentType ])
 			  ifNotEmpty: [ :attributes |
-				  attributes size = 1
-					  ifTrue: [ attributes anyOne ]
-					  ifFalse: [ self error: 'Expected only one attribute.' ] ]
+				  | attribute |
+				  attributes size = 1 ifFalse: [
+					  FamixValueExporterError signal: 'Expected only one attribute.' ].
+				  (attribute := attributes anyOne) declaredType
+					  ifNil: [ "TODO should not happen, fix Java parser" nil ]
+					  ifNotNil: [ :attributeType |
+						  (attributeType withSubHierarchy includes:
+							   parameter declaredType)
+							  ifTrue: [ attribute ]
+							  ifFalse: [ "parameter is used to set the attribute, but not directly because they are of different types
+						a common occurence is an array-to-collection transformation:
+						setValues(String... values) { this.values = Arrays.asList(values); }
+						however reality is often more complex, so for now we ignore this parameter-to-attribute mapping (10/24)"
+								  nil ] ] ]
 			  ifEmpty: [ "parameter is not mapped to an attribute" nil ] ]
 ]

@@ -139,7 +139,7 @@ FamixValueGenerator >> defineProperties [
 { #category : 'definition' }
 FamixValueGenerator >> defineRelations [
 
-	value *- (tType property: #values).
+	value *- (tType property: #valueInstances).
 	value
 	*- ((self remoteTrait: #TTypedEntity withPrefix: #Famix) property:
 			 #values).

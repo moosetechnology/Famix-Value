@@ -24,5 +24,14 @@ FASTJavaVariableExpression >> accessedAttributesOf: aFamixJavaClass [
 			  ifFalse: [
 				  (method parameters at: (invoc arguments indexOf: self))
 					  allAccessedAttributesOf: aFamixJavaClass ] ].
+	receiverOwner ifNotNil: [ :receiver | "receiver of a method, reiterate on the variable 'this'"
+		| method |
+		^ (method := receiver famixInvocation anyCandidate) isStub
+			  ifTrue: [ "ignore stubs" {  } ]
+			  ifFalse: [
+				  method implicitVariables
+					  detect: [ :var | var isSelf ]
+					  ifFound: [ :var | var allAccessedAttributesOf: aFamixJavaClass ]
+					  ifNone: [ {  } ] ] ].
 	self error: 'TODO: what else can be using the parameter?'
 ]

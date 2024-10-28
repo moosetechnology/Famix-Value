@@ -9,7 +9,11 @@ OrderedDictionary >> asJavaJacksonValueOn: importer [
 		        ifNil: [
 			        importer typeInference ifNil: [
 				        Error signal: 'Cannot determine type.' ] ].
-	^ (type isUnknownType or: [ type isDictionaryType ])
+	(type isUnknownType not and: [ type isParameterType ]) ifTrue: [
+		Warning signal:
+			'ParameterType should not be applicable as a value type?' ].
+	^ (type isUnknownType or: [
+		   type isDictionaryType or: [ type isParameterType ] ])
 		  ifTrue: [ importer importDictionary: self of: type ]
 		  ifFalse: [ importer importObject: self of: type ]
 ]

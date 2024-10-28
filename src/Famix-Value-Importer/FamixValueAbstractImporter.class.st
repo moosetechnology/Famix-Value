@@ -74,7 +74,7 @@ FamixValueAbstractImporter >> importCollection: rawValue of: type [
 ]
 
 { #category : 'importing' }
-FamixValueAbstractImporter >> importDictionary: rawValue of: type [
+FamixValueAbstractImporter >> importDictionary: rawDictionary of: type [
 	"infer from type arguments, e.g. Map<String, MyClass>"
 
 	| dictionary keyType valueType assoc |
@@ -84,15 +84,16 @@ FamixValueAbstractImporter >> importDictionary: rawValue of: type [
 			keyType := paramTypeInferences at: 1.
 			valueType := paramTypeInferences at: 2 ]
 		ifEmpty: [ keyType := valueType := nil ].
-	rawValue associationsDo: [ :rawAssoc |
+
+	self iterate: rawDictionary keysAndValuesDo: [ :rawKey :rawValue |
 		assoc := self model newOfDictionaryAssociation dictionary:
 			         dictionary.
 		self
 			withTypeInference: keyType
-			do: [ assoc key: (self importValue: rawAssoc key) ].
+			do: [ assoc key: (self importValue: rawKey) ].
 		self
 			withTypeInference: valueType
-			do: [ assoc value: (self importValue: rawAssoc value) ] ].
+			do: [ assoc value: (self importValue: rawValue) ] ].
 	^ dictionary
 ]
 
@@ -113,7 +114,7 @@ FamixValueAbstractImporter >> importObject: rawObject of: type [
 	object := self model newOfObject type: type.
 	(self getObjectIdentity: rawObject) ifNotNil: [ :id |
 		objectDict at: id put: object ].
-	rawObject keysAndValuesDo: [ :name :value |
+	self iterate: rawObject keysAndValuesDo: [ :name :value |
 		(self importObjectAttribute: value of: type named: name) ifNotNil: [
 			:attribute | attribute object: object ] ].
 	^ object
@@ -153,6 +154,12 @@ FamixValueAbstractImporter >> importValue: rawValue [
 FamixValueAbstractImporter >> initialize [
 
 	self reset
+]
+
+{ #category : 'importing' }
+FamixValueAbstractImporter >> iterate: rawObject keysAndValuesDo: aBlock [
+
+	rawObject keysAndValuesDo: aBlock
 ]
 
 { #category : 'enumerating' }
