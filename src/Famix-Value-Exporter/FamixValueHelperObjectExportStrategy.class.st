@@ -45,7 +45,7 @@ FamixValueHelperObjectExportStrategy >> buildMethodFor: object withParametersFor
 	visitor constructObject: object.
 	self
 		makeSetterInvocationsFor:
-		(visitor filterAttributesToSet: attributes for: object)
+		(visitor filterAttributesToSet: attributes for: object type)
 		on: visitor.
 	visitor statementBlock addStatement:
 		(model newReturnStatement expression:

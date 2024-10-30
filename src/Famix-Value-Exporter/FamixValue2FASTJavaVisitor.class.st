@@ -377,11 +377,11 @@ FamixValue2FASTJavaVisitor >> ensureReflectionField: attribute [
 ]
 
 { #category : 'private' }
-FamixValue2FASTJavaVisitor >> filterAttributesToSet: attributes for: object [
+FamixValue2FASTJavaVisitor >> filterAttributesToSet: attributes for: type [
 	"No need to set attributes that are set in the constructor."
 
 	^ constructorCache
-		  at: object type
+		  at: type
 		  ifPresent: [ :constructor |
 			  constructorCache
 				  at: constructor
@@ -487,7 +487,7 @@ FamixValue2FASTJavaVisitor >> makeHelperClass [
 		  addModifier: (model newModifier token: 'public');
 		  addDeclaration: (model newMethodEntity
 				   name: 'ModestHelper';
-				   modifiers: { (model newModifier token: 'private') };
+				   addModifier: (model newModifier token: 'private');
 				   statementBlock: model newStatementBlock);
 		  yourself
 ]
