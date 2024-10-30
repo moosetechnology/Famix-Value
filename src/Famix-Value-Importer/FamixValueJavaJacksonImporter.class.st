@@ -202,24 +202,37 @@ FamixValueJavaJacksonImporter >> parseList: serializedValues [
 
 { #category : 'private - utility' }
 FamixValueJavaJacksonImporter >> readDimensionsOfAttribute: attribute [
+	"Famix ignores the dimensions of an attribute, so we have to read it manually.
+	The source anchor is used to look for square brackets in the attribute definition.
+	The square brackets can appear on the type or on the identifier.
+	e.g. `int[] a, b[];`, var a has 1 dimension, var b has 2."
 
-	| source index char dimensions |
-	source := WriteStream on: ''.
+	| source char index dimensions |
+	source := WriteStream on: (String new: 100).
 	attribute sourceAnchor fileReference readStreamDo: [ :rs |
-		1 to: attribute sourceAnchor endPos do: [ :i |
+		| start |
+		"we don't know where the attribute definition starts
+		because the source anchor only applies to the identifier
+		so we read the source starting from the class start position"
+		start := attribute parentType sourceAnchor startPos.
+		rs skip: start.
+		start to: attribute sourceAnchor endPos do: [ :i |
 		source nextPut: rs next ].
-		"read from endPos until:
+		"additionally read from endPos until:
 		- next declarator, eg. `int a, b`
 		- end of definition, eg. `int a;`
 		- initialization, eg. `int a = 1`"
-		[ ',;=' includes: (source nextPut: rs next) ] whileFalse.
-		source := source contents ].
+		[ ',;=' includes: (char := rs next) ] whileFalse: [
+			source nextPut: char ] ].
+
+	"source contains (at least) the attribute definition, now we count the square brackets"
+	source := source contents.
 	index := source size.
 	dimensions := 0.
 	[ "read backwards until:
-	- block opener, eg. `class { int a;`
+	- block opener, eg. `class C { int a;`
 	- block closer, eg. `int f(){} int a;`
-	- end of statement, eg. int b; int a;"
+	- end of statement, eg. `int b; int a;`"
 	char := source at: (index := index - 1).
 	char == $]
 		ifTrue: [
