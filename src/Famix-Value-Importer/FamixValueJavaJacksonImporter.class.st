@@ -17,11 +17,31 @@ Class {
 	#instVars : [
 		'typeKey',
 		'idKey',
-		'specialTypes'
+		'specialTypes',
+		'skipTransientAttributes'
 	],
 	#category : 'Famix-Value-Importer',
 	#package : 'Famix-Value-Importer'
 }
+
+{ #category : 'importing' }
+FamixValueJavaJacksonImporter >> findAttributeNamed: name in: type [
+	"Handle Java synthetic fields: they are created by the compiler and do not appear in the source code"
+
+	(name beginsWith: 'this$') ifTrue: [ "reference from the inner class instance to the enclosing class instance
+		this is not represented in Famix so we create the attribute"
+		^ (type cacheAt: #syntheticFields ifAbsentPut: [ Dictionary new ])
+			  at: name
+			  ifAbsentPut: [
+				  (FamixJavaAttribute named: name)
+					  parentType: type;
+					  declaredType: type typeContainer ] ].
+
+	"TODO fields from anonymous classes and lambdas storing variables captured by closure (named `val$<varName>`)"
+
+	"regular attribute"
+	^ type findAttributeNamed: name
+]
 
 { #category : 'enumerating' }
 FamixValueJavaJacksonImporter >> getDefaultUnknownType [
@@ -63,13 +83,13 @@ FamixValueJavaJacksonImporter >> importObjectAttribute: rawValue of: type named:
 		Error signal:
 			'Cannot find attributes in interfaces. Signaled for attribute `'
 			, name , '` and interface `' , type name , '`.' ].
-	(attribute := type findAttributeNamed: name)
-		ifNil: [
-			FamixValueImporterError signal:
-				'Attribute `' , name , '` not found in hierarchy of `'
-				, type mooseName , '`' ]
-		ifNotNil: [ "Skip transient attributes."
-			attribute isTransient ifTrue: [ ^ nil ] ].
+	(attribute := self findAttributeNamed: name in: type) ifNil: [
+		FamixValueImporterError signal:
+			'Attribute `' , name , '` not found in hierarchy of `'
+			, type mooseName , '`' ].
+
+	(attribute isTransient and: [ self skipTransientAttributes ])
+		ifTrue: [ ^ nil ].
 
 	"If the attribute type is a TypeParameter, and the runtime type is a concretization
 	=> inference is the concretization of the TypeParameter"
@@ -79,6 +99,7 @@ FamixValueJavaJacksonImporter >> importObjectAttribute: rawValue of: type named:
 			declaredType isParameterType
 				ifFalse: [ "not parametric" inference := declaredType ]
 				ifTrue: [
+					self halt. "wait what's happening here? why do we need a detect? investigate, fix(?), and explain with a comment"
 					declaredType concretizations
 						detect: [ :paramType |
 						paramType concretizations first concreteEntity == type ]
@@ -87,7 +108,7 @@ FamixValueJavaJacksonImporter >> importObjectAttribute: rawValue of: type named:
 
 	(rawValue isCollection and: [
 		 inference isNotNil and: [ self isPrimitiveType: inference ] ])
-		ifTrue: [
+		ifTrue: [ "TODO check is too strict, arrays can be everywhere -> add info in metamodel!"
 			^ self model newOfObjectAttribute
 				  value: (self
 						   importCollection: rawValue
@@ -175,8 +196,7 @@ FamixValueJavaJacksonImporter >> parseList: serializedValues [
 	rawValues := super parseList: serializedValues.
 	^ rawValues hasJavaJacksonTypeInformation
 		  ifTrue: [ "ignore the type information of the top level list."
-			  ^ rawValues "TODO only a specific version of jackson does this, investigate"
-			  "rawValues at: 2" ]
+			  ^ rawValues at: 2 "TODO only a specific version of jackson does this, investigate" ]
 		  ifFalse: [ rawValues ]
 ]
 
@@ -207,6 +227,18 @@ FamixValueJavaJacksonImporter >> readDimensionsOfAttribute: attribute [
 			false ]
 		ifFalse: [ '{};' includes: char ] ] whileFalse.
 	^ dimensions
+]
+
+{ #category : 'importing' }
+FamixValueJavaJacksonImporter >> skipTransientAttributes [
+
+	^ skipTransientAttributes ifNil: [ skipTransientAttributes := true ]
+]
+
+{ #category : 'importing' }
+FamixValueJavaJacksonImporter >> skipTransientAttributes: aBoolean [
+
+	skipTransientAttributes := aBoolean
 ]
 
 { #category : 'accessing' }
