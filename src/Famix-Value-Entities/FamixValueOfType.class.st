@@ -10,7 +10,7 @@ Abstract superclass of all ValueOf_Type_ entities.
 | `attributeInObjects` | `FamixValueOfType` | `value` | `FamixValueOfObjectAttribute` | |
 | `elementInCollections` | `FamixValueOfType` | `value` | `FamixValueOfCollectionElement` | |
 | `keyInDictionaries` | `FamixValueOfType` | `key` | `FamixValueOfDictionaryAssociation` | |
-| `type` | `FamixValueOfType` | `values` | `FamixTType` | |
+| `type` | `FamixValueOfType` | `valueInstances` | `FamixTType` | |
 | `typedEntity` | `FamixValueOfType` | `values` | `FamixTTypedEntity` | |
 | `valueInDictionaries` | `FamixValueOfType` | `value` | `FamixValueOfDictionaryAssociation` | |
 | `variableInClosures` | `FamixValueOfType` | `value` | `FamixValueOfClosureVariable` | |
@@ -137,10 +137,10 @@ FamixValueOfType >> keyInDictionaries: anObject [
 
 { #category : 'accessing' }
 FamixValueOfType >> type [
-	"Relation named: #type type: #FamixTType opposite: #values"
+	"Relation named: #type type: #FamixTType opposite: #valueInstances"
 
 	<generated>
-	<FMProperty: #type type: #FamixTType opposite: #values>
+	<FMProperty: #type type: #FamixTType opposite: #valueInstances>
 	^ self attributeAt: #type ifAbsent: [ nil ]
 ]
 
@@ -148,7 +148,7 @@ FamixValueOfType >> type [
 FamixValueOfType >> type: anObject [
 
 	<generated>
-	self attributeAt: #type put: (FMMultivalueLink on: self update: #values from: self type to: anObject).
+	self attributeAt: #type put: (FMMultivalueLink on: self update: #valueInstances from: self type to: anObject).
 ]
 
 { #category : 'accessing' }

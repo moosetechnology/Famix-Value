@@ -17,11 +17,31 @@ Class {
 	#instVars : [
 		'typeKey',
 		'idKey',
-		'specialTypes'
+		'specialTypes',
+		'skipTransientAttributes'
 	],
 	#category : 'Famix-Value-Importer',
 	#package : 'Famix-Value-Importer'
 }
+
+{ #category : 'importing' }
+FamixValueJavaJacksonImporter >> findAttributeNamed: name in: type [
+	"Handle Java synthetic fields: they are created by the compiler and do not appear in the source code"
+
+	(name beginsWith: 'this$') ifTrue: [ "reference from the inner class instance to the enclosing class instance
+		this is not represented in Famix so we create the attribute"
+		^ (type cacheAt: #syntheticFields ifAbsentPut: [ Dictionary new ])
+			  at: name
+			  ifAbsentPut: [
+				  (FamixJavaAttribute named: name)
+					  parentType: type;
+					  declaredType: type typeContainer ] ].
+
+	"TODO fields from anonymous classes and lambdas storing variables captured by closure (named `val$<varName>`)"
+
+	"regular attribute"
+	^ type findAttributeNamed: name
+]
 
 { #category : 'enumerating' }
 FamixValueJavaJacksonImporter >> getDefaultUnknownType [
@@ -34,13 +54,13 @@ FamixValueJavaJacksonImporter >> getObjectIdentity: rawObject [
 	"Keep track of objects by using the id given by Jackson.
 	References to previously seen objects are serialized by using this id."
 
-	^ rawObject removeKey: self idKey ifAbsent: nil
+	^ rawObject at: self idKey ifAbsent: nil
 ]
 
 { #category : 'enumerating' }
 FamixValueJavaJacksonImporter >> getObjectType: rawObject [
 
-	^ rawObject removeKey: self typeKey ifAbsent: nil
+	^ rawObject at: self typeKey ifAbsent: nil
 ]
 
 { #category : 'accessing' }
@@ -58,20 +78,48 @@ FamixValueJavaJacksonImporter >> idKey: aString [
 { #category : 'importing' }
 FamixValueJavaJacksonImporter >> importObjectAttribute: rawValue of: type named: name [
 
-	| attribute |
+	| attribute inference |
 	type isInterface ifTrue: [
 		Error signal:
 			'Cannot find attributes in interfaces. Signaled for attribute `'
 			, name , '` and interface `' , type name , '`.' ].
-	(attribute := type findAttributeNamed: name) ifNotNil: [ "Skip transient attributes."
-		attribute isTransient ifTrue: [ ^ nil ] ].
-	^ self
-		  withTypeInference:
-		  (attribute ifNotNil: [ attribute declaredType ])
-		  do: [
-			  self model newOfObjectAttribute
-				  value: (self importValue: rawValue);
-				  attribute: attribute ]
+	(attribute := self findAttributeNamed: name in: type) ifNil: [
+		FamixValueImporterError signal:
+			'Attribute `' , name , '` not found in hierarchy of `'
+			, type mooseName , '`' ].
+
+	(attribute isTransient and: [ self skipTransientAttributes ])
+		ifTrue: [ ^ nil ].
+
+	"If the attribute type is a TypeParameter, and the runtime type is a concretization
+	=> inference is the concretization of the TypeParameter"
+	inference := nil.
+	attribute ifNotNil: [
+		attribute declaredType ifNotNil: [ :declaredType |
+			declaredType isParameterType
+				ifFalse: [ "not parametric" inference := declaredType ]
+				ifTrue: [
+					self halt. "wait what's happening here? why do we need a detect? investigate, fix(?), and explain with a comment"
+					declaredType concretizations
+						detect: [ :paramType |
+						paramType concretizations first concreteEntity == type ]
+						ifFound: [ :paramType |
+						inference := paramType concreteParameter ] ] ] ].
+
+	(rawValue isCollection and: [
+		 inference isNotNil and: [ self isPrimitiveType: inference ] ])
+		ifTrue: [ "TODO check is too strict, arrays can be everywhere -> add info in metamodel!"
+			^ self model newOfObjectAttribute
+				  value: (self
+						   importCollection: rawValue
+						   of: ((FamixValueJavaArray wrapping: inference) dimensions:
+									    (self readDimensionsOfAttribute: attribute)));
+				  attribute: attribute ].
+
+	^ self withTypeInference: inference do: [
+		  self model newOfObjectAttribute
+			  value: (self importValue: rawValue);
+			  attribute: attribute ]
 ]
 
 { #category : 'importing' }
@@ -130,7 +178,15 @@ FamixValueJavaJacksonImporter >> importValueFromList: rawValue of: type [
 FamixValueJavaJacksonImporter >> isPrimitiveType: type [
 
 	^ type isPrimitiveType or: [ "Classes wrapping primitives are also considered primitives."
-		  type isPrimitiveWrapper ]
+		  type isClass and: [ type isPrimitiveWrapper ] ]
+]
+
+{ #category : 'importing' }
+FamixValueJavaJacksonImporter >> iterate: rawValue keysAndValuesDo: aBlock [
+
+	rawValue keysAndValuesDo: [ :key :value |
+		(key = self idKey or: [ key = self typeKey ]) ifFalse: [
+			aBlock value: key value: value ] ]
 ]
 
 { #category : 'parsing' }
@@ -140,8 +196,62 @@ FamixValueJavaJacksonImporter >> parseList: serializedValues [
 	rawValues := super parseList: serializedValues.
 	^ rawValues hasJavaJacksonTypeInformation
 		  ifTrue: [ "ignore the type information of the top level list."
-			  rawValues at: 2 ]
+			  ^ rawValues at: 2 "TODO only a specific version of jackson does this, investigate" ]
 		  ifFalse: [ rawValues ]
+]
+
+{ #category : 'private - utility' }
+FamixValueJavaJacksonImporter >> readDimensionsOfAttribute: attribute [
+	"Famix ignores the dimensions of an attribute, so we have to read it manually.
+	The source anchor is used to look for square brackets in the attribute definition.
+	The square brackets can appear on the type or on the identifier.
+	e.g. `int[] a, b[];`, var a has 1 dimension, var b has 2."
+
+	| source char index dimensions |
+	source := WriteStream on: (String new: 100).
+	attribute sourceAnchor fileReference readStreamDo: [ :rs |
+		| start |
+		"we don't know where the attribute definition starts
+		because the source anchor only applies to the identifier
+		so we read the source starting from the class start position"
+		start := attribute parentType sourceAnchor startPos.
+		rs skip: start.
+		start to: attribute sourceAnchor endPos do: [ :i |
+		source nextPut: rs next ].
+		"additionally read from endPos until:
+		- next declarator, eg. `int a, b`
+		- end of definition, eg. `int a;`
+		- initialization, eg. `int a = 1`"
+		[ ',;=' includes: (char := rs next) ] whileFalse: [
+			source nextPut: char ] ].
+
+	"source contains (at least) the attribute definition, now we count the square brackets"
+	source := source contents.
+	index := source size.
+	dimensions := 0.
+	[ "read backwards until:
+	- block opener, eg. `class C { int a;`
+	- block closer, eg. `int f(){} int a;`
+	- end of statement, eg. `int b; int a;`"
+	char := source at: (index := index - 1).
+	char == $]
+		ifTrue: [
+			dimensions := dimensions + 1.
+			false ]
+		ifFalse: [ '{};' includes: char ] ] whileFalse.
+	^ dimensions
+]
+
+{ #category : 'importing' }
+FamixValueJavaJacksonImporter >> skipTransientAttributes [
+
+	^ skipTransientAttributes ifNil: [ skipTransientAttributes := true ]
+]
+
+{ #category : 'importing' }
+FamixValueJavaJacksonImporter >> skipTransientAttributes: aBoolean [
+
+	skipTransientAttributes := aBoolean
 ]
 
 { #category : 'accessing' }
@@ -149,6 +259,7 @@ FamixValueJavaJacksonImporter >> specialTypes [
 
 	^ specialTypes ifNil: [
 		  (specialTypes := Dictionary new)
+			  at: 'java.util.Calendar' put: FamixValueJavaCalendar;
 			  at: 'java.util.Date' put: FamixValueJavaDate;
 			  at: 'java.sql.Date' put: FamixValueJavaSQLDate;
 			  at: 'java.sql.Timestamp' put: FamixValueJavaDate;

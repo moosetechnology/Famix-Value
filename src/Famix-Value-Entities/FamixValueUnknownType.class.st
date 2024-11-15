@@ -19,8 +19,8 @@ An unknown type.
 |---|
 | `sourceAnchor` | `FamixTSourceEntity` | `element` | `FamixTSourceAnchor` | SourceAnchor entity linking to the original source code for this entity|
 | `typedEntities` | `FamixTType` | `declaredType` | `FamixTTypedEntity` | Entities that have this type as declaredType|
+| `valueInstances` | `FamixTType` | `type` | `FamixValueOfType` | |
 | `valueReferences` | `FamixTType` | `value` | `FamixValueOfTypeReference` | |
-| `values` | `FamixTType` | `type` | `FamixValueOfType` | |
 
 
 ## Properties

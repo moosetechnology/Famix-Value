@@ -1,17 +1,6 @@
 Extension { #name : 'FamixValueOfObject' }
 
 { #category : '*Famix-Value-Entities-Extensions' }
-FamixValueOfObject >> constructorSignature [
-
-	^ String streamContents: [ :s |
-		  s << self type name << '('.
-		  value
-			  do: [ :attribute | s << attribute attribute declaredType name ]
-			  separatedBy: [ s nextPut: $, ].
-		  s nextPut: $) ]
-]
-
-{ #category : '*Famix-Value-Entities-Extensions' }
 FamixValueOfObject >> containsCollection [
 
 	^ value anySatisfy: [ :attribute |

@@ -3,16 +3,17 @@ Extension { #name : 'String' }
 { #category : '*Famix-Value-Importer' }
 String >> asJavaJacksonValueOn: importer [
 
-	| typeInference |
-	typeInference := importer typeInference.
-	^ (typeInference isNotNil and: [ typeInference name = 'Class' ])
-		  ifTrue: [ importer importTypeReference: self of: typeInference ]
-		  ifFalse: [ "import regular string, escape special characters"
-			  importer
-				  importPrimitive: (self
-						   copyWithRegex: '\\|"'
-						   matchesTranslatedUsing: [ :match | match copyWithFirst: $\ ])
-				  of: 'java.lang.String' ]
+	importer typeInference ifNotNil: [ :typeInference |
+		typeInference name = 'Class' ifTrue: [
+			^ importer importTypeReference: self of: typeInference ].
+		(typeInference usesFamixTrait: FamixTEnum) ifTrue: [
+			^ importer importEnumValue: self of: typeInference ] ].
+	"import regular string, escape special characters"
+	^ importer
+		  importPrimitive: (self
+				   copyWithRegex: '\\|"'
+				   matchesTranslatedUsing: [ :match | match copyWithFirst: $\ ])
+		  of: 'java.lang.String'
 ]
 
 { #category : '*Famix-Value-Importer' }

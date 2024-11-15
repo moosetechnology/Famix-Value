@@ -45,6 +45,29 @@ FamixJavaType >> decorate: aFamixJavaType asFASTJavaTypeExpressionOn: visitor [
 ]
 
 { #category : '*Famix-Value-Exporter' }
+FamixJavaType >> fullyQualifiedNameOn: aFASTJavaModel [
+
+	^ typeContainer
+		  ifNil: [ aFASTJavaModel newQualifiedName name: name ]
+		  ifNotNil: [
+			  aFASTJavaModel newQualifiedName
+				  name: name;
+				  namespace: (typeContainer fullyQualifiedNameOn: aFASTJavaModel) ]
+]
+
+{ #category : '*Famix-Value-Exporter' }
+FamixJavaType >> fullyQualifiedTypeNameOn: aFASTJavaModel [
+
+	^ typeContainer
+		  ifNil: [ aFASTJavaModel newQualifiedTypeName name: name ]
+		  ifNotNil: [
+			  aFASTJavaModel newQualifiedTypeName
+				  name: name;
+				  namespace:
+					  (typeContainer fullyQualifiedTypeNameOn: aFASTJavaModel) ]
+]
+
+{ #category : '*Famix-Value-Exporter' }
 FamixJavaType >> needsJavaImport [
 
 	^ typeContainer mooseName ~= 'java::lang'

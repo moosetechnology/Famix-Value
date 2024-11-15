@@ -33,7 +33,10 @@ FamixValue2FASTJavaVisitor >> addAttributesFrom: object asArgumentsTo: invocatio
 			invocation addArgument: (paramAttribute
 					 ifNil: [ "constructor parameter is not mapped to an attribute"
 						 (constructor parameters at: index) declaredType
-							 asFASTJavaDefaultValueOn: self model ]
+							 ifNil: [ "TODO fix Java parser; if it's unknown then it must be a class, otherwise the parser would have found it"
+								 FamixJavaClass new asFASTJavaDefaultValueOn: self model ]
+							 ifNotNil: [ :declaredType |
+							 declaredType asFASTJavaDefaultValueOn: self model ] ]
 					 ifNotNil: [
 						 object value
 							 detect: [ :objAttribute | "find the matching value attribute"
@@ -58,6 +61,8 @@ FamixValue2FASTJavaVisitor >> constructObject: object [
 
 	| constructor invocation |
 	constructor := self findConstructorFor: object.
+	constructor thrownExceptions ifNotEmpty: [
+		self shouldBeImplemented "handle exceptions thrown by the chosen constructor" ].
 	self reflections
 		at: constructor
 		ifPresent: [ :varName | "reflective constructor call, the variable contains the Constructor object"
@@ -69,9 +74,13 @@ FamixValue2FASTJavaVisitor >> constructObject: object [
 						 variable: (self makeVariableExpression: object);
 						 expression: invocation) ]
 		ifAbsent: [ "regular constructor call"
-			invocation := (self statementBlock addStatement:
-				               (self makeVarDeclStatement: object)) declarators
-				              first expression ].
+			| statement |
+			statement := self makeVarDeclStatement: object.
+			invocation := statement declarators first expression.
+			constructor thrownExceptions ifNotEmpty: [ :exceptions | "rethrow as RuntimeException"
+				self shouldBeImplemented.
+				exceptions do: [ :exception |  ] ].
+			self statementBlock addStatement: statement ].
 	"call with arguments to match constructor parameters"
 	constructor parameters ifNotEmpty: [
 		self
@@ -90,13 +99,13 @@ FamixValue2FASTJavaVisitor >> ensureReflection [
 
 	| declarations declaration initStatementBlock |
 	declarations := self objectExportStrategy declarations. "does not work for inline strategy..."
-	self reflections ifNotEmpty: [
+	self reflections ifNotEmpty: [ "body of initializeReflection()"
 		^ (declarations at: -3) statementBlock ].
 
 	"static {
 		try {
 			initializeReflection();
-		} catch (NoSuchFieldException | SecurityException e) {
+		} catch (Exception e) {
 			new RuntimeException(e);
 		}
 	}"
@@ -109,13 +118,8 @@ FamixValue2FASTJavaVisitor >> ensureReflection [
 							   { (model newExpressionStatement expression:
 									    (model newMethodInvocation name: 'initializeReflection')) });
 				  catches: { (model newCatchPartStatement
-						   catchedTypes: {
-								   (model newClassTypeExpression typeName:
-										    (model newTypeName name: 'NoSuchFieldException')).
-								   (model newClassTypeExpression typeName:
-										    (model newTypeName name: 'SecurityException')).
-								   (model newClassTypeExpression typeName:
-										    (model newTypeName name: 'NoSuchMethodException')) };
+						   catchedTypes: { (model newClassTypeExpression typeName:
+									    (model newTypeName name: 'Exception')) };
 						   body: (model newStatementBlock statements:
 									    { (model newThrowStatement expression:
 											     (model newNewExpression
@@ -125,8 +129,8 @@ FamixValue2FASTJavaVisitor >> ensureReflection [
 													      { (model newVariableExpression name: 'e') })) });
 						   parameter: (model newVariableExpression name: 'e')) }) }).
 
-	"private static void initializeReflection() throws NoSuchFieldException, SecurityException {
-		// fields will be obtained and set as accessible here
+	"private static void initializeReflection() throws NoSuchFieldException, NoSuchMethodException, SecurityException {
+		// fields and constructors will be obtained and set as accessible here
 	}"
 	declaration := model newMethodEntity name: 'initializeReflection'.
 	declaration attributeAt: 'order' put: -3.
@@ -140,9 +144,9 @@ FamixValue2FASTJavaVisitor >> ensureReflection [
 				(model newClassTypeExpression typeName:
 						 (model newTypeName name: 'NoSuchFieldException')).
 				(model newClassTypeExpression typeName:
-						 (model newTypeName name: 'SecurityException')).
+						 (model newTypeName name: 'NoSuchMethodException')).
 				(model newClassTypeExpression typeName:
-						 (model newTypeName name: 'NoSuchMethodException')) };
+						 (model newTypeName name: 'SecurityException')) };
 		statementBlock: (initStatementBlock := model newStatementBlock).
 
 	"public static void setField(Object object, Field field, Object value) {
@@ -199,7 +203,7 @@ FamixValue2FASTJavaVisitor >> ensureReflection [
 		T instance;
 		try {
 			instance = constructor.newInstance(arguments);
-		} catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 		return instance;
@@ -248,13 +252,8 @@ FamixValue2FASTJavaVisitor >> ensureReflection [
 															      { (model newVariableExpression name: 'arguments') });
 												     operator: '=')) });
 						  catches: { (model newCatchPartStatement
-								   catchedTypes: {
-										   (model newClassTypeExpression typeName:
-												    (model newTypeName name: 'InstantiationException')).
-										   (model newClassTypeExpression typeName:
-												    (model newTypeName name: 'IllegalAccessException')).
-										   (model newClassTypeExpression typeName:
-												    (model newTypeName name: 'InvocationTargetException')) };
+								   catchedTypes: { (model newClassTypeExpression typeName:
+											    (model newTypeName name: 'Exception')) };
 								   body: (model newStatementBlock statements:
 											    { (model newThrowStatement expression:
 													     (model newNewExpression
@@ -378,11 +377,11 @@ FamixValue2FASTJavaVisitor >> ensureReflectionField: attribute [
 ]
 
 { #category : 'private' }
-FamixValue2FASTJavaVisitor >> filterAttributesToSet: attributes for: object [
+FamixValue2FASTJavaVisitor >> filterAttributesToSet: attributes for: type [
 	"No need to set attributes that are set in the constructor."
 
 	^ constructorCache
-		  at: object type
+		  at: type
 		  ifPresent: [ :constructor |
 			  constructorCache
 				  at: constructor
@@ -422,7 +421,7 @@ FamixValue2FASTJavaVisitor >> findStaticAttributeMatching: object [
 	type := object type.
 	((objAttributes := object relevantAttributes) allSatisfy: [
 		 :attribute | attribute value isOfPrimitiveType ]) ifFalse: [ ^ nil ].
-	"eligible attributes are public, static, of the same type, and have an initializer expression; the conditions are ordered for maximum time efficiency"
+	"eligible attributes are public, static, of the same type, and have an initializer expression; the conditions are ordered for time efficiency"
 	staticAttributes := staticAttributesCache at: type ifAbsentPut: [
 		                    type attributes select: [ :attribute |
 			                    attribute declaredType == object type and: [
@@ -488,7 +487,7 @@ FamixValue2FASTJavaVisitor >> makeHelperClass [
 		  addModifier: (model newModifier token: 'public');
 		  addDeclaration: (model newMethodEntity
 				   name: 'ModestHelper';
-				   modifiers: { (model newModifier token: 'private') };
+				   addModifier: (model newModifier token: 'private');
 				   statementBlock: model newStatementBlock);
 		  yourself
 ]
@@ -550,6 +549,24 @@ FamixValue2FASTJavaVisitor >> makeSetterInvocation: setter for: attribute named:
 				  name: setter name;
 				  addArgument: (model newVariableExpression name: aString);
 				  famixMethod: setter))
+]
+
+{ #category : 'ast' }
+FamixValue2FASTJavaVisitor >> makeTry: statement catch: exceptions [
+	"Wrap the statement in a try-catch for the given exceptions, and rethrow as an unchecked RuntimeException."
+
+	^ self model newTryCatchStatement
+		  try: (model newStatementBlock statements: { statement });
+		  catches: { (model newCatchPartStatement
+				   catchedTypes: (exceptions collect: [ :exception |
+							    exception asFASTJavaTypeExpressionOn: self ]);
+				   parameter: (model newVariableExpression name: 'e');
+				   body: (model newStatementBlock statements:
+							    { (model newThrowStatement expression:
+									     (model newNewExpression
+										      type: (model newClassTypeExpression typeName:
+													       (model newTypeName name: 'RuntimeException'));
+										      arguments: { (model newVariableExpression name: 'e') })) })) }
 ]
 
 { #category : 'ast' }
@@ -710,7 +727,7 @@ FamixValue2FASTJavaVisitor >> visitObjectOfRegularType: object [
 FamixValue2FASTJavaVisitor >> visitObjectStub: object [
 	"Previously tried to recreate stubs by deserializing their JSON representation, but getting a correct JSON string is a challenge."
 
-	self shouldBeImplemented
+	FamixUTStubError signal: object type
 ]
 
 { #category : 'visiting' }
@@ -718,6 +735,25 @@ FamixValue2FASTJavaVisitor >> visitPrimitive: primitive [
 
 	^ self statementBlock
 		  addStatement: (self makeVarDeclStatement: primitive);
+		  yourself
+]
+
+{ #category : 'visiting' }
+FamixValue2FASTJavaVisitor >> visitTypeReference: aFamixValueOfTypeReference [
+	"Class xxx = MyClass.class;"
+
+	^ self statementBlock
+		  addStatement: (model newVarDeclStatement
+				   type: (self makeClassTypeExpression: 'Class');
+				   addDeclarator: (model newVariableDeclarator
+						    variable:
+							    (self makeVariableExpression: aFamixValueOfTypeReference);
+						    expression: (model newClassProperty
+								     type:
+									     (self makeClassTypeExpression:
+											      aFamixValueOfTypeReference value name);
+								     fieldName: 'class'));
+				   yourself);
 		  yourself
 ]
 

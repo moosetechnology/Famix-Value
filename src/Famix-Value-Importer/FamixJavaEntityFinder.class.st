@@ -108,7 +108,10 @@ FamixJavaEntityFinder >> translateFieldDescriptors: parameters on: stream [
 		do: [ :parameter |
 			| translation index |
 			translation := self translateFieldDescriptor: parameter.
-			index := translation lastIndexOf: $..
+			index := translation
+				         lastIndexOfAnyOf: '.$'
+				         startingAt: translation size
+				         ifAbsent: 0.
 			stream nextPutAll: (index = 0
 					 ifTrue: [ translation ]
 					 ifFalse: [ translation allButFirst: index ]) ]

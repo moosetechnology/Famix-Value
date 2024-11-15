@@ -14,8 +14,10 @@ Class {
 FamixValueInlineObjectExportStrategy >> export: object on: visitor [
 
 	visitor constructObject: object.
-	(visitor filterAttributesToSet: object relevantAttributes for: object)
-		do: [ :attribute | visitor visitObjectAttribute: attribute ]
+	(visitor
+		 filterAttributesToSet: object relevantAttributes
+		 for: object type) do: [ :attribute |
+		visitor visitObjectAttribute: attribute ]
 ]
 
 { #category : 'ast' }

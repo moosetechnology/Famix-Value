@@ -27,6 +27,10 @@ FamixValueHelperObjectExportStrategy >> buildMethodFor: object withParametersFor
 	Use only the relevant attributes that are given, rather than all attributes."
 
 	| model oldStatementBlock helper |
+	object type isPublic ifFalse: [
+		FamixValueExporterError signal:
+			'Cannot (yet) recreate object of non-public class: '
+			, object type name ].
 	model := visitor model.
 	"swap visitor context: the 'sheet' on which the visitor writes"
 	oldStatementBlock := visitor statementBlock.
@@ -41,7 +45,7 @@ FamixValueHelperObjectExportStrategy >> buildMethodFor: object withParametersFor
 	visitor constructObject: object.
 	self
 		makeSetterInvocationsFor:
-		(visitor filterAttributesToSet: attributes for: object)
+		(visitor filterAttributesToSet: attributes for: object type)
 		on: visitor.
 	visitor statementBlock addStatement:
 		(model newReturnStatement expression:
@@ -93,10 +97,11 @@ FamixValueHelperObjectExportStrategy >> export: object on: visitor [
 					  variable:
 						  (model newVariableExpression name:
 								   (visitor varNameFor: object));
-					  expression: (model newMethodInvocation
-							   name: helper name;
-							   arguments: (attributes collect: [ :attribute |
-										    visitor makeVariableExpression: attribute value ])));
+					  expression:
+						  (self
+							   makeHelperInvocation: helper
+							   arguments: attributes
+							   on: visitor));
 			 yourself)
 ]
 
@@ -104,6 +109,29 @@ FamixValueHelperObjectExportStrategy >> export: object on: visitor [
 FamixValueHelperObjectExportStrategy >> initialize [
 
 	declarations := Dictionary new
+]
+
+{ #category : 'exporting' }
+FamixValueHelperObjectExportStrategy >> makeHelperInvocation: helper arguments: arguments on: visitor [
+
+	| model |
+	model := visitor model.
+	^ model newMethodInvocation
+		  name: helper name;
+		  arguments: (arguments
+				   with: helper parameters
+				   collect: [ :argument :parameter | "reference the value with a variable"
+					   | ref |
+					   ref := visitor makeVariableExpression: argument value.
+					   ((argument value type name sameAs: 'long') not and: [
+							    (FASTJavaExportVisitor new export: parameter type) sameAs:
+									    'long' ])
+						   ifTrue: [ "try casting"
+							   model newCastExpression
+								   type: (model newClassTypeExpression typeName:
+											    (model newTypeName name: 'long'));
+								   expression: ref ]
+						   ifFalse: [ ref ] ])
 ]
 
 { #category : 'ast' }
@@ -144,7 +172,13 @@ FamixValueHelperObjectExportStrategy >> makeSetterInvocationsFor: attributes on:
 				visitor
 					makeSetterInvocation: setter
 					for: attribute
-					named: attribute varName ]
+					named: attribute varName.
+
+				"handle setters that can throw exceptions to rethrow an unchecked exception"
+				setter thrownExceptions ifNotEmpty: [ :exceptions |
+					visitor statementBlock addStatement: (visitor
+							 makeTry: visitor statementBlock statements last
+							 catch: exceptions) ] ]
 			ifNil: [ visitor makeReflectionSetterInvocation: attribute ] ]
 ]
 
