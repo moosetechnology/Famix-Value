@@ -16,7 +16,8 @@ Class {
 		'constructorCache',
 		'staticAttributesCache',
 		'objectExportStrategy',
-		'reflections'
+		'reflections',
+		'defaultHelperPackage'
 	],
 	#category : 'Famix-Value-Exporter-Visitors',
 	#package : 'Famix-Value-Exporter',
@@ -89,6 +90,18 @@ FamixValue2FASTJavaVisitor >> constructObject: object [
 			usingConstructor: constructor ]
 ]
 
+{ #category : 'exporting' }
+FamixValue2FASTJavaVisitor >> defaultHelperPackage [
+
+	^ defaultHelperPackage ifNil: [ defaultHelperPackage := 'org.modest' ]
+]
+
+{ #category : 'exporting' }
+FamixValue2FASTJavaVisitor >> defaultHelperPackage: aString [
+
+	defaultHelperPackage := aString
+]
+
 { #category : 'private' }
 FamixValue2FASTJavaVisitor >> ensureReflection [
 	"Ensure that the infrastructure needed to use reflection is generated.
@@ -98,9 +111,10 @@ FamixValue2FASTJavaVisitor >> ensureReflection [
 	Return the statement block of `initializeReflection` for callers to populate."
 
 	| declarations declaration initStatementBlock |
-	declarations := self objectExportStrategy declarations. "does not work for inline strategy..."
-	self reflections ifNotEmpty: [ "body of initializeReflection()"
-		^ (declarations at: -3) statementBlock ].
+	declarations := self objectExportStrategy currentDeclarations. "does not work for inline strategy..."
+
+	"check if already defined and return the body of initializeReflection()"
+	declarations at: -3 ifPresent: [ :decl | ^ decl statementBlock ].
 
 	"static {
 		try {
@@ -110,7 +124,7 @@ FamixValue2FASTJavaVisitor >> ensureReflection [
 		}
 	}"
 	declaration := self model newInitializer isStatic: true.
-	declaration attributeAt: 'order' put: -4.
+	declaration cacheAt: #order put: -4.
 	declarations at: -4 put: declaration.
 	declaration statementBlock:
 		(model newStatementBlock statements: { (model newTryCatchStatement
@@ -133,7 +147,7 @@ FamixValue2FASTJavaVisitor >> ensureReflection [
 		// fields and constructors will be obtained and set as accessible here
 	}"
 	declaration := model newMethodEntity name: 'initializeReflection'.
-	declaration attributeAt: 'order' put: -3.
+	declaration cacheAt: #order put: -3.
 	declarations at: -3 put: declaration.
 	declaration
 		type: (model newVoidTypeExpression name: 'void');
@@ -157,7 +171,7 @@ FamixValue2FASTJavaVisitor >> ensureReflection [
 		}
 	}"
 	declaration := model newMethodEntity name: 'setField'.
-	declaration attributeAt: 'order' put: -2.
+	declaration cacheAt: #order put: -2.
 	declarations at: -2 put: declaration.
 	declaration
 		type: (model newVoidTypeExpression name: 'void');
@@ -209,7 +223,7 @@ FamixValue2FASTJavaVisitor >> ensureReflection [
 		return instance;
 	}"
 	declaration := model newMethodEntity name: 'instantiate'.
-	declaration attributeAt: 'order' put: -1.
+	declaration cacheAt: #order put: -1.
 	declarations at: -1 put: declaration.
 	declaration
 		typeParameters: { (model newTypeParameterExpression name: 'T') };
@@ -272,7 +286,7 @@ FamixValue2FASTJavaVisitor >> ensureReflection [
 FamixValue2FASTJavaVisitor >> ensureReflectionConstructor: aFamixJavaMethod [
 
 	| declarations initStatementBlock varName |
-	declarations := self objectExportStrategy declarations.
+	declarations := self objectExportStrategy currentDeclarations.
 	initStatementBlock := self ensureReflection.
 	varName := aFamixJavaMethod name asUppercase.
 	self reflections at: aFamixJavaMethod put: varName.
@@ -323,15 +337,16 @@ FamixValue2FASTJavaVisitor >> ensureReflectionConstructor: aFamixJavaMethod [
 ]
 
 { #category : 'private' }
-FamixValue2FASTJavaVisitor >> ensureReflectionField: attribute [
+FamixValue2FASTJavaVisitor >> ensureReflectionField: aFamixJavaAttribute [
 	"Ensure an attribute exists to hold the java.lang.reflect.Field for the given attribute."
 
-	^ self reflections at: attribute attribute ifAbsentPut: [
+	^ self reflections at: aFamixJavaAttribute ifAbsentPut: [
 		  | declarations initStatementBlock varName |
-		  declarations := self objectExportStrategy declarations.
+		  declarations := self objectExportStrategy currentDeclarations.
 		  initStatementBlock := self ensureReflection.
-		  varName := attribute attribute parentType name asUppercase , '_'
-		             , attribute attribute name asUppercase.
+		  varName := aFamixJavaAttribute parentType name asUppercase , '_'
+		             , aFamixJavaAttribute name asUppercase.
+
 		  declarations
 			  at: varName
 			  ifPresent: [ "handle naming collisions, some ideas:
@@ -359,12 +374,12 @@ FamixValue2FASTJavaVisitor >> ensureReflectionField: attribute [
 							     receiver: (model newClassProperty
 									      type:
 										      (self builder referType:
-												       attribute attribute parentType);
+												       aFamixJavaAttribute parentType);
 									      fieldName: 'class');
 							     name: 'getDeclaredField';
 							     arguments:
 							     { (model newStringLiteral primitiveValue:
-								      attribute attribute name) });
+								      aFamixJavaAttribute name) });
 					    operator: '=')).
 		  initStatementBlock addStatement:
 			  (model newExpressionStatement expression:
@@ -390,6 +405,13 @@ FamixValue2FASTJavaVisitor >> filterAttributesToSet: attributes for: type [
 						  constructorAttributes includes: attribute attribute ] ]
 				  ifAbsent: [ attributes ] ]
 		  ifAbsent: [ attributes ]
+]
+
+{ #category : 'ast' }
+FamixValue2FASTJavaVisitor >> finalizeHelpers [
+	"This method must be called after all of the other value exports are done."
+
+	self objectExportStrategy makeHelpersOn: self
 ]
 
 { #category : 'private' }
@@ -438,6 +460,26 @@ FamixValue2FASTJavaVisitor >> findStaticAttributeMatching: object [
 		  ifNone: nil
 ]
 
+{ #category : 'exporting' }
+FamixValue2FASTJavaVisitor >> helperPackageFor: type [
+	"Most helper methods will be put in a common helper class in a default location.
+	However, types with protected or package-private visibility need to be created in the same package they are declared in.
+	This means a helper class should be created in the same package."
+
+	| container |
+	type isPublic ifTrue: [ ^ self defaultHelperPackage ].
+
+	(type isProtected or: [ type isPackageVisibility ]) ifFalse: [
+		FamixValueExporterError signal:
+			'Cannot recreate object of private class: '
+			, type mooseNameWithDots ].
+
+	"requires the helper to be in the same package"
+	container := type.
+	[ (container := container typeContainer) isPackage ] whileFalse.
+	^ container mooseNameWithDots
+]
+
 { #category : 'initialization' }
 FamixValue2FASTJavaVisitor >> initialize [
 
@@ -452,30 +494,11 @@ FamixValue2FASTJavaVisitor >> makeClassTypeExpression: typeName [
 		  (model newTypeName name: typeName)
 ]
 
-{ #category : 'ast' }
-FamixValue2FASTJavaVisitor >> makeHelper [
-	"The helper should always be generated, regardless of strategy.
-	This method must be called after all of the other value exports are done."
+{ #category : 'helpers' }
+FamixValue2FASTJavaVisitor >> makeDefaultHelper [
+	"The default helper should always be generated, regardless of strategy."
 
-	| helperClass compilationUnit |
-	helperClass := self makeHelperClass.
-	(compilationUnit := self model newCompilationUnit)
-		packageDeclaration: (model newPackageDeclaration qualifiedName:
-					 (model newQualifiedName name: 'fr.evref.modest'));
-		importDeclarations: self builder makeImportDeclarations;
-		addClassDeclaration: helperClass.
-
-	reflections ifNotNil: [
-		compilationUnit
-			addImportDeclaration: (model newImportDeclaration qualifiedName:
-						 (model newQualifiedName name: 'java.lang.reflect.Field'));
-			addImportDeclaration: (model newImportDeclaration qualifiedName:
-						 (model newQualifiedName name: 'java.lang.reflect.Constructor'));
-			addImportDeclaration: (model newImportDeclaration qualifiedName:
-						 (model newQualifiedName name:
-								  'java.lang.reflect.InvocationTargetException')) ].
-
-	self objectExportStrategy addToHelper: helperClass
+	self makeHelperInPackage: self defaultHelperPackage
 ]
 
 { #category : 'ast' }
@@ -490,6 +513,30 @@ FamixValue2FASTJavaVisitor >> makeHelperClass [
 				   addModifier: (model newModifier token: 'private');
 				   statementBlock: model newStatementBlock);
 		  yourself
+]
+
+{ #category : 'ast' }
+FamixValue2FASTJavaVisitor >> makeHelperInPackage: aPackageName [
+
+	| helperClass compilationUnit |
+	helperClass := self makeHelperClass.
+	(compilationUnit := self model newCompilationUnit)
+		packageDeclaration: (model newPackageDeclaration qualifiedName:
+					 (model newQualifiedName name: aPackageName));
+		importDeclarations: self builder makeImportDeclarations;
+		addClassDeclaration: helperClass.
+
+	reflections ifNotNil: [ "TODO reflections per package"
+		compilationUnit
+			addImportDeclaration: (model newImportDeclaration qualifiedName:
+						 (model newQualifiedName name: 'java.lang.reflect.Field'));
+			addImportDeclaration: (model newImportDeclaration qualifiedName:
+						 (model newQualifiedName name: 'java.lang.reflect.Constructor'));
+			addImportDeclaration: (model newImportDeclaration qualifiedName:
+						 (model newQualifiedName name:
+								  'java.lang.reflect.InvocationTargetException')) ].
+
+	^ helperClass
 ]
 
 { #category : 'ast' }
@@ -519,7 +566,7 @@ FamixValue2FASTJavaVisitor >> makeReflectionSetterInvocation: attribute [
 	"Use reflection to set an attribute on an object."
 
 	| fieldName |
-	fieldName := self ensureReflectionField: attribute.
+	fieldName := self ensureReflectionField: attribute attribute.
 	self statementBlock addStatement:
 		(self model newExpressionStatement expression:
 			 (model newMethodInvocation

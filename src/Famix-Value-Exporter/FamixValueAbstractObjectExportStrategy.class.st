@@ -17,11 +17,6 @@ FamixValueAbstractObjectExportStrategy class >> isAbstract [
 ]
 
 { #category : 'ast' }
-FamixValueAbstractObjectExportStrategy >> addToHelper: helperClass [
-	"Hook to add strategy specifics to the helper class. By default, do nothing."
-]
-
-{ #category : 'ast' }
 FamixValueAbstractObjectExportStrategy >> dependencyImportsOn: aFASTModel [
 
 	^ {  }
@@ -31,4 +26,11 @@ FamixValueAbstractObjectExportStrategy >> dependencyImportsOn: aFASTModel [
 FamixValueAbstractObjectExportStrategy >> export: object on: visitor [
 
 	self subclassResponsibility
+]
+
+{ #category : 'ast' }
+FamixValueAbstractObjectExportStrategy >> makeHelpersOn: visitor [
+	"Hook to create helper classes. By default, create the default helper and add nothing to it."
+
+	visitor makeDefaultHelper
 ]
