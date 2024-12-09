@@ -1,10 +1,11 @@
 Class {
-	#name : #BaselineOfFamixValue,
-	#superclass : #BaselineOf,
-	#category : #BaselineOfFamixValue
+	#name : 'BaselineOfFamixValue',
+	#superclass : 'BaselineOf',
+	#category : 'BaselineOfFamixValue',
+	#package : 'BaselineOfFamixValue'
 }
 
-{ #category : #baselines }
+{ #category : 'baselines' }
 BaselineOfFamixValue >> baseline: spec [
 
 	<baseline>
@@ -14,7 +15,7 @@ BaselineOfFamixValue >> baseline: spec [
 		self groups: spec ]
 ]
 
-{ #category : #baselines }
+{ #category : 'baselines' }
 BaselineOfFamixValue >> dependencies: spec [
 
 	spec
@@ -27,7 +28,7 @@ BaselineOfFamixValue >> dependencies: spec [
 		spec repository: 'github://moosetechnology/Carrefour:v5/src' ]
 ]
 
-{ #category : #baselines }
+{ #category : 'baselines' }
 BaselineOfFamixValue >> groups: spec [
 
 	spec
@@ -43,7 +44,7 @@ BaselineOfFamixValue >> groups: spec [
 			   'FASTJava' 'Carrefour' )
 ]
 
-{ #category : #baselines }
+{ #category : 'baselines' }
 BaselineOfFamixValue >> packages: spec [
 
 	spec
@@ -55,7 +56,8 @@ BaselineOfFamixValue >> packages: spec [
 		with: [
 			spec requires: #( 'Famix-Value-Entities' 'Famix-Value-Types' ) ];
 		package: 'Famix-Value-Exporter'
-		with: [ spec requires: 'Famix-Value-Entities' ];
+		with: [
+			spec requires: #( 'Famix-Value-Entities' 'Famix-Value-Types' ) ];
 		package: 'Famix-Value-Exporter-Tests'
 		with: [ spec requires: 'Famix-Value-Exporter' ];
 		package: 'Famix-Value-Types';
