@@ -1,26 +1,27 @@
 Class {
-	#name : #FamixValuePresenter,
-	#superclass : #SpPresenterWithModel,
+	#name : 'FamixValuePresenter',
+	#superclass : 'SpPresenterWithModel',
 	#instVars : [
 		'tree',
 		'label',
 		'activationBlock'
 	],
-	#category : #'Famix-Value-Presenter'
+	#category : 'Famix-Value-Presenter',
+	#package : 'Famix-Value-Presenter'
 }
 
-{ #category : #api }
+{ #category : 'api' }
 FamixValuePresenter >> activateOnSingleClick [
 	tree activateOnSingleClick
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 FamixValuePresenter >> initialize [
 	super initialize.
 	activationBlock := [ :val | ]
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 FamixValuePresenter >> initializePresenters [
 
 	tree := SpTreePresenter new.
@@ -39,7 +40,7 @@ FamixValuePresenter >> initializePresenters [
 		activationBlock value: selection ]
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 FamixValuePresenter >> initializeWindow: aWindowPresenter [
 
 	aWindowPresenter
@@ -47,12 +48,12 @@ FamixValuePresenter >> initializeWindow: aWindowPresenter [
 		initialExtent: 450 @ 200
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 FamixValuePresenter >> outputActivationPort [
 	^ SpActivationPort newPresenter: self
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 FamixValuePresenter >> whenActivatedDo: aBlock [
 	activationBlock := aBlock
 ]

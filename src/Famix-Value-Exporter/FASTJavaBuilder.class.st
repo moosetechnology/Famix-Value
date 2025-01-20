@@ -23,17 +23,6 @@ FASTJavaBuilder >> fullyQualifiedPackageNameFor: aFamixJavaPackage [
 				  namespace: (self fullyQualifiedPackageNameFor: parentPackage) ]
 ]
 
-{ #category : 'ast' }
-FASTJavaBuilder >> fullyQualifiedTypeNameFor: aFamixJavaType [
-	"A type can be in another type or a package"
-
-	^ self model newQualifiedTypeName
-		  name: aFamixJavaType baseName;
-		  namespace:
-			  (aFamixJavaType typeContainer fullyQualifiedTypeNameOn:
-					   self model)
-]
-
 { #category : 'initialization' }
 FASTJavaBuilder >> initialize [
 
@@ -99,5 +88,5 @@ FASTJavaBuilder >> referType: aFamixType [
 			   ifTrue: [ "has import"
 			   model newTypeName name: aFamixType baseName ]
 			   ifFalse: [ "no import"
-			   self fullyQualifiedTypeNameFor: aFamixType ])
+			   aFamixType fullyQualifiedTypeNameOn: self model ])
 ]

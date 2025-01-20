@@ -26,21 +26,39 @@ Class {
 
 { #category : 'importing' }
 FamixValueJavaJacksonImporter >> findAttributeNamed: name in: type [
-	"Handle Java synthetic fields: they are created by the compiler and do not appear in the source code"
+	"Find the attribute using its name in the given type's hierarchy.
+	Handle Java synthetic fields: they are created by the compiler and do not appear in the source code."
 
-	(name beginsWith: 'this$') ifTrue: [ "reference from the inner class instance to the enclosing class instance
-		this is not represented in Famix so we create the attribute"
-		^ (type cacheAt: #syntheticFields ifAbsentPut: [ Dictionary new ])
-			  at: name
-			  ifAbsentPut: [
-				  (FamixJavaAttribute named: name)
-					  parentType: type;
-					  declaredType: type typeContainer ] ].
+	type isInterface ifTrue: [ "this should not happen because we should have the runtime type, which cannot be an interface
+		if it still happens, it probably means the source of the value, or possibly the model, is missing the type"
+		FamixValueImporterError signal:
+			'Cannot find the attribute `' , name , '` in the interface `'
+			, type name , '`.' ].
+
+	"search the attribute in the code model"
+	(type findAttributeNamed: name) ifNotNil: [ :attribute | ^ attribute ].
+
+	"The attribute was not found in the model: it may be synthetic.
+	The check for synthetic fields is based on the naming convention of the Java compiler.
+	However, the names it gives are also valid in source code, even if it is unlikely.
+	For this reason, the regular check must be done before the following checks."
+
+	(name beginsWith: 'this$') ifTrue: [ "Reference from the inner class instance to the outer class instance.
+		This is not represented in Famix, so we create the attribute artificially.
+		Inner classes can be nested, and the fields are named with a suffix to avoid collisions: this$0, this$1, etc.
+		There can only be one such field in a class.
+		Do not create a relation to the code model, such as parentType or declaredType, to keep it 'special' and resetable."
+		^ type cacheAt: #syntheticOuterInstance ifAbsentPut: [
+			  (FamixValueJavaSyntheticAttribute named: name)
+				  parentType: type;
+				  declaredType: type typeContainer ] ].
 
 	"TODO fields from anonymous classes and lambdas storing variables captured by closure (named `val$<varName>`)"
 
-	"regular attribute"
-	^ type findAttributeNamed: name
+	"attribute not found -> probably declared in a stub superclass"
+	FamixValueImporterError signal:
+		'Attribute `' , name , '` not found in hierarchy of `'
+		, type mooseName , '`'
 ]
 
 { #category : 'enumerating' }
@@ -79,14 +97,7 @@ FamixValueJavaJacksonImporter >> idKey: aString [
 FamixValueJavaJacksonImporter >> importObjectAttribute: rawValue of: type named: name [
 
 	| attribute inference |
-	type isInterface ifTrue: [
-		Error signal:
-			'Cannot find attributes in interfaces. Signaled for attribute `'
-			, name , '` and interface `' , type name , '`.' ].
-	(attribute := self findAttributeNamed: name in: type) ifNil: [
-		FamixValueImporterError signal:
-			'Attribute `' , name , '` not found in hierarchy of `'
-			, type mooseName , '`' ].
+	attribute := self findAttributeNamed: name in: type.
 
 	(attribute isTransient and: [ self skipTransientAttributes ])
 		ifTrue: [ ^ nil ].
@@ -106,6 +117,7 @@ FamixValueJavaJacksonImporter >> importObjectAttribute: rawValue of: type named:
 						ifFound: [ :paramType |
 						inference := paramType concreteParameter ] ] ] ].
 
+	"check if the value is an array"
 	(rawValue isCollection and: [
 		 inference isNotNil and: [ self isPrimitiveType: inference ] ])
 		ifTrue: [ "TODO check is too strict, arrays can be everywhere -> add info in metamodel!"

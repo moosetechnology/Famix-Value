@@ -3,7 +3,7 @@ Extension { #name : 'FamixTClass' }
 { #category : '*Famix-Value-Importer' }
 FamixTClass >> findAttributeNamed: attributeName [
 
-	(self isParametricEntity and: [ self isGenericEntity not ]) ifTrue: [
+	(self isParametricEntity and: [ self isConcreteEntity ]) ifTrue: [
 		^ self genericEntity findAttributeNamed: attributeName ].
 	^ (self cacheAt: #resolvedAttributes ifAbsentPut: [ Dictionary new ])
 		  at: attributeName

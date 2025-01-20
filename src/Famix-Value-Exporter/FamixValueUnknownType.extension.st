@@ -1,6 +1,12 @@
 Extension { #name : 'FamixValueUnknownType' }
 
 { #category : '*Famix-Value-Exporter' }
+FamixValueUnknownType >> acceptValueVisitor: visitor forObject: object [
+
+	self error: 'Exporting an unknown type is not (yet?) supported.'
+]
+
+{ #category : '*Famix-Value-Exporter' }
 FamixValueUnknownType >> asFASTJavaTypeExpressionOn: visitor [
 
 	^ visitor builder referType: self

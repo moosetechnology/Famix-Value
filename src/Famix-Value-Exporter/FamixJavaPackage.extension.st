@@ -14,11 +14,9 @@ FamixJavaPackage >> fullyQualifiedNameOn: aFASTJavaModel [
 { #category : '*Famix-Value-Exporter' }
 FamixJavaPackage >> fullyQualifiedTypeNameOn: aFASTJavaModel [
 
-	^ parentPackage
-		  ifNil: [ aFASTJavaModel newQualifiedTypeName name: name ]
-		  ifNotNil: [
-			  aFASTJavaModel newQualifiedTypeName
-				  name: name;
-				  namespace:
-					  (parentPackage fullyQualifiedTypeNameOn: aFASTJavaModel) ]
+	| qualifiedName |
+	qualifiedName := aFASTJavaModel newQualifiedTypeName name: name.
+	^ parentPackage ifNil: [ qualifiedName ] ifNotNil: [
+		  qualifiedName namespace:
+			  (parentPackage fullyQualifiedTypeNameOn: aFASTJavaModel) ]
 ]

@@ -85,9 +85,3 @@ FamixValueOfClosureVariable >> value: anObject [
 	<generated>
 	value := anObject
 ]
-
-{ #category : 'generate' }
-FamixValueOfClosureVariable >> varName [
-
-	^ name
-]

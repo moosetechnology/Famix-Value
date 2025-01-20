@@ -6,7 +6,8 @@ Class {
 	#name : 'FamixValueHelperObjectExportStrategy',
 	#superclass : 'FamixValueAbstractObjectExportStrategy',
 	#instVars : [
-		'declarations'
+		'currentDeclarations',
+		'helpers'
 	],
 	#category : 'Famix-Value-Exporter-Strategies',
 	#package : 'Famix-Value-Exporter',
@@ -14,33 +15,23 @@ Class {
 }
 
 { #category : 'ast' }
-FamixValueHelperObjectExportStrategy >> addToHelper: helperClass [
-	"Must be called when building the helper class to add the generated helper declarations."
-
-	declarations valuesDo: [ :declaration |
-		helperClass addDeclaration: declaration ]
-]
-
-{ #category : 'ast' }
 FamixValueHelperObjectExportStrategy >> buildMethodFor: object withParametersFor: attributes on: visitor [
 	"Build the helper method to construct objects of the same type as the one given in argument.
 	Use only the relevant attributes that are given, rather than all attributes."
 
 	| model oldStatementBlock helper |
-	object type isPublic ifFalse: [
-		FamixValueExporterError signal:
-			'Cannot (yet) recreate object of non-public class: '
-			, object type name ].
 	model := visitor model.
 	"swap visitor context: the 'sheet' on which the visitor writes"
 	oldStatementBlock := visitor statementBlock.
 	visitor statementBlock: model newStatementBlock.
 	visitor builder processType: object type.
+
 	"make the method entity"
 	helper := self
 		          makeMethodFor: object type
 		          withParametersFor: attributes
 		          on: visitor.
+
 	"make the method body: instantiate object, set attributes and return it"
 	visitor constructObject: object.
 	self
@@ -50,25 +41,29 @@ FamixValueHelperObjectExportStrategy >> buildMethodFor: object withParametersFor
 	visitor statementBlock addStatement:
 		(model newReturnStatement expression:
 			 (model newVariableExpression name: (visitor varNameFor: object))).
+
 	"restore original visitor context"
 	visitor statementBlock: oldStatementBlock.
 	^ helper
 ]
 
-{ #category : 'initialization' }
-FamixValueHelperObjectExportStrategy >> declarations [
+{ #category : 'accessing' }
+FamixValueHelperObjectExportStrategy >> currentDeclarations [
 
-	^ declarations
+	^ currentDeclarations
 ]
 
 { #category : 'ast' }
 FamixValueHelperObjectExportStrategy >> dependencyImportsOn: aFASTModel [
+	"To have access to some protected classes, there may be helpers in different packages"
 
-	^ { ((aFASTModel newImportDeclaration qualifiedName:
-			    (aFASTModel newQualifiedName name:
-					     'fr.evref.modest.ModestHelper'))
-		   isStatic: true;
-		   isOnDemand: true) }
+	"Current implementation imports all helpers whether they need it or not"
+
+	^ helpers keys collect: [ :package |
+		  (aFASTModel newImportDeclaration qualifiedName:
+				   (aFASTModel newQualifiedName name: package , '.ModestHelper'))
+			  isStatic: true;
+			  isOnDemand: true ]
 ]
 
 { #category : 'exporting' }
@@ -81,14 +76,19 @@ FamixValueHelperObjectExportStrategy >> export: object on: visitor [
 		visitor ensureVisited: attribute value ].
 	"check if the object was not set up in the previous step"
 	(visitor varNameDict includesKey: object) ifTrue: [ ^ self ].
+
 	"get the helper method, or build it if it does not exist"
-	helper := declarations
+	currentDeclarations := helpers
+		                       at: (visitor helperPackageFor: object type)
+		                       ifAbsentPut: [ Dictionary new ].
+	helper := currentDeclarations
 		          at: object constructorSignature
 		          ifAbsentPut: [
 			          self
 				          buildMethodFor: object
 				          withParametersFor: attributes
 				          on: visitor ].
+
 	"call the helper method to build the object and store it in a variable"
 	model := visitor model.
 	visitor statementBlock addStatement: (model newVarDeclStatement
@@ -108,7 +108,7 @@ FamixValueHelperObjectExportStrategy >> export: object on: visitor [
 { #category : 'initialization' }
 FamixValueHelperObjectExportStrategy >> initialize [
 
-	declarations := Dictionary new
+	helpers := Dictionary new
 ]
 
 { #category : 'exporting' }
@@ -132,6 +132,16 @@ FamixValueHelperObjectExportStrategy >> makeHelperInvocation: helper arguments: 
 											    (model newTypeName name: 'long'));
 								   expression: ref ]
 						   ifFalse: [ ref ] ])
+]
+
+{ #category : 'ast' }
+FamixValueHelperObjectExportStrategy >> makeHelpersOn: visitor [
+
+	helpers keysAndValuesDo: [ :package :methodDeclarations |
+		| helperClass |
+		helperClass := visitor makeHelperInPackage: package.
+		methodDeclarations do: [ :declaration |
+			helperClass addDeclaration: declaration ] ]
 ]
 
 { #category : 'ast' }
@@ -167,18 +177,13 @@ FamixValueHelperObjectExportStrategy >> makeSetterInvocationsFor: attributes on:
 	attributes do: [ :attribute |
 		attribute attribute declaredType ifNotNil: [ :declaredType |
 			visitor builder processType: declaredType ].
+
 		(attribute object type findSetterOf: attribute attribute)
 			ifNotNil: [ :setter |
 				visitor
 					makeSetterInvocation: setter
 					for: attribute
-					named: attribute varName.
-
-				"handle setters that can throw exceptions to rethrow an unchecked exception"
-				setter thrownExceptions ifNotEmpty: [ :exceptions |
-					visitor statementBlock addStatement: (visitor
-							 makeTry: visitor statementBlock statements last
-							 catch: exceptions) ] ]
+					named: attribute varName ]
 			ifNil: [ visitor makeReflectionSetterInvocation: attribute ] ]
 ]
 
