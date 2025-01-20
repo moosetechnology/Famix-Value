@@ -30,7 +30,11 @@ FamixValueAbstractObjectExportStrategy >> export: object on: visitor [
 
 { #category : 'ast' }
 FamixValueAbstractObjectExportStrategy >> makeHelpersOn: visitor [
-	"Hook to create helper classes. By default, create the default helper and add nothing to it."
+	"Hook to create helper classes.
+	By default, create the default helper and add nothing to it.
+	If reflection is required, it will contain the corresponding helper methods."
+
+	"TODO only make if strictly necessary"
 
 	visitor makeDefaultHelper
 ]

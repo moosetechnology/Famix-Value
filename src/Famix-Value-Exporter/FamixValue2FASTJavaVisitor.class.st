@@ -32,13 +32,16 @@ FamixValue2FASTJavaVisitor >> addAttributesFrom: object asArgumentsTo: invocatio
 		 ifAbsentPut: [ constructor mapConstructorParametersToAttributes ])
 		withIndexDo: [ :paramAttribute :index |
 			invocation addArgument: (paramAttribute
-					 ifNil: [ "constructor parameter is not mapped to an attribute"
+					 ifNil: [ "constructor parameter is not mapped to an attribute
+						=> give it a default value"
 						 (constructor parameters at: index) declaredType
-							 ifNil: [ "TODO fix Java parser; if it's unknown then it must be a class, otherwise the parser would have found it"
-								 FamixJavaClass new asFASTJavaDefaultValueOn: self model ]
+							 ifNil: [ "TODO fix Java parser
+								if it's unknown then it must be a class, otherwise the parser would have found it
+								=> the default for class instances is `null`"
+								 self model newNullLiteral ]
 							 ifNotNil: [ :declaredType |
 							 declaredType asFASTJavaDefaultValueOn: self model ] ]
-					 ifNotNil: [
+					 ifNotNil: [ "parameter is mapped to attribute"
 						 object value
 							 detect: [ :objAttribute | "find the matching value attribute"
 								 objAttribute attribute == paramAttribute ]
@@ -59,30 +62,24 @@ FamixValue2FASTJavaVisitor >> builder [
 
 { #category : 'private' }
 FamixValue2FASTJavaVisitor >> constructObject: object [
+	"Build code to instantiate the object and store it in a variable"
 
 	| constructor invocation |
 	constructor := self findConstructorFor: object.
-	constructor thrownExceptions ifNotEmpty: [
-		self shouldBeImplemented "handle exceptions thrown by the chosen constructor" ].
-	self reflections
-		at: constructor
-		ifPresent: [ :varName | "reflective constructor call, the variable contains the Constructor object"
-			invocation := model newMethodInvocation name: 'instantiate'.
-			invocation addArgument: (model newVariableExpression name: varName).
-			(self statementBlock addStatement: self model newVarDeclStatement)
-				type: (self builder referType: object type);
-				addDeclarator: (model newVariableDeclarator
-						 variable: (self makeVariableExpression: object);
-						 expression: invocation) ]
-		ifAbsent: [ "regular constructor call"
-			| statement |
-			statement := self makeVarDeclStatement: object.
-			invocation := statement declarators first expression.
-			constructor thrownExceptions ifNotEmpty: [ :exceptions | "rethrow as RuntimeException"
-				self shouldBeImplemented.
-				exceptions do: [ :exception |  ] ].
-			self statementBlock addStatement: statement ].
-	"call with arguments to match constructor parameters"
+
+	"make the constructor invocation"
+	invocation := self reflections
+		              at: constructor
+		              ifPresent: [ :varName | "use reflection: var contains the Constructor object"
+			              self
+				              makeReflectionConstructorInvocation: varName
+				              for: object ]
+		              ifAbsent: [ "regular use of the constructor"
+			              self
+				              makeConstructorInvocation: constructor
+				              for: object ].
+
+	"add arguments to match constructor parameters"
 	constructor parameters ifNotEmpty: [
 		self
 			addAttributesFrom: object
@@ -395,6 +392,13 @@ FamixValue2FASTJavaVisitor >> ensureReflectionField: aFamixJavaAttribute [
 FamixValue2FASTJavaVisitor >> filterAttributesToSet: attributes for: type [
 	"No need to set attributes that are set in the constructor."
 
+	| attributesToIgnore |
+	"there can be more attributes to ignore in the future"
+	attributesToIgnore := type entityCache
+		                      at: #syntheticOuterInstance
+		                      ifPresent: [ :field | { field } ]
+		                      ifAbsent: [ #(  ) ].
+
 	^ constructorCache
 		  at: type
 		  ifPresent: [ :constructor |
@@ -402,7 +406,10 @@ FamixValue2FASTJavaVisitor >> filterAttributesToSet: attributes for: type [
 				  at: constructor
 				  ifPresent: [ :constructorAttributes |
 					  attributes reject: [ :attribute |
-						  constructorAttributes includes: attribute attribute ] ]
+						  | codeAttribute |
+						  codeAttribute := attribute attribute.
+						  (constructorAttributes includes: codeAttribute) or: [
+							  attributesToIgnore includes: codeAttribute ] ] ]
 				  ifAbsent: [ attributes ] ]
 		  ifAbsent: [ attributes ]
 ]
@@ -494,6 +501,33 @@ FamixValue2FASTJavaVisitor >> makeClassTypeExpression: typeName [
 		  (model newTypeName name: typeName)
 ]
 
+{ #category : 'ast' }
+FamixValue2FASTJavaVisitor >> makeConstructorInvocation: constructor for: object [
+	"Make the statement calling the constructor and return the invocation expression."
+
+	| invocation statement |
+	statement := self makeVarDeclStatement: object.
+	invocation := statement declarators first expression.
+
+	"If the object is a non-static inner class, it has a reference to its enclosing instance.
+	It must be exported beforehand, and it must be the receiver of the invocation."
+	object type cacheAt: #syntheticOuterInstance ifPresent: [ :field |
+		| outerInstance |
+		outerInstance := object value detect: [ :attribute |
+			                 attribute attribute == field ].
+		self ensureVisited: outerInstance value.
+		invocation receiver: (self objectExportStrategy
+				 makeVariableExpression: outerInstance
+				 on: self) ].
+
+	"handle exceptions thrown by the constructor and rethrow as an unchecked RuntimeException"
+	constructor thrownExceptions ifNotEmpty: [ :exceptions |
+		statement := self makeTry: statement catch: exceptions ].
+
+	self statementBlock addStatement: statement.
+	^ invocation
+]
+
 { #category : 'helpers' }
 FamixValue2FASTJavaVisitor >> makeDefaultHelper [
 	"The default helper should always be generated, regardless of strategy."
@@ -548,6 +582,35 @@ FamixValue2FASTJavaVisitor >> makeNewExpression: object [
 ]
 
 { #category : 'ast' }
+FamixValue2FASTJavaVisitor >> makeReflectionConstructorInvocation: constructorVarName for: object [
+	"Use `T instantiate(Constructor<T> constructor, Object... arguments)` from the UT helper.
+	constructorVarName is the name of the variable that contains the Constructor object."
+
+	| invocation |
+	(invocation := model newMethodInvocation name: 'instantiate')
+		addArgument: (model newVariableExpression name: constructorVarName).
+
+	"If the object is a non-static inner class, it has a reference to its enclosing instance.
+	It must be exported beforehand, and it must be the first argument of the invocation."
+	object type cacheAt: #syntheticOuterInstance ifPresent: [ :field |
+		| outerInstance |
+		outerInstance := object value detect: [ :attribute |
+			                 attribute attribute == field ].
+		self ensureVisited: outerInstance value.
+		invocation addArgument: (self objectExportStrategy
+				 makeVariableExpression: outerInstance
+				 on: self) ].
+
+	"invoke the method and store the result in a variable"
+	(self statementBlock addStatement: self model newVarDeclStatement)
+		type: (self builder referType: object type);
+		addDeclarator: (model newVariableDeclarator
+				 variable: (self makeVariableExpression: object);
+				 expression: invocation).
+	^ invocation
+]
+
+{ #category : 'ast' }
 FamixValue2FASTJavaVisitor >> makeReflectionFieldGetter: attribute [
 
 	^ self model newMethodInvocation
@@ -589,13 +652,18 @@ FamixValue2FASTJavaVisitor >> makeSetterInvocation: setter for: attribute [
 { #category : 'ast' }
 FamixValue2FASTJavaVisitor >> makeSetterInvocation: setter for: attribute named: aString [
 
-	self statementBlock addStatement:
-		(self model newExpressionStatement expression:
-			 (model newMethodInvocation
-				  receiver: (self makeVariableExpression: attribute object);
-				  name: setter name;
-				  addArgument: (model newVariableExpression name: aString);
-				  famixMethod: setter))
+	| invocation |
+	(invocation := self model newExpressionStatement) expression:
+		(model newMethodInvocation
+			 receiver: (self makeVariableExpression: attribute object);
+			 name: setter name;
+			 addArgument: (model newVariableExpression name: aString);
+			 famixMethod: setter).
+
+	self statementBlock addStatement: (setter thrownExceptions
+			 ifEmpty: [ invocation ]
+			 ifNotEmpty: [ :exceptions | "handle setters that can throw exceptions to rethrow an unchecked exception"
+				 self makeTry: invocation catch: exceptions ])
 ]
 
 { #category : 'ast' }
@@ -603,17 +671,23 @@ FamixValue2FASTJavaVisitor >> makeTry: statement catch: exceptions [
 	"Wrap the statement in a try-catch for the given exceptions, and rethrow as an unchecked RuntimeException."
 
 	^ self model newTryCatchStatement
-		  try: (model newStatementBlock statements: { statement });
-		  catches: { (model newCatchPartStatement
+		  try: (model newStatementBlock
+				   addStatement: statement;
+				   yourself);
+		  addCatch: (model newCatchPartStatement
 				   catchedTypes: (exceptions collect: [ :exception |
 							    exception asFASTJavaTypeExpressionOn: self ]);
 				   parameter: (model newVariableExpression name: 'e');
-				   body: (model newStatementBlock statements:
-							    { (model newThrowStatement expression:
+				   body: (model newStatementBlock
+						    addStatement:
+							    (model newThrowStatement expression:
 									     (model newNewExpression
 										      type: (model newClassTypeExpression typeName:
 													       (model newTypeName name: 'RuntimeException'));
-										      arguments: { (model newVariableExpression name: 'e') })) })) }
+										      addArgument: (model newVariableExpression name: 'e');
+										      yourself));
+						    yourself));
+		  yourself
 ]
 
 { #category : 'ast' }

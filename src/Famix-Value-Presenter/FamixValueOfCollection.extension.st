@@ -1,6 +1,6 @@
-Extension { #name : #FamixValueOfCollection }
+Extension { #name : 'FamixValueOfCollection' }
 
-{ #category : #'*Famix-Value-Presenter' }
+{ #category : '*Famix-Value-Presenter' }
 FamixValueOfCollection >> presenterChildren [
 
 	^ value collect: #value

@@ -1,6 +1,6 @@
-Extension { #name : #FamixValueOfDictionary }
+Extension { #name : 'FamixValueOfDictionary' }
 
-{ #category : #'*Famix-Value-Presenter' }
+{ #category : '*Famix-Value-Presenter' }
 FamixValueOfDictionary >> presenterChildren [
 
 	^ value

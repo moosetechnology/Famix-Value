@@ -102,7 +102,7 @@ FamixValueHelperObjectExportStrategy >> export: object on: visitor [
 { #category : 'initialization' }
 FamixValueHelperObjectExportStrategy >> initialize [
 
-	declarations := Dictionary new
+	helpers := Dictionary new
 ]
 
 { #category : 'exporting' }
@@ -131,10 +131,11 @@ FamixValueHelperObjectExportStrategy >> makeHelperInvocation: helper arguments: 
 { #category : 'ast' }
 FamixValueHelperObjectExportStrategy >> makeHelpersOn: visitor [
 
-	declarations keysAndValuesDo: [ :package :decls |
+	helpers keysAndValuesDo: [ :package :methodDeclarations |
 		| helperClass |
 		helperClass := visitor makeHelperInPackage: package.
-		decls do: [ :declaration | helperClass addDeclaration: declaration ] ]
+		methodDeclarations do: [ :declaration |
+			helperClass addDeclaration: declaration ] ]
 ]
 
 { #category : 'ast' }
@@ -170,18 +171,13 @@ FamixValueHelperObjectExportStrategy >> makeSetterInvocationsFor: attributes on:
 	attributes do: [ :attribute |
 		attribute attribute declaredType ifNotNil: [ :declaredType |
 			visitor builder processType: declaredType ].
+
 		(attribute object type findSetterOf: attribute attribute)
 			ifNotNil: [ :setter |
 				visitor
 					makeSetterInvocation: setter
 					for: attribute
-					named: attribute varName.
-
-				"handle setters that can throw exceptions to rethrow an unchecked exception"
-				setter thrownExceptions ifNotEmpty: [ :exceptions |
-					visitor statementBlock addStatement: (visitor
-							 makeTry: visitor statementBlock statements last
-							 catch: exceptions) ] ]
+					named: attribute varName ]
 			ifNil: [ visitor makeReflectionSetterInvocation: attribute ] ]
 ]
 
