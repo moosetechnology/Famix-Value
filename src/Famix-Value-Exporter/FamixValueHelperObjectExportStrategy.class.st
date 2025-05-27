@@ -6,8 +6,8 @@ Class {
 	#name : 'FamixValueHelperObjectExportStrategy',
 	#superclass : 'FamixValueAbstractObjectExportStrategy',
 	#instVars : [
-		'declarations',
-		'currentDeclarations'
+		'currentDeclarations',
+		'helpers'
 	],
 	#category : 'Famix-Value-Exporter-Strategies',
 	#package : 'Famix-Value-Exporter',
@@ -25,11 +25,13 @@ FamixValueHelperObjectExportStrategy >> buildMethodFor: object withParametersFor
 	oldStatementBlock := visitor statementBlock.
 	visitor statementBlock: model newStatementBlock.
 	visitor builder processType: object type.
+
 	"make the method entity"
 	helper := self
 		          makeMethodFor: object type
 		          withParametersFor: attributes
 		          on: visitor.
+
 	"make the method body: instantiate object, set attributes and return it"
 	visitor constructObject: object.
 	self
@@ -39,6 +41,7 @@ FamixValueHelperObjectExportStrategy >> buildMethodFor: object withParametersFor
 	visitor statementBlock addStatement:
 		(model newReturnStatement expression:
 			 (model newVariableExpression name: (visitor varNameFor: object))).
+
 	"restore original visitor context"
 	visitor statementBlock: oldStatementBlock.
 	^ helper
@@ -52,8 +55,11 @@ FamixValueHelperObjectExportStrategy >> currentDeclarations [
 
 { #category : 'ast' }
 FamixValueHelperObjectExportStrategy >> dependencyImportsOn: aFASTModel [
+	"To have access to some protected classes, there may be helpers in different packages"
 
-	^ declarations keys collect: [ :package |
+	"Current implementation imports all helpers whether they need it or not"
+
+	^ helpers keys collect: [ :package |
 		  (aFASTModel newImportDeclaration qualifiedName:
 				   (aFASTModel newQualifiedName name: package , '.ModestHelper'))
 			  isStatic: true;
@@ -72,7 +78,7 @@ FamixValueHelperObjectExportStrategy >> export: object on: visitor [
 	(visitor varNameDict includesKey: object) ifTrue: [ ^ self ].
 
 	"get the helper method, or build it if it does not exist"
-	currentDeclarations := declarations
+	currentDeclarations := helpers
 		                       at: (visitor helperPackageFor: object type)
 		                       ifAbsentPut: [ Dictionary new ].
 	helper := currentDeclarations
