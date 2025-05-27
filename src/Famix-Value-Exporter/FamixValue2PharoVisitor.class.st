@@ -106,12 +106,12 @@ FamixValue2PharoVisitor >> visitClosure: closure [
 	closure variables do: [ :var | self ensureVisited: var value ].
 
 	[ "TODO how to reference variables now that everything is in a dictionary?
-	-> probably need to rewrite source..."
+		-> probably need to rewrite source..."
 	self statementBlock addNode: (self
 			 makeAssignment: (RBParser parseExpression: closure sourceCode)
 			 to: (self varNameFor: closure)) ]
-		on: SyntaxErrorNotification
-		do: [ :error | "TODO: fix reflective opperation on block when metalink is installed"
+		on: CodeError
+		do: [ :error | "TODO: fix reflective operation on block when metalink is installed"
 			Transcript crShow: error description.
 			error pass ]
 ]
