@@ -43,7 +43,7 @@ FamixValue2ASTVisitor >> model: aModel [
 { #category : 'accessing' }
 FamixValue2ASTVisitor >> nextId [
 
-	^ (id := (id ifNil: 0) + 1) - 1
+	^ (id := (id ifNil: [ 0 ]) + 1) - 1
 ]
 
 { #category : 'accessing' }

@@ -38,19 +38,22 @@ FamixEntityFinder >> findMethodWithSignature: signature in: class [
 	class methods
 		detect: [ :method | method signature = signature ]
 		ifFound: [ :method | ^ method ].
-	"signature might not exactly match due to representation format"
+
+	"Signature might not exactly match due to representation format"
 	candidates := self
 		              findMethodsWithName:
 		              (self methodNameFromSignature: signature)
 		              in: class.
 	candidates size = 1 ifTrue: [ ^ candidates anyOne ].
-	"method might be overloaded, find the one with matching signature"
+
+	"Method might be overloaded, find the one with matching signature"
 	candidates := candidates select: [ :method |
 		              self signatureOf: method matches: signature ].
 	candidates size = 1 ifTrue: [ ^ candidates anyOne ].
 	candidates ifEmpty: [
 		FamixEntityNotFound signalFor: signature in: class ].
-	"consider returning a specific candidate; TODO: better"
+
+	"Consider returning a specific candidate; TODO: better"
 	self error: 'Found multiple methods matching signature: ' , signature
 ]
 
