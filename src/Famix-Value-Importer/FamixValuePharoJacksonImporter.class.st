@@ -134,7 +134,7 @@ FamixValuePharoJacksonImporter >> importObject: rawObject of: type [
 { #category : 'importing' }
 FamixValuePharoJacksonImporter >> importObjectAttribute: rawValue of: type named: name [
 
-	name = '@' ifFalse: [ "regular attribute"
+	name = '@' ifFalse: [ "Regular attribute"
 		^ super importObjectAttribute: rawValue of: type named: name ].
 	"The object is indexable *and* has instance variables.
 	There is nothing to represent this in the Value model (yet), so instead use a placeholder attribute with a collection."
@@ -180,7 +180,7 @@ FamixValuePharoJacksonImporter >> initialize [
 	closureSources := Dictionary new
 ]
 
-{ #category : 'importing' }
+{ #category : 'private - utility' }
 FamixValuePharoJacksonImporter >> newReader [
 
 	^ super newReader.

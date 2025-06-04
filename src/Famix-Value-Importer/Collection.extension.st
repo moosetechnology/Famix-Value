@@ -12,23 +12,23 @@ Collection >> asJavaJacksonValueOn: importer [
 	type mooseName = 'java::lang::Class' ifTrue: [
 		^ importer importTypeReference: (self at: 2) of: type ].
 
-	"might be an evident Jackson TypeInfo wrapper"
+	"Might be an evident Jackson TypeInfo wrapper"
 	self hasJavaJacksonTypeInformation ifTrue: [
 		^ importer importValueFromList: (self at: 2) of: type ].
 
-	"might be an enumeration value"
+	"Might be an enumeration value"
 	(type usesFamixTrait: FamixTEnum) ifTrue: [
 		^ importer importEnumValue: (self at: 2) of: type ].
 
-	"might be a special object"
+	"Might be a special object"
 	type ifNotNil: [
 		(importer importSpecialObject: (self at: 2) of: type) ifNotNil: [
 			:value | ^ value ] ].
 
-	type isPrimitiveType ifTrue: [ "an array of primitives"
+	type isPrimitiveType ifTrue: [ "An array of primitives"
 		self shouldBeImplemented ].
 
-	"must be a regular list"
+	"Must be a regular list"
 	^ importer importValueFromList: self of: type
 ]
 

@@ -10,7 +10,8 @@ Class {
 		'model',
 		'typeInferences',
 		'objectDict',
-		'entityFinder'
+		'entityFinder',
+		'ignoreUnknownAttributes'
 	],
 	#category : 'Famix-Value-Importer',
 	#package : 'Famix-Value-Importer'
@@ -54,6 +55,19 @@ FamixValueAbstractImporter >> getUnknownTypeNamed: name [
 	^ (self model allWithType: FamixValueUnknownType)
 		  detect: [ :type | type name = name ]
 		  ifNone: [ self model newUnknownTypeNamed: name ]
+]
+
+{ #category : 'initialization' }
+FamixValueAbstractImporter >> ignoreUnknownAttributes [
+
+	^ ignoreUnknownAttributes
+]
+
+{ #category : 'initialization' }
+FamixValueAbstractImporter >> ignoreUnknownAttributes: aBoolean [
+	"Whether to raise an error when an attribute is not found in the code model."
+
+	ignoreUnknownAttributes := aBoolean
 ]
 
 { #category : 'importing' }
@@ -153,7 +167,8 @@ FamixValueAbstractImporter >> importValue: rawValue [
 { #category : 'initialization' }
 FamixValueAbstractImporter >> initialize [
 
-	self reset
+	self reset.
+	ignoreUnknownAttributes := false
 ]
 
 { #category : 'importing' }

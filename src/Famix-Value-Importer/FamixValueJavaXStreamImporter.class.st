@@ -8,7 +8,7 @@ Class {
 	#package : 'Famix-Value-Importer'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'private - utility' }
 FamixValueJavaXStreamImporter >> findTypeDimensions: aFamixJavaAttribute [
 	"Nothing in the XML tells if it is an array, so we have to check the source code"
 
@@ -16,14 +16,14 @@ FamixValueJavaXStreamImporter >> findTypeDimensions: aFamixJavaAttribute [
 	dimensions := 0.
 	source := aFamixJavaAttribute sourceAnchor fileReference contents.
 
-	"search after attribute name"
+	"Search after attribute name"
 	index := aFamixJavaAttribute sourceAnchor endPos.
 	[
 	char := source at: (index := index + 1).
 	char == $[ ifTrue: [ dimensions := dimensions + 1 ].
 	char == $= or: [ char == $; ] ] whileFalse.
 
-	"search before"
+	"Search before"
 	index := aFamixJavaAttribute sourceAnchor startPos.
 	[
 	char := source at: (index := index - 1).
@@ -35,7 +35,7 @@ FamixValueJavaXStreamImporter >> findTypeDimensions: aFamixJavaAttribute [
 
 { #category : 'importing' }
 FamixValueJavaXStreamImporter >> importArray: aXMLElement of: type [
-	"element type should already be inferred by the caller, normally in the context of an object attribute"
+	"Element type should already be inferred by the caller, normally in the context of an object attribute"
 
 	| collection |
 	collection := self model newOfCollection type: type.
@@ -59,7 +59,7 @@ FamixValueJavaXStreamImporter >> importArray: aXMLElement of: type [
 
 { #category : 'importing' }
 FamixValueJavaXStreamImporter >> importCollection: rawValue of: type [
-	"infer element types from type argument, e.g. List<String> => String"
+	"Infer element types from type argument, e.g. List<String> => String"
 
 	| collection |
 	collection := self model newOfCollection type: type.
@@ -82,7 +82,7 @@ FamixValueJavaXStreamImporter >> importCollection: rawValue of: type [
 
 { #category : 'importing' }
 FamixValueJavaXStreamImporter >> importDictionary: rawValue of: type [
-	"infer from type arguments, e.g. Map<String, MyClass>"
+	"Infer from type arguments, e.g. Map<String, MyClass>"
 
 	| dictionary keyType valueType assoc |
 	dictionary := self model newOfDictionary type: type.
@@ -148,8 +148,8 @@ FamixValueJavaXStreamImporter >> importObjectAttribute: rawValue of: type named:
 		  self model newOfObjectAttribute
 			  attribute: attribute;
 			  value: (dimensions == 0
-					   ifTrue: [ "regular type" self importValue: rawValue ]
-					   ifFalse: [ "array type"
+					   ifTrue: [ "Regular type" self importValue: rawValue ]
+					   ifFalse: [ "Array type"
 						   self
 							   importArray: rawValue
 							   of:
@@ -198,7 +198,7 @@ FamixValueJavaXStreamImporter >> newReader [
 { #category : 'parsing' }
 FamixValueJavaXStreamImporter >> parseList: serializedValues [
 
-	self halt
+	self shouldBeImplemented
 ]
 
 { #category : 'parsing' }
@@ -212,7 +212,7 @@ FamixValueJavaXStreamImporter >> parseValue: serializedValue [
 			  self importValue: nodes first ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'private - utility' }
 FamixValueJavaXStreamImporter >> resolve: aString from: sourceNode [
 	"Resolve a reference relative to the source node"
 

@@ -29,13 +29,13 @@ FamixValueJavaJacksonImporter >> findAttributeNamed: name in: type [
 	"Find the attribute using its name in the given type's hierarchy.
 	Handle Java synthetic fields: they are created by the compiler and do not appear in the source code."
 
-	type isInterface ifTrue: [ "this should not happen because we should have the runtime type, which cannot be an interface
-		if it still happens, it probably means the source of the value, or possibly the model, is missing the type"
+	type isInterface ifTrue: [ "This should not happen because we should have the runtime type, which cannot be an interface.
+		If it still happens, it probably means the source of the value, or possibly the model, is missing the type"
 		FamixValueImporterError signal:
 			'Cannot find the attribute `' , name , '` in the interface `'
 			, type name , '`.' ].
 
-	"search the attribute in the code model"
+	"Search the attribute in the code model"
 	(type findAttributeNamed: name) ifNotNil: [ :attribute | ^ attribute ].
 
 	"The attribute was not found in the model: it may be synthetic.
@@ -55,7 +55,8 @@ FamixValueJavaJacksonImporter >> findAttributeNamed: name in: type [
 
 	"TODO fields from anonymous classes and lambdas storing variables captured by closure (named `val$<varName>`)"
 
-	"attribute not found -> probably declared in a stub superclass"
+	"Attribute not found -> probably declared in a stub superclass"
+	ignoreUnknownAttributes ifTrue: [ ^ nil ].
 	FamixValueImporterError signal:
 		'Attribute `' , name , '` not found in hierarchy of `'
 		, type mooseName , '`'
@@ -99,7 +100,8 @@ FamixValueJavaJacksonImporter >> importObjectAttribute: rawValue of: type named:
 	| attribute inference |
 	attribute := self findAttributeNamed: name in: type.
 
-	(attribute isTransient and: [ self skipTransientAttributes ])
+	(attribute isNil or: [
+		 attribute isTransient and: [ self skipTransientAttributes ] ])
 		ifTrue: [ ^ nil ].
 
 	"If the attribute type is a TypeParameter, and the runtime type is a concretization
@@ -109,15 +111,15 @@ FamixValueJavaJacksonImporter >> importObjectAttribute: rawValue of: type named:
 		attribute declaredType ifNotNil: [ :declaredType |
 			declaredType isParameterType
 				ifFalse: [ "not parametric" inference := declaredType ]
-				ifTrue: [
-					self halt. "wait what's happening here? why do we need a detect? investigate, fix(?), and explain with a comment"
+				ifTrue: [ "wait what's happening here? why do we need a detect? investigate, fix(?), and explain with a comment"
 					declaredType concretizations
 						detect: [ :paramType |
 						paramType concretizations first concreteEntity == type ]
 						ifFound: [ :paramType |
-						inference := paramType concreteParameter ] ] ] ].
+						inference := paramType concreteParameter ].
+					inference ifNotNil: [ self halt ] ] ] ].
 
-	"check if the value is an array"
+	"Check if the value is an array"
 	(rawValue isCollection and: [
 		 inference isNotNil and: [ self isPrimitiveType: inference ] ])
 		ifTrue: [ "TODO check is too strict, arrays can be everywhere -> add info in metamodel!"
@@ -207,8 +209,8 @@ FamixValueJavaJacksonImporter >> parseList: serializedValues [
 	| rawValues |
 	rawValues := super parseList: serializedValues.
 	^ rawValues hasJavaJacksonTypeInformation
-		  ifTrue: [ "ignore the type information of the top level list."
-			  ^ rawValues at: 2 "TODO only a specific version of jackson does this, investigate" ]
+		  ifTrue: [ "Ignore the type information of the top level list."
+			  ^ rawValues at: 2 "TODO Only a specific version of jackson does this, investigate" ]
 		  ifFalse: [ rawValues ]
 ]
 
@@ -223,25 +225,25 @@ FamixValueJavaJacksonImporter >> readDimensionsOfAttribute: attribute [
 	source := WriteStream on: (String new: 100).
 	attribute sourceAnchor fileReference readStreamDo: [ :rs |
 		| start |
-		"we don't know where the attribute definition starts
+		"We don't know where the attribute definition starts
 		because the source anchor only applies to the identifier
-		so we read the source starting from the class start position"
+		so we read the source starting from the class start position."
 		start := attribute parentType sourceAnchor startPos.
 		rs skip: start.
 		start to: attribute sourceAnchor endPos do: [ :i |
 		source nextPut: rs next ].
-		"additionally read from endPos until:
+		"Additionally read from endPos until:
 		- next declarator, eg. `int a, b`
 		- end of definition, eg. `int a;`
 		- initialization, eg. `int a = 1`"
 		[ ',;=' includes: (char := rs next) ] whileFalse: [
 			source nextPut: char ] ].
 
-	"source contains (at least) the attribute definition, now we count the square brackets"
+	"Source contains (at least) the attribute definition, now we count the square brackets"
 	source := source contents.
 	index := source size.
 	dimensions := 0.
-	[ "read backwards until:
+	[ "Read backwards until:
 	- block opener, eg. `class C { int a;`
 	- block closer, eg. `int f(){} int a;`
 	- end of statement, eg. `int b; int a;`"
