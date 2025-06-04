@@ -27,7 +27,7 @@ FamixValueUnknownType >> fullyQualifiedNameOn: aFASTJavaModel [
 { #category : '*Famix-Value-Exporter' }
 FamixValueUnknownType >> fullyQualifiedTypeNameOn: aFASTJavaModel [
 
-	^ aFASTJavaModel newQualifiedTypeName name: name
+	^ aFASTJavaModel newTypeName name: name
 ]
 
 { #category : '*Famix-Value-Exporter' }

@@ -12,17 +12,6 @@ Class {
 	#tag : 'Helpers'
 }
 
-{ #category : 'ast' }
-FASTJavaBuilder >> fullyQualifiedPackageNameFor: aFamixJavaPackage [
-
-	^ aFamixJavaPackage parentPackage
-		  ifNil: [ self model newTypeName name: aFamixJavaPackage name ]
-		  ifNotNil: [ :parentPackage |
-			  self model newQualifiedTypeName
-				  name: aFamixJavaPackage name;
-				  namespace: (self fullyQualifiedPackageNameFor: parentPackage) ]
-]
-
 { #category : 'initialization' }
 FASTJavaBuilder >> initialize [
 
