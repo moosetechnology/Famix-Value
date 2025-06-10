@@ -115,7 +115,7 @@ FamixValue2PharoVisitor >> visitClosure: closure [
 			   to: (self varNameFor: closure)) ]
 		  on: CodeError
 		  do: [ :error | "TODO: fix reflective operation on block when metalink is installed"
-			  Transcript crShow: error description.
+			  error record.
 			  error pass ]
 ]
 
