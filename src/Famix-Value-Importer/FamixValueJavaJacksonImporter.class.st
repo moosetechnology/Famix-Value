@@ -110,14 +110,14 @@ FamixValueJavaJacksonImporter >> importObjectAttribute: rawValue of: type named:
 	attribute ifNotNil: [
 		attribute declaredType ifNotNil: [ :declaredType |
 			declaredType isParameterType
-				ifFalse: [ "not parametric" inference := declaredType ]
-				ifTrue: [ "wait what's happening here? why do we need a detect? investigate, fix(?), and explain with a comment"
+				ifFalse: [ "Not parametric" inference := declaredType ]
+				ifTrue: [ "Wait, what's happening here? Why do we need a detect? Investigate, fix(?), and explain with a comment...
+					Note: Parametrics v3 came out since this weird code from v2, so let it be until migration to v3"
 					declaredType concretizations
 						detect: [ :paramType |
 						paramType concretizations first concreteEntity == type ]
 						ifFound: [ :paramType |
-						inference := paramType concreteParameter ].
-					inference ifNotNil: [ self halt ] ] ] ].
+						inference := paramType concreteParameter ] ] ] ].
 
 	"Check if the value is an array"
 	(rawValue isCollection and: [
@@ -209,8 +209,8 @@ FamixValueJavaJacksonImporter >> parseList: serializedValues [
 	| rawValues |
 	rawValues := super parseList: serializedValues.
 	^ rawValues hasJavaJacksonTypeInformation
-		  ifTrue: [ "Ignore the type information of the top level list."
-			  ^ rawValues at: 2 "TODO Only a specific version of jackson does this, investigate" ]
+		  ifTrue: [ "Ignore the type information of the top-level list."
+			  ^ rawValues at: 2 "Only Jackson <2.12 does this (array wrapper when `As.PROPERTY`)" ]
 		  ifFalse: [ rawValues ]
 ]
 

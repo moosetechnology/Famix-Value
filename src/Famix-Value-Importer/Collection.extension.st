@@ -2,28 +2,32 @@ Extension { #name : 'Collection' }
 
 { #category : '*Famix-Value-Importer' }
 Collection >> asJavaJacksonValueOn: importer [
-	"List values are serialized as an array containing [1] the type name and [2] the array of elements."
+	"List values are serialized as an array containing [1] the type name and [2] the array of elements.
+	There's also the issue that Jackson <2.12 does array wrapping as a fallback when TypeInfo is `As.PROPERTY`.
+	This can lead to unexpected wrappers when it can also be a regular list, so we need to differentiate.
+	The real solution is to only depend on `As.WRAPPER_ARRAY`, that should have been the choice from the start :/"
 
 	| type |
-	type := self hasJavaJacksonTypeInformation ifTrue: [
+	self hasJavaJacksonTypeInformation ifTrue: [ "Obvious TypeInfo wrapper"
+		^ importer
+			  importValueFromList: (self at: 2)
+			  of: (importer entityFinder findTypeNamed: (self at: 1)) ].
+
+	type := (self size = 2 and: [ (self at: 1) isString ]) ifTrue: [ "Maybe TypeInfo"
 		        importer entityFinder findTypeNamed: (self at: 1) ].
 	type ifNil: [ type := importer loadType ].
 
-	type mooseName = 'java::lang::Class' ifTrue: [
+	"Can be a class reference"
+	type mooseName = 'java.lang.Class' ifTrue: [
 		^ importer importTypeReference: (self at: 2) of: type ].
 
-	"Might be an evident Jackson TypeInfo wrapper"
-	self hasJavaJacksonTypeInformation ifTrue: [
-		^ importer importValueFromList: (self at: 2) of: type ].
-
-	"Might be an enumeration value"
+	"Can be an enumeration value"
 	(type usesFamixTrait: FamixTEnum) ifTrue: [
 		^ importer importEnumValue: (self at: 2) of: type ].
 
-	"Might be a special object"
-	type ifNotNil: [
-		(importer importSpecialObject: (self at: 2) of: type) ifNotNil: [
-			:value | ^ value ] ].
+	"Can be a special object"
+	(importer importSpecialObject: (self at: 2) of: type) ifNotNil: [
+		:value | ^ value ].
 
 	type isPrimitiveType ifTrue: [ "An array of primitives"
 		self shouldBeImplemented ].
