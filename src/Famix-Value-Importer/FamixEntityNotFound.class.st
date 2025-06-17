@@ -9,5 +9,6 @@ Class {
 FamixEntityNotFound >> standardMessageText [
 
 	^ String streamContents: [ :stream |
-		  stream << self object << ' not found in ' << self collection name ]
+		  stream << self object << ' not found in '
+		  << self collection mooseName ]
 ]

@@ -30,10 +30,10 @@ FamixValueJavaJacksonImporter >> findAttributeNamed: name in: type [
 	Handle Java synthetic fields: they are created by the compiler and do not appear in the source code."
 
 	type isInterface ifTrue: [ "This should not happen because we should have the runtime type, which cannot be an interface.
-		If it still happens, it probably means the source of the value, or possibly the model, is missing the type"
+		If it still happens, it probably means the source of the value, or possibly the model, is missing the type."
 		FamixValueImporterError signal:
 			'Cannot find the attribute `' , name , '` in the interface `'
-			, type name , '`.' ].
+			, type mooseName , '`.' ].
 
 	"Search the attribute in the code model"
 	(type findAttributeNamed: name) ifNotNil: [ :attribute | ^ attribute ].
@@ -53,7 +53,7 @@ FamixValueJavaJacksonImporter >> findAttributeNamed: name in: type [
 				  parentType: type;
 				  declaredType: type typeContainer ] ].
 
-	"TODO fields from anonymous classes and lambdas storing variables captured by closure (named `val$<varName>`)"
+	"TODO fields from anonymous classes and lambdas storing variables captured by closure (named `val$<varName>` or `arg$<N>`)"
 
 	"Attribute not found -> probably declared in a stub superclass"
 	ignoreUnknownAttributes ifTrue: [ ^ nil ].

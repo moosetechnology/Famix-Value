@@ -11,7 +11,7 @@ FamixJavaMethod >> signatureWithoutParameterTypes [
 	"Rewrite the method signature ignoring parameter types, e.g. f(List<String>) => f(List)"
 
 	| result from to |
-	result := '' writeStream.
+	result := WriteStream on: ''.
 	from := to := 1.
 	[ (to := signature indexOf: $< startingAt: from) = 0 ] whileFalse: [
 		result nextPutAll: (signature copyFrom: from to: to - 1).

@@ -46,9 +46,7 @@ FamixJavaEntityFinder >> parseTypeName: name [
 		        ifFalse: [ self findTypeWithName: typeName ]
 		        ifTrue: [ "Search by translating the type name to a mooseName."
 			        self findTypeWithMooseName:
-				        ((typeName allButLast: dimensions * 2)
-					         copyReplaceAll: '.'
-					         with: '::') ].
+				        (typeName allButLast: dimensions * 2) ].
 	^ dimensions > 0
 		  ifFalse: [ type ]
 		  ifTrue: [
@@ -89,11 +87,12 @@ FamixJavaEntityFinder >> translateFieldDescriptor: fieldDescriptor [
 	typeName := fieldDescriptor allButFirst: dimensions.
 	typeName := FieldDescriptors
 		            at: (typeName at: 1)
-		            ifAbsent: [ "an instance of class, e.g. Ljava.lang.String;"
+		            ifAbsent: [ "A class, e.g. Ljava.lang.String;"
 			            (typeName at: 1) == $L
 				            ifTrue: [ typeName copyFrom: 2 to: typeName size - 1 ]
 				            ifFalse: [
-				            self error: 'incoherent Java field descriptor' ] ].
+				            self error:
+					            'Incoherent Java field descriptor: ' , typeName ] ].
 	[
 	typeName := typeName , '[]'.
 	(dimensions := dimensions - 1) > 0 ] whileTrue.
