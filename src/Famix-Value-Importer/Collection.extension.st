@@ -3,19 +3,20 @@ Extension { #name : 'Collection' }
 { #category : '*Famix-Value-Importer' }
 Collection >> asJavaJacksonValueOn: importer [
 	"List values are serialized as an array containing [1] the type name and [2] the array of elements.
-	There's also the issue that Jackson <2.12 does array wrapping as a fallback when TypeInfo is `As.PROPERTY`.
+	There's also the issue that Jackson <2.12 does array wrapping as a fallback with `JsonTypeInfo.As.PROPERTY`.
 	This can lead to unexpected wrappers when it can also be a regular list, so we need to differentiate.
-	The real solution is to only depend on `As.WRAPPER_ARRAY`, that should have been the choice from the start :/"
+	The real solution is to only depend on `As.WRAPPER_ARRAY`, that should have been the choice from the start."
 
 	| type |
-	self hasJavaJacksonTypeInformation ifTrue: [ "Obvious TypeInfo wrapper"
-		^ importer
-			  importValueFromList: (self at: 2)
-			  of: (importer entityFinder findTypeNamed: (self at: 1)) ].
-
 	type := (self size = 2 and: [ (self at: 1) isString ]) ifTrue: [ "Maybe TypeInfo"
 		        importer entityFinder findTypeNamed: (self at: 1) ].
-	type ifNil: [ type := importer loadType ].
+	type
+		ifNotNil: [ "Confirmed TypeInfo"
+			importer importValueFromList: (self at: 2) of: type ]
+		ifNil: [
+			self hasJavaJacksonTypeInformation ifTrue: [ "Was TypeInfo but could not find type in model"
+				self error: 'Type not in code model: ' , (self at: 1) ].
+			type := importer loadType ].
 
 	"Can be a class reference"
 	type mooseName = 'java.lang.Class' ifTrue: [
