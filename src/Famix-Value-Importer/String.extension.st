@@ -4,11 +4,12 @@ Extension { #name : 'String' }
 String >> asJavaJacksonValueOn: importer [
 
 	importer typeInference ifNotNil: [ :typeInference |
-		typeInference name = 'Class' ifTrue: [
+		typeInference mooseName = 'java.lang.Class' ifTrue: [
 			^ importer importTypeReference: self of: typeInference ].
 		(typeInference usesFamixTrait: FamixTEnum) ifTrue: [
 			^ importer importEnumValue: self of: typeInference ] ].
-	"import regular string, escape special characters"
+
+	"Import regular string, escape special characters"
 	^ importer
 		  importPrimitive: (self
 				   copyWithRegex: '\\|"'
