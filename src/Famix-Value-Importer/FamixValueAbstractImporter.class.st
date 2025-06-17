@@ -72,7 +72,7 @@ FamixValueAbstractImporter >> ignoreUnknownAttributes: aBoolean [
 
 { #category : 'importing' }
 FamixValueAbstractImporter >> importCollection: rawValue of: type [
-	"infer element types from type argument, e.g. List<String> => String"
+	"Infer element types from type argument, e.g. List<String> => String"
 
 	| collection |
 	collection := self model newOfCollection type: type.
@@ -89,7 +89,7 @@ FamixValueAbstractImporter >> importCollection: rawValue of: type [
 
 { #category : 'importing' }
 FamixValueAbstractImporter >> importDictionary: rawDictionary of: type [
-	"infer from type arguments, e.g. Map<String, MyClass>"
+	"Infer from type arguments, e.g. Map<String, MyClass>"
 
 	| dictionary keyType valueType assoc |
 	dictionary := self model newOfDictionary type: type.
@@ -128,6 +128,7 @@ FamixValueAbstractImporter >> importObject: rawObject of: type [
 	object := self model newOfObject type: type.
 	(self getObjectIdentity: rawObject) ifNotNil: [ :id |
 		objectDict at: id put: object ].
+
 	self iterate: rawObject keysAndValuesDo: [ :name :value |
 		(self importObjectAttribute: value of: type named: name) ifNotNil: [
 			:attribute | attribute object: object ] ].

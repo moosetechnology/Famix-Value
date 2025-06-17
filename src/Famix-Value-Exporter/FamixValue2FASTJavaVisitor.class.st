@@ -478,13 +478,12 @@ FamixValue2FASTJavaVisitor >> helperPackageFor: type [
 
 	(type isProtected or: [ type isPackageVisibility ]) ifFalse: [
 		FamixValueExporterError signal:
-			'Cannot recreate object of private class: '
-			, type mooseNameWithDots ].
+			'Cannot recreate object of private class: ' , type mooseName ].
 
 	"requires the helper to be in the same package"
 	container := type.
 	[ (container := container typeContainer) isPackage ] whileFalse.
-	^ container mooseNameWithDots
+	^ container mooseName
 ]
 
 { #category : 'initialization' }

@@ -141,10 +141,8 @@ FamixValueJavaJacksonImporter >> importSpecialObject: rawValue of: type [
 	"Some objects have special rules for serialization.
 	They should have a corresponding type wrapper that knows how to handle them."
 
-	self specialTypes
-		at: type mooseNameWithDots
-		ifPresent: [ :typeWrapper |
-			^ typeWrapper import: rawValue wrapping: type on: self ].
+	self specialTypes at: type mooseName ifPresent: [ :typeWrapper |
+		^ typeWrapper import: rawValue wrapping: type on: self ].
 	^ nil
 ]
 
@@ -172,20 +170,25 @@ FamixValueJavaJacksonImporter >> importValueFromList: rawValue of: type [
 
 	rawValue isCollection ifTrue: [
 		^ self importCollection: rawValue of: type ].
+
 	type isUnknownType ifTrue: [
 		^ self model newOfUnknownType
 			  value: rawValue;
 			  type: type ].
+
 	(type usesFamixTrait: FamixTEnum) ifTrue: [
 		^ self importEnumValue: rawValue of: type ].
+
 	(self isPrimitiveType: type) ifTrue: [
 		^ self model newOfPrimitiveType
 			  value: rawValue;
 			  type: type ].
-	type isClass ifTrue: [ "might be a special object"
+
+	type isClass ifTrue: [ "Can be a special object"
 		(self importSpecialObject: rawValue of: type) ifNotNil: [ :object |
 			^ object ] ].
-	self error: 'Unknown type: ' , type mooseNameWithDots
+
+	self error: 'Unknown type: ' , type mooseName
 ]
 
 { #category : 'private - utility' }
