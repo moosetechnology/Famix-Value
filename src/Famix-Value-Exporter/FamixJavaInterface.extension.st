@@ -1,6 +1,12 @@
 Extension { #name : 'FamixJavaInterface' }
 
 { #category : '*Famix-Value-Exporter' }
+FamixJavaInterface >> asFASTJavaDefaultValueOn: aFASTJavaModel [
+
+	^ aFASTJavaModel newNullLiteral
+]
+
+{ #category : '*Famix-Value-Exporter' }
 FamixJavaInterface >> withSubHierarchy [
 	"Includes subinterfaces and their implementing classes"
 
