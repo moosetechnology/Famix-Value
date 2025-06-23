@@ -34,7 +34,8 @@ FamixValueJavaArray >> decorate: aFamixJavaType asFASTJavaTypeExpressionOn: visi
 
 	| expression |
 	expression := aFamixJavaType asFASTJavaTypeExpressionOn: visitor.
-	expression typeName name:
-		expression typeName name , ('[]' repeat: dimensions).
+	dimensions timesRepeat: [
+		expression := visitor model newArrayTypeExpression baseType:
+			              expression ].
 	^ expression
 ]
