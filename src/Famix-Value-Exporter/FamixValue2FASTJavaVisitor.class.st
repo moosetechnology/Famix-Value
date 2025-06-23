@@ -427,15 +427,18 @@ FamixValue2FASTJavaVisitor >> findConstructorFor: object [
 	If no constructor is explicitly declared, use the default constructor. Otherwise, rely on reflection."
 
 	| type |
-	type := object type.
+	(type := object type) isInterface ifTrue: [
+		^ FamixValueExporterError signal:
+			  'Cannot reconstruct object of interface type: ' , type mooseName ].
+
 	^ constructorCache at: type ifAbsentPut: [
 		  type constructorsOrderedByScore
-			  ifEmpty: [ "use default constructor, this acts as a null object"
+			  ifEmpty: [ "Use default constructor, this acts as a null object"
 				  FamixJavaMethod new ]
 			  ifNotEmpty: [ :constructors |
 				  constructors
 					  detect: [ :constructor | constructor isPublic ]
-					  ifNone: [ "fallback to using reflection with constructor with best score"
+					  ifNone: [ "Fall back to using reflection with constructor with best score"
 						  | constructor |
 						  constructor := constructors first.
 						  self ensureReflectionConstructor: constructor.
