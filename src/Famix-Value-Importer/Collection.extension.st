@@ -12,7 +12,7 @@ Collection >> asJavaJacksonValueOn: importer [
 		        importer entityFinder findTypeNamed: (self at: 1) ].
 	type
 		ifNotNil: [ "Confirmed TypeInfo"
-			importer importValueFromList: (self at: 2) of: type ]
+			^ importer importValueFromList: (self at: 2) of: type ]
 		ifNil: [
 			self hasJavaJacksonTypeInformation ifTrue: [ "Was TypeInfo but could not find type in model"
 				self error: 'Type not in code model: ' , (self at: 1) ].
