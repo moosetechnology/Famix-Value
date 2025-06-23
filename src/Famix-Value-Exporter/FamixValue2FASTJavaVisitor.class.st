@@ -847,7 +847,7 @@ FamixValue2FASTJavaVisitor >> visitObjectOfRegularType: object [
 FamixValue2FASTJavaVisitor >> visitObjectStub: object [
 	"Previously tried to recreate stubs by deserializing their JSON representation, but getting a correct JSON string is a challenge."
 
-	FamixUTStubError signal: object type
+	FamixValueStubError signalFor: object type
 ]
 
 { #category : 'visiting' }
