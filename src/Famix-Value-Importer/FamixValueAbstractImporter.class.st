@@ -2,6 +2,9 @@
 I am the root FamixValue importer.
 My subclasses parse values and generate corresponding entities to represent runtime data.
 The entities are linked with a Famix model to represent their type and their optional value holder (such as a variable).
+
+Implementation note:
+Uses `FamixValueImporterError` for known failures and `Error` for unexpected ones.
 "
 Class {
 	#name : 'FamixValueAbstractImporter',
@@ -11,7 +14,8 @@ Class {
 		'typeInferences',
 		'objectDict',
 		'entityFinder',
-		'ignoreUnknownAttributes'
+		'ignoreUnknownAttributes',
+		'allowUnknownTypes'
 	],
 	#category : 'Famix-Value-Importer',
 	#package : 'Famix-Value-Importer'
@@ -51,7 +55,10 @@ FamixValueAbstractImporter >> getObjectIdentity: rawObject [
 { #category : 'enumerating' }
 FamixValueAbstractImporter >> getUnknownTypeNamed: name [
 
-	Warning signal: 'Unknown type named ' , name.
+	(allowUnknownTypes
+		 ifTrue: [ "Still worth a warning" Warning ]
+		 ifFalse: [ FamixValueImporterError ]) signal:
+		'Unknown type named ' , name.
 	^ (self model allWithType: FamixValueUnknownType)
 		  detect: [ :type | type name = name ]
 		  ifNone: [ self model newUnknownTypeNamed: name ]
@@ -169,7 +176,7 @@ FamixValueAbstractImporter >> importValue: rawValue [
 FamixValueAbstractImporter >> initialize [
 
 	self reset.
-	ignoreUnknownAttributes := false
+	ignoreUnknownAttributes := allowUnknownTypes := false
 ]
 
 { #category : 'importing' }
