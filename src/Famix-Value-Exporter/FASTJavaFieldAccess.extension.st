@@ -10,9 +10,9 @@ FASTJavaFieldAccess >> accessedAttributeName [
 FASTJavaFieldAccess >> accessedAttributesOf: aFamixJavaClass [
 	"TODO: ensure 'this' is of the given class..."
 
-	self receiver name = 'this' ifFalse: [ ^ {  } ].
+	self receiver name = 'this' ifFalse: [ ^ Array empty ].
 	aFamixJavaClass attributes
 		detect: [ :attribute | attribute name = self fieldName ]
-		ifFound: [ :attribute | ^ { attribute } ].
-	^ {  }
+		ifFound: [ :attribute | ^ { attribute } ]
+		ifNone: [ Array empty ]
 ]
