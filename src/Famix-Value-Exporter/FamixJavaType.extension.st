@@ -70,7 +70,7 @@ FamixJavaType >> fullyQualifiedTypeNameOn: aFASTJavaModel [
 { #category : '*Famix-Value-Exporter' }
 FamixJavaType >> needsJavaImport [
 
-	^ typeContainer mooseName ~= 'java::lang'
+	^ typeContainer mooseName ~= 'java.lang'
 ]
 
 { #category : '*Famix-Value-Exporter' }
