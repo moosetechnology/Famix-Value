@@ -12,6 +12,16 @@ Class {
 	#tag : 'Helpers'
 }
 
+{ #category : 'processing' }
+FASTJavaBuilder >> canReferType: aFamixType [
+	"Does the code model have the necessary information to import the type?"
+
+	^ aFamixType needsJavaImport not or: [ "Is the type definition in the model?"
+		  aFamixType isStub not or: [ "Is it part of the JDK?"
+			  aFamixType mooseName beginsWithAnyOf:
+				  #( 'java.' 'javax.' 'jdk.' ) ] ]
+]
+
 { #category : 'initialization' }
 FASTJavaBuilder >> initialize [
 
@@ -49,6 +59,10 @@ FASTJavaBuilder >> processType: aFamixType [
 	If the type is in the typeNameDict, it will be imported, so it can be referenced by its unqualified name."
 
 	| type |
+	(self canReferType: aFamixType) ifFalse: [
+		FamixValueExporterError signal:
+			'Cannot import type: ' , aFamixType mooseName ].
+
 	type := aFamixType isParametricEntity
 		        ifTrue: [
 			        aFamixType concreteParameters do: [ :parameter |
