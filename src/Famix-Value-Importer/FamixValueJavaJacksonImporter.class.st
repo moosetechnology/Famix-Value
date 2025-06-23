@@ -188,6 +188,7 @@ FamixValueJavaJacksonImporter >> importValueFromList: rawValue of: type [
 		(self importSpecialObject: rawValue of: type) ifNotNil: [ :object |
 			^ object ] ].
 
+	"Truly unexpected, should not happen"
 	self error: 'Unknown type: ' , type mooseName
 ]
 
@@ -232,7 +233,7 @@ FamixValueJavaJacksonImporter >> readDimensionsOfAttribute: attribute [
 		because the source anchor only applies to the identifier
 		so we read the source starting from the class start position."
 		start := attribute parentType sourceAnchor startPos.
-		rs skip: start.
+		rs skip: start - 1.
 		start to: attribute sourceAnchor endPos do: [ :i |
 		source nextPut: rs next ].
 		"Additionally read from endPos until:
@@ -244,18 +245,20 @@ FamixValueJavaJacksonImporter >> readDimensionsOfAttribute: attribute [
 
 	"Source contains (at least) the attribute definition, now we count the square brackets"
 	source := source contents.
-	index := source size.
+	index := source size + 1.
 	dimensions := 0.
 	[ "Read backwards until:
 	- block opener, eg. `class C { int a;`
 	- block closer, eg. `int f(){} int a;`
 	- end of statement, eg. `int b; int a;`"
-	char := source at: (index := index - 1).
-	char == $]
+	(char := source at: (index := index - 1)) == $]
 		ifTrue: [
 			dimensions := dimensions + 1.
+			index := index - 1. "Skip opening bracket"
 			false ]
 		ifFalse: [ '{};' includes: char ] ] whileFalse.
+	dimensions = 0 ifTrue: [ "Unexpected error, something is wrong with the model"
+		self error: 'Expected an array but found 0 dimensions' ].
 	^ dimensions
 ]
 
