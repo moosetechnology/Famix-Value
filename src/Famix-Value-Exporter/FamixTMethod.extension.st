@@ -56,7 +56,7 @@ FamixTMethod >> mapConstructorParametersToAttributes [
 			   access accessedAttributesOf: parentType ])
 			  ifNotEmpty: [ :attributes |
 				  | attribute |
-				  attributes size = 1 ifFalse: [
+				  attributes size = 1 ifFalse: [ "TODO The same parameter can be assigned to multiple attributes"
 					  FamixValueExporterError signal: 'Expected only one attribute.' ].
 				  (attribute := attributes anyOne) declaredType
 					  ifNil: [ "TODO should not happen, fix Java parser" nil ]
@@ -64,10 +64,10 @@ FamixTMethod >> mapConstructorParametersToAttributes [
 						  (attributeType withSubHierarchy includes:
 							   parameter declaredType)
 							  ifTrue: [ attribute ]
-							  ifFalse: [ "parameter is used to set the attribute, but not directly because they are of different types
-						a common occurence is an array-to-collection transformation:
-						setValues(String... values) { this.values = Arrays.asList(values); }
-						however reality is often more complex, so for now we ignore this parameter-to-attribute mapping (10/24)"
+							  ifFalse: [ "Parameter is used to set the attribute, but not directly because they are of different types.
+								  A common occurence is an array-to-collection transformation:
+								  setValues(String... values) { this.values = Arrays.asList(values); }
+								  However, reality is often more complex, so for now we ignore this parameter-to-attribute mapping (10/24)"
 								  nil ] ] ]
-			  ifEmpty: [ "parameter is not mapped to an attribute" nil ] ]
+			  ifEmpty: [ "Parameter is not mapped to an attribute" nil ] ]
 ]

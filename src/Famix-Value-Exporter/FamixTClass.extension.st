@@ -3,7 +3,7 @@ Extension { #name : 'FamixTClass' }
 { #category : '*Famix-Value-Exporter' }
 FamixTClass >> constructorsOrderedByScore [
 	"Return the constructors ordered by an arbitrary score that determine their effectiveness.
-	The score is roughly the ratio of attributes set over parameter count, see FamixTMethod>>#impactScore."
+	The score is roughly the ratio of attributes set over parameter count, see FamixTMethod>>#constructorScore."
 
 	^ (methods select: [ :method | method isConstructor ]) sort: [ :a :b |
 		  a constructorScore > b constructorScore ]

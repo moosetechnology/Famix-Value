@@ -32,24 +32,24 @@ FamixValue2FASTJavaVisitor >> addAttributesFrom: object asArgumentsTo: invocatio
 		 ifAbsentPut: [ constructor mapConstructorParametersToAttributes ])
 		withIndexDo: [ :paramAttribute :index |
 			invocation addArgument: (paramAttribute
-					 ifNil: [ "constructor parameter is not mapped to an attribute
-						=> give it a default value"
+					 ifNil: [ "Constructor parameter is not mapped to an attribute
+						 => Give it a default value"
 						 (constructor parameters at: index) declaredType
 							 ifNil: [ "TODO fix Java parser
-								if it's unknown then it must be a class, otherwise the parser would have found it
-								=> the default for class instances is `null`"
+								 If it's unknown then it must be a class, otherwise the parser would have found it
+								 => The default for class instances is `null`"
 								 self model newNullLiteral ]
 							 ifNotNil: [ :declaredType |
 							 declaredType asFASTJavaDefaultValueOn: self model ] ]
-					 ifNotNil: [ "parameter is mapped to attribute"
+					 ifNotNil: [ "Parameter is mapped to attribute"
 						 object value
-							 detect: [ :objAttribute | "find the matching value attribute"
+							 detect: [ :objAttribute | "Find the matching value attribute"
 								 objAttribute attribute == paramAttribute ]
-							 ifFound: [ :objAttribute | "dispatch for var naming context"
+							 ifFound: [ :objAttribute | "Dispatch for var naming context"
 								 objectExportStrategy
 									 makeVariableExpression: objAttribute value
 									 on: self ]
-							 ifNone: [ "the object does not have the attribute set"
+							 ifNone: [ "The object does not have the attribute set"
 								 paramAttribute declaredType asFASTJavaDefaultValueOn:
 									 self model ] ]) ]
 ]
@@ -67,19 +67,19 @@ FamixValue2FASTJavaVisitor >> constructObject: object [
 	| constructor invocation |
 	constructor := self findConstructorFor: object.
 
-	"make the constructor invocation"
+	"Make the constructor invocation"
 	invocation := self reflections
 		              at: constructor
-		              ifPresent: [ :varName | "use reflection: var contains the Constructor object"
+		              ifPresent: [ :varName | "Use reflection: var contains the Constructor object"
 			              self
 				              makeReflectionConstructorInvocation: varName
 				              for: object ]
-		              ifAbsent: [ "regular use of the constructor"
+		              ifAbsent: [ "Regular use of the constructor"
 			              self
 				              makeConstructorInvocation: constructor
 				              for: object ].
 
-	"add arguments to match constructor parameters"
+	"Add arguments to match constructor parameters"
 	constructor parameters ifNotEmpty: [
 		self
 			addAttributesFrom: object
