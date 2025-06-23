@@ -48,6 +48,12 @@ FamixValueSpecialType >> import: rawValue on: importer [
 	self subclassResponsibility
 ]
 
+{ #category : 'printing' }
+FamixValueSpecialType >> mooseName [
+
+	^ type mooseName
+]
+
 { #category : 'accessing' }
 FamixValueSpecialType >> type [
 
