@@ -22,6 +22,19 @@ Class {
 }
 
 { #category : 'accessing' }
+FamixValueAbstractImporter >> allowUnknownTypes [
+
+	^ allowUnknownTypes
+]
+
+{ #category : 'accessing' }
+FamixValueAbstractImporter >> allowUnknownTypes: aBoolean [
+	"Whether to raise an error when a type is not found in the code model."
+
+	allowUnknownTypes := aBoolean
+]
+
+{ #category : 'accessing' }
 FamixValueAbstractImporter >> entityFinder [
 
 	^ entityFinder ifNil: [ entityFinder := FamixEntityFinder new ]
@@ -64,13 +77,13 @@ FamixValueAbstractImporter >> getUnknownTypeNamed: name [
 		  ifNone: [ self model newUnknownTypeNamed: name ]
 ]
 
-{ #category : 'initialization' }
+{ #category : 'accessing' }
 FamixValueAbstractImporter >> ignoreUnknownAttributes [
 
 	^ ignoreUnknownAttributes
 ]
 
-{ #category : 'initialization' }
+{ #category : 'accessing' }
 FamixValueAbstractImporter >> ignoreUnknownAttributes: aBoolean [
 	"Whether to raise an error when an attribute is not found in the code model."
 
