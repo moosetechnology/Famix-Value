@@ -42,12 +42,6 @@ FamixValueSpecialType >> doesNotUnderstand: aMessage [
 	^ type perform: aMessage selector withArguments: aMessage arguments
 ]
 
-{ #category : 'importing' }
-FamixValueSpecialType >> import: rawValue on: importer [
-
-	self subclassResponsibility
-]
-
 { #category : 'printing' }
 FamixValueSpecialType >> mooseName [
 

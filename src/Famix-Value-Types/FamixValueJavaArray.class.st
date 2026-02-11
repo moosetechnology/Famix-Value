@@ -24,9 +24,3 @@ FamixValueJavaArray >> dimensions: anInteger [
 
 	dimensions := anInteger
 ]
-
-{ #category : 'importing' }
-FamixValueJavaArray >> import: rawValue on: importer [
-
-	self shouldNotImplement
-]
