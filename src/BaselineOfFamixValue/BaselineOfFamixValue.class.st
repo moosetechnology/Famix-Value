@@ -19,6 +19,9 @@ BaselineOfFamixValue >> baseline: spec [
 BaselineOfFamixValue >> dependencies: spec [
 
 	spec
+		baseline: 'FamixEntityFinder' with: [
+			spec repository:
+					'github://moosetechnology/Famix-EntityFinder:main/src' ];
 		baseline: 'FASTJava' with: [
 			spec
 				repository: 'github://moosetechnology/FAST-JAVA:v3/src';
@@ -37,11 +40,12 @@ BaselineOfFamixValue >> groups: spec [
 		with: #( 'Famix-Value-Entities' 'Famix-Value-Entities-Extensions'
 			   'Famix-Value-Generator' 'Famix-Value-Presenter' );
 		group: 'importer'
-		with: #( 'Famix-Value-Importer' 'Famix-Value-Types' );
+		with: #( 'types' 'Famix-Value-Importer' 'FamixEntityFinder' );
 		group: 'exporter'
 		with:
 			#( 'default' 'Famix-Value-Exporter' 'Famix-Value-Exporter-Tests'
-			   'FASTJava' 'Carrefour' )
+			   'FASTJava' 'Carrefour' );
+		group: 'types' with: #( 'Famix-Value-Types' )
 ]
 
 { #category : 'baselines' }
