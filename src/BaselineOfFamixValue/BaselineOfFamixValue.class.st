@@ -45,7 +45,8 @@ BaselineOfFamixValue >> groups: spec [
 		with:
 			#( 'default' 'Famix-Value-Exporter' 'Famix-Value-Exporter-Tests'
 			   'FASTJava' 'Carrefour' );
-		group: 'types' with: #( 'Famix-Value-Types' )
+		group: 'types' with: #( 'Famix-Value-Types' );
+		group: 'interpreter' with: #( 'model' 'Famix-Value-Interpreter' )
 ]
 
 { #category : 'baselines' }
@@ -66,5 +67,7 @@ BaselineOfFamixValue >> packages: spec [
 		with: [ spec requires: 'Famix-Value-Exporter' ];
 		package: 'Famix-Value-Types';
 		package: 'Famix-Value-Presenter'
+		with: [ spec requires: 'Famix-Value-Entities' ];
+		package: 'Famix-Value-Interpreter'
 		with: [ spec requires: 'Famix-Value-Entities' ]
 ]
