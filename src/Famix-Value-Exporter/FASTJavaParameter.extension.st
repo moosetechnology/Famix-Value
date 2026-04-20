@@ -1,7 +1,7 @@
-Extension { #name : #FASTJavaParameter }
+Extension { #name : 'FASTJavaParameter' }
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FASTJavaParameter >> accessedAttributesOf: aFamixJavaClass [
 
-	^ {  }
+	^ Array empty
 ]

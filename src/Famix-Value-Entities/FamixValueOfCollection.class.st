@@ -13,15 +13,17 @@ A value of a collection type.
 
 "
 Class {
-	#name : #FamixValueOfCollection,
-	#superclass : #FamixValueOfType,
+	#name : 'FamixValueOfCollection',
+	#superclass : 'FamixValueOfType',
 	#instVars : [
 		'#value => FMMany type: #FamixValueOfCollectionElement opposite: #collection'
 	],
-	#category : #'Famix-Value-Entities-Entities'
+	#category : 'Famix-Value-Entities-Entities',
+	#package : 'Famix-Value-Entities',
+	#tag : 'Entities'
 }
 
-{ #category : #meta }
+{ #category : 'meta' }
 FamixValueOfCollection class >> annotation [
 
 	<FMClass: #OfCollection super: #FamixValueOfType>
@@ -30,20 +32,20 @@ FamixValueOfCollection class >> annotation [
 	^ self
 ]
 
-{ #category : #adding }
+{ #category : 'adding' }
 FamixValueOfCollection >> addValue: anObject [
 	<generated>
 	^ self value add: anObject
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 FamixValueOfCollection >> isOfCollection [
 
 	<generated>
 	^ true
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfCollection >> value [
 	"Relation named: #value type: #FamixValueOfCollectionElement opposite: #collection"
 
@@ -52,7 +54,7 @@ FamixValueOfCollection >> value [
 	^ value
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfCollection >> value: anObject [
 
 	<generated>

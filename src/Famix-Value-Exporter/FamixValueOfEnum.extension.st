@@ -1,12 +1,12 @@
-Extension { #name : #FamixValueOfEnum }
+Extension { #name : 'FamixValueOfEnum' }
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixValueOfEnum >> accept: visitor [
 
 	^ visitor visitEnumValue: self
 ]
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixValueOfEnum >> asFASTJavaExpressionOn: visitor [
 
 	^ visitor model newClassProperty

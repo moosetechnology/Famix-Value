@@ -1,40 +1,30 @@
+"
+I am a helper for the `FamixValue2ASTVisitor` hierarchy of classes to build AST.
+"
 Class {
-	#name : #FASTBuilder,
-	#superclass : #Object,
+	#name : 'FASTBuilder',
+	#superclass : 'Object',
 	#instVars : [
 		'model'
 	],
-	#classVars : [
-		'Current'
-	],
-	#category : #'Famix-Value-Exporter'
+	#category : 'Famix-Value-Exporter-Helpers',
+	#package : 'Famix-Value-Exporter',
+	#tag : 'Helpers'
 }
 
-{ #category : #accessing }
-FASTBuilder class >> current [
+{ #category : 'testing' }
+FASTBuilder class >> isAbstract [
 
-	^ Current ifNil: [ Current := self new ]
+	^ self == FASTBuilder
 ]
 
-{ #category : #'class initialization' }
-FASTBuilder class >> reset [
-
-	Current := nil
-]
-
-{ #category : #accessing }
-FASTBuilder >> beCurrent [
-
-	Current := self
-]
-
-{ #category : #accessing }
+{ #category : 'accessing' }
 FASTBuilder >> model [
 
 	^ model ifNil: [ model := FASTJavaModel new ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FASTBuilder >> model: aFASTModel [
 
 	model := aFASTModel

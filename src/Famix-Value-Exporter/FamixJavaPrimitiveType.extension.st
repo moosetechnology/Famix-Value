@@ -1,6 +1,6 @@
-Extension { #name : #FamixJavaPrimitiveType }
+Extension { #name : 'FamixJavaPrimitiveType' }
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixJavaPrimitiveType >> asFASTJavaDefaultValueOn: model [
 
 	(#( int short byte ) includes: name) ifTrue: [
@@ -16,7 +16,7 @@ FamixJavaPrimitiveType >> asFASTJavaDefaultValueOn: model [
 	self error: 'Unknown primitive type:' , name
 ]
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixJavaPrimitiveType >> asFASTJavaTypeExpressionOn: visitor [
 
 	| model |
@@ -30,4 +30,10 @@ FamixJavaPrimitiveType >> asFASTJavaTypeExpressionOn: visitor [
 	name = 'byte' ifTrue: [ ^ model newByteTypeExpression ].
 	name = 'short' ifTrue: [ ^ model newShortTypeExpression ].
 	self error: 'Unknown primitive type:' , name
+]
+
+{ #category : '*Famix-Value-Exporter' }
+FamixJavaPrimitiveType >> needsJavaImport [
+
+	^ false
 ]

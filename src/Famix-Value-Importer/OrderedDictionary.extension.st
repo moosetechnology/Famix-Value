@@ -1,15 +1,42 @@
-Extension { #name : #OrderedDictionary }
+Extension { #name : 'OrderedDictionary' }
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 OrderedDictionary >> asJavaJacksonValueOn: importer [
 
 	| type |
-	(self removeKey: importer typeKey ifAbsent: nil)
-		ifNotNil: [ :typeName | type := importer loadTypeNamed: typeName ]
-		ifNil: [
-			(type := importer typeInference) ifNil: [
-				self error: 'Cannot determine type.' ] ].
-	^ (type isUnknownType or: [ type isDictionaryType ])
+	type := (importer getObjectType: self)
+		        ifNotNil: [ :typeName | importer loadTypeNamed: typeName ]
+		        ifNil: [
+			        importer typeInference ifNil: [
+				        Error signal: 'Cannot determine type.' ] ].
+	(type isUnknownType not and: [ type isParameterType ]) ifTrue: [
+		Warning signal:
+			'ParameterType should not be applicable as a value type?' ].
+	^ (type isUnknownType or: [
+		   type isDictionaryType or: [ type isParameterType ] ])
 		  ifTrue: [ importer importDictionary: self of: type ]
 		  ifFalse: [ importer importObject: self of: type ]
+]
+
+{ #category : '*Famix-Value-Importer' }
+OrderedDictionary >> asPharoJacksonValueOn: importer [
+
+	^ (importer getObjectType: self)
+		  ifNotNil: [ :className | "object of an unloaded class"
+			  className = 'Class'
+				  ifTrue: [
+					  importer
+						  importTypeReference: self
+						  of: (importer loadTypeNamed: className) ]
+				  ifFalse: [
+				  importer
+					  importObject: self
+					  of: (importer loadTypeNamed: className) ] ]
+		  ifNil: [ "species of dictionary"
+			  (importer getObjectReference: self)
+				  ifNotNil: [ :refId | "if @ref"
+					  importer
+						  getObjectFromIdentity: refId
+						  ifAbsent: [ Error signal: 'unknown id: ' , refId asString ] ]
+				  ifNil: [ Error signal: 'Unknown state' ] ]
 ]

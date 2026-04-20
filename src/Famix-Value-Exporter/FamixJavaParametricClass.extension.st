@@ -1,6 +1,6 @@
-Extension { #name : #FamixJavaParametricClass }
+Extension { #name : 'FamixJavaParametricClass' }
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixJavaParametricClass >> concreteTypeNameOn: stream [
 
 	stream nextPutAll: name.

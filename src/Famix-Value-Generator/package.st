@@ -1,1 +1,1 @@
-Package { #name : #'Famix-Value-Generator' }
+Package { #name : 'Famix-Value-Generator' }

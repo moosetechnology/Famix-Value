@@ -7,8 +7,8 @@ Each value entity has a relation with its type (`FamixTType` subtraits) and has 
 They can also have a relation with a typed entity (`FamixTTypedEntity`) to represent an affectation.
 "
 Class {
-	#name : #FamixValueGenerator,
-	#superclass : #FamixMetamodelGenerator,
+	#name : 'FamixValueGenerator',
+	#superclass : 'FamixMetamodelGenerator',
 	#instVars : [
 		'value',
 		'primitive',
@@ -23,32 +23,35 @@ Class {
 		'tType',
 		'collectionElement',
 		'objectAttribute',
-		'classReference'
+		'closure',
+		'closureVariable',
+		'typeReference'
 	],
-	#category : #'Famix-Value-Generator'
+	#category : 'Famix-Value-Generator',
+	#package : 'Famix-Value-Generator'
 }
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueGenerator class >> packageName [
 
 	<ignoreForCoverage>
 	^ #'Famix-Value-Entities'
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueGenerator class >> prefix [
 
 	<ignoreForCoverage>
 	^ #FamixValue
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueGenerator class >> submetamodels [
 
 	^ { FamixGenerator }
 ]
 
-{ #category : #definition }
+{ #category : 'definition' }
 FamixValueGenerator >> defineClasses [
 
 	value := (builder
@@ -79,14 +82,20 @@ FamixValueGenerator >> defineClasses [
 	dictionary := (builder
 		               newClassNamed: #OfDictionary
 		               comment: 'A value of a dictionary type.') withTesting.
-
 	dictionaryAssociation := builder
 		                         newClassNamed: #OfDictionaryAssociation
 		                         comment:
 		                         'A key-value pair belonging to a dictionary.'.
-	classReference := builder
-		                  newClassNamed: #OfClassReference
-		                  comment: 'A reference to a class.'.
+	typeReference := (builder
+		                  newClassNamed: #OfTypeReference
+		                  comment: 'A reference to a type.') withTesting.
+	closure := (builder
+		            newClassNamed: #OfClosure
+		            comment: 'A lexical closure.') withTesting.
+	closureVariable := builder
+		                   newClassNamed: #OfClosureVariable
+		                   comment:
+		                   'A variable binding in a lexical closure.'.
 	ofUnknownType := (builder
 		                  newClassNamed: #OfUnknownType
 		                  comment: 'A value of an unknwon type.')
@@ -96,16 +105,18 @@ FamixValueGenerator >> defineClasses [
 		                comment: 'An unknown type.') withTesting
 ]
 
-{ #category : #definition }
+{ #category : 'definition' }
 FamixValueGenerator >> defineHierarchy [
 
 	object --|> value.
+	closure --|> value.
 	primitive --|> value.
 	enumValue --|> value.
 	collection --|> value.
 	dictionary --|> value.
-	classReference --|> value.
 	ofUnknownType --|> value.
+	typeReference --|> value.
+	dictionaryAssociation --|> value.
 
 	primitive --|> tWithValueProperty.
 	ofUnknownType --|> tWithValueProperty.
@@ -113,17 +124,22 @@ FamixValueGenerator >> defineHierarchy [
 	unknownType --|> tType
 ]
 
-{ #category : #definition }
+{ #category : 'definition' }
 FamixValueGenerator >> defineProperties [
 
 	(tWithValueProperty property: #value type: #Object) comment:
-		'Value data represented as a native Smalltalk object.'
+		'Value data represented as a native Smalltalk object.'.
+
+	(closure property: #sourceCode type: #String) comment:
+		'The source code of the lexical closure.'.
+	(closureVariable property: #name type: #String) comment:
+		'Name of the variable bound to the closure.'
 ]
 
-{ #category : #definition }
+{ #category : 'definition' }
 FamixValueGenerator >> defineRelations [
 
-	value *- (tType property: #values).
+	value *- (tType property: #valueInstances).
 	value
 	*- ((self remoteTrait: #TTypedEntity withPrefix: #Famix) property:
 			 #values).
@@ -151,12 +167,16 @@ FamixValueGenerator >> defineRelations [
 	(dictionaryAssociation property: #value)
 	*- (value property: #valueInDictionaries).
 
-	(classReference property: #value)
-	*- ((self remoteTrait: #TClass withPrefix: #Famix) property:
-			 #valueReferences)
+	(typeReference property: #value)
+	*- (tType property: #valueReferences).
+
+	(closure property: #variables)
+	-* (closureVariable property: #closure).
+	(closureVariable property: #value)
+	*- (value property: #variableInClosures)
 ]
 
-{ #category : #definition }
+{ #category : 'definition' }
 FamixValueGenerator >> defineTraits [
 
 	tWithValueProperty := builder

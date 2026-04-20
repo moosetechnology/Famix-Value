@@ -1,10 +1,11 @@
 Class {
-	#name : #BaselineOfFamixValue,
-	#superclass : #BaselineOf,
-	#category : #BaselineOfFamixValue
+	#name : 'BaselineOfFamixValue',
+	#superclass : 'BaselineOf',
+	#category : 'BaselineOfFamixValue',
+	#package : 'BaselineOfFamixValue'
 }
 
-{ #category : #baselines }
+{ #category : 'baselines' }
 BaselineOfFamixValue >> baseline: spec [
 
 	<baseline>
@@ -14,20 +15,23 @@ BaselineOfFamixValue >> baseline: spec [
 		self groups: spec ]
 ]
 
-{ #category : #baselines }
+{ #category : 'baselines' }
 BaselineOfFamixValue >> dependencies: spec [
 
 	spec
+		baseline: 'FamixEntityFinder' with: [
+			spec repository:
+					'github://moosetechnology/Famix-EntityFinder:main/src' ];
 		baseline: 'FASTJava' with: [
 			spec
 				repository: 'github://moosetechnology/FAST-JAVA:v3/src';
 				loads: 'tools' ];
 		baseline: 'Carrefour'
 		with: [
-		spec repository: 'github://moosetechnology/Carrefour:v4/src' ]
+		spec repository: 'github://moosetechnology/Carrefour:v5/src' ]
 ]
 
-{ #category : #baselines }
+{ #category : 'baselines' }
 BaselineOfFamixValue >> groups: spec [
 
 	spec
@@ -36,14 +40,15 @@ BaselineOfFamixValue >> groups: spec [
 		with: #( 'Famix-Value-Entities' 'Famix-Value-Entities-Extensions'
 			   'Famix-Value-Generator' 'Famix-Value-Presenter' );
 		group: 'importer'
-		with: #( 'Famix-Value-Importer' 'Famix-Value-Types' );
+		with: #( 'types' 'Famix-Value-Importer' 'FamixEntityFinder' );
 		group: 'exporter'
 		with:
 			#( 'default' 'Famix-Value-Exporter' 'Famix-Value-Exporter-Tests'
-			   'FASTJava' 'Carrefour' )
+			   'FASTJava' 'Carrefour' );
+		group: 'types' with: #( 'Famix-Value-Types' )
 ]
 
-{ #category : #baselines }
+{ #category : 'baselines' }
 BaselineOfFamixValue >> packages: spec [
 
 	spec
@@ -55,7 +60,8 @@ BaselineOfFamixValue >> packages: spec [
 		with: [
 			spec requires: #( 'Famix-Value-Entities' 'Famix-Value-Types' ) ];
 		package: 'Famix-Value-Exporter'
-		with: [ spec requires: 'Famix-Value-Entities' ];
+		with: [
+			spec requires: #( 'Famix-Value-Entities' 'Famix-Value-Types' ) ];
 		package: 'Famix-Value-Exporter-Tests'
 		with: [ spec requires: 'Famix-Value-Exporter' ];
 		package: 'Famix-Value-Types';

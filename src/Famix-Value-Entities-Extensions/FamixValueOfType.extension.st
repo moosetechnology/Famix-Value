@@ -1,6 +1,33 @@
-Extension { #name : #FamixValueOfType }
+Extension { #name : 'FamixValueOfType' }
 
-{ #category : #'*Famix-Value-Entities-Extensions' }
+{ #category : '*Famix-Value-Entities-Extensions' }
+FamixValueOfType >> containsCollection [
+
+	^ false
+]
+
+{ #category : '*Famix-Value-Entities-Extensions' }
+FamixValueOfType >> containsObject [
+
+	^ false
+]
+
+{ #category : '*Famix-Value-Entities-Extensions' }
+FamixValueOfType >> isReferencedInLoop [
+
+	| count |
+	count := self referenceCount.
+	^ count > 1 or: [ count = 1 and: [ self isRoot ] ]
+]
+
+{ #category : '*Famix-Value-Entities-Extensions' }
+FamixValueOfType >> isRoot [
+
+	^ self argumentInSpans isEmpty or: [
+		  self resultInSpan isNotNil or: [ self receiverInSpan isNotNil ] ]
+]
+
+{ #category : '*Famix-Value-Entities-Extensions' }
 FamixValueOfType >> mooseNameOn: aStream [
 
 	self printTypeOn: aStream.
@@ -10,7 +37,7 @@ FamixValueOfType >> mooseNameOn: aStream [
 	self printValueOn: aStream
 ]
 
-{ #category : #'*Famix-Value-Entities-Extensions' }
+{ #category : '*Famix-Value-Entities-Extensions' }
 FamixValueOfType >> printTypeOn: aStream [
 
 	self type
@@ -21,37 +48,26 @@ FamixValueOfType >> printTypeOn: aStream [
 		ifNil: [ aStream nextPutAll: '<type>' ]
 ]
 
-{ #category : #'*Famix-Value-Entities-Extensions' }
+{ #category : '*Famix-Value-Entities-Extensions' }
 FamixValueOfType >> printValueOn: aStream [
 
 	self value printOn: aStream
 ]
 
-{ #category : #'*Famix-Value-Entities-Extensions' }
+{ #category : '*Famix-Value-Entities-Extensions' }
 FamixValueOfType >> referenceCount [
 
 	^ attributeInObjects size + elementInCollections size
 	  + keyInDictionaries size + valueInDictionaries size
+	  + variableInClosures size
 ]
 
-{ #category : #'*Famix-Value-Entities-Extensions' }
-FamixValueOfType >> value [
-
-	self subclassResponsibility
-]
-
-{ #category : #'*Famix-Value-Entities-Extensions' }
-FamixValueOfType >> value: anObject [
-
-	self subclassResponsibility
-]
-
-{ #category : #'*Famix-Value-Entities-Extensions' }
+{ #category : '*Famix-Value-Entities-Extensions' }
 FamixValueOfType >> varName [
 	"Basic variable name of a value."
 
 	^ self typedEntity
-		  ifNotNil: [ :typedEntity | typedEntity name ]
+		  ifNotNil: [ :typedEntity | typedEntity varName ]
 		  ifNil: [
 			  attributeInObjects size = 1
 				  ifTrue: [ attributeInObjects first attribute name ]

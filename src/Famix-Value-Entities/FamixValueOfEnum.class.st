@@ -13,12 +13,14 @@ A value of an enumeration.
 
 "
 Class {
-	#name : #FamixValueOfEnum,
-	#superclass : #FamixValueOfType,
-	#category : #'Famix-Value-Entities-Entities'
+	#name : 'FamixValueOfEnum',
+	#superclass : 'FamixValueOfType',
+	#category : 'Famix-Value-Entities-Entities',
+	#package : 'Famix-Value-Entities',
+	#tag : 'Entities'
 }
 
-{ #category : #meta }
+{ #category : 'meta' }
 FamixValueOfEnum class >> annotation [
 
 	<FMClass: #OfEnum super: #FamixValueOfType>
@@ -27,14 +29,14 @@ FamixValueOfEnum class >> annotation [
 	^ self
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 FamixValueOfEnum >> isOfEnum [
 
 	<generated>
 	^ true
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfEnum >> value [
 	"Relation named: #value type: #FamixTEnumValue opposite: #valueReferences"
 
@@ -43,7 +45,7 @@ FamixValueOfEnum >> value [
 	^ self attributeAt: #value ifAbsent: [ nil ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfEnum >> value: anObject [
 
 	<generated>

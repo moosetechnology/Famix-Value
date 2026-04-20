@@ -1,10 +1,11 @@
 Class {
-	#name : #FamixValueExtensionsTest,
-	#superclass : #TestCase,
-	#category : #'Famix-Value-Exporter-Tests'
+	#name : 'FamixValueExtensionsTest',
+	#superclass : 'TestCase',
+	#category : 'Famix-Value-Exporter-Tests',
+	#package : 'Famix-Value-Exporter-Tests'
 }
 
-{ #category : #tests }
+{ #category : 'tests' }
 FamixValueExtensionsTest >> test_FamixTParametricEntity_keyType [
 
 	| string integer |
@@ -28,7 +29,7 @@ FamixValueExtensionsTest >> test_FamixTParametricEntity_keyType [
 		equals: string
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 FamixValueExtensionsTest >> test_FamixTParametricEntity_typeName [
 
 	| map string integer |
@@ -51,7 +52,7 @@ FamixValueExtensionsTest >> test_FamixTParametricEntity_typeName [
 		equals: 'Map<String, String>'
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 FamixValueExtensionsTest >> test_FamixTParametricEntity_valueType [
 
 	| string integer |
@@ -75,7 +76,7 @@ FamixValueExtensionsTest >> test_FamixTParametricEntity_valueType [
 		equals: string
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 FamixValueExtensionsTest >> test_String_splitJavaArguments [
 
 	self assert: '' splitJavaArguments equals: {  }.

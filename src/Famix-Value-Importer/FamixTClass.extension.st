@@ -1,17 +1,22 @@
-Extension { #name : #FamixTClass }
+Extension { #name : 'FamixTClass' }
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 FamixTClass >> findAttributeNamed: attributeName [
 
-	^ self attributes
-		  detect: [ :attr | attr name = attributeName ]
-		  ifNone: [
-			  self inheritedAttributes
-				  detect: [ :attribute | attribute name = attributeName ]
-				  ifNone: [ self findAttributeWithSetterNamed: attributeName ] ]
+	(self isParametricEntity and: [ self isConcreteEntity ]) ifTrue: [
+		^ self genericEntity findAttributeNamed: attributeName ].
+	^ (self cacheAt: #resolvedAttributes ifAbsentPut: [ Dictionary new ])
+		  at: attributeName
+		  ifAbsentPut: [
+			  self attributes
+				  detect: [ :attr | attr name = attributeName ]
+				  ifNone: [
+					  self inheritedAttributes
+						  detect: [ :attribute | attribute name = attributeName ]
+						  ifNone: [ self findAttributeWithSetterNamed: attributeName ] ] ]
 ]
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 FamixTClass >> findAttributeWithSetterNamed: attributeName [
 	"Useful when the serialized attribute's name does not exactly match the attribute name.
 	I try to find the setter matching the former, then search for the attribute access."

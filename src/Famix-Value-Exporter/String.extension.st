@@ -1,13 +1,13 @@
-Extension { #name : #String }
+Extension { #name : 'String' }
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 String >> asFASTJavaExpressionOn: visitor of: type [
 
 	^ visitor model newStringLiteral primitiveValue:
 		  (self copyReplaceAll: self class lf with: '\n')
 ]
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 String >> splitJavaArguments [
 	"Assume I represent a list of comma-separated Java arguments. Return that list."
 

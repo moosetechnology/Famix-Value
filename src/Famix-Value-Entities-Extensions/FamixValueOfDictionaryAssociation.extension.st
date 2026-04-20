@@ -1,6 +1,6 @@
-Extension { #name : #FamixValueOfDictionaryAssociation }
+Extension { #name : 'FamixValueOfDictionaryAssociation' }
 
-{ #category : #'*Famix-Value-Entities-Extensions' }
+{ #category : '*Famix-Value-Entities-Extensions' }
 FamixValueOfDictionaryAssociation >> mooseNameOn: aStream [
 
 	aStream << (key ifNotNil: [ key type name ] ifNil: [ '<keyType>' ])

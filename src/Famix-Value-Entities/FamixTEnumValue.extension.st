@@ -1,6 +1,6 @@
-Extension { #name : #FamixTEnumValue }
+Extension { #name : 'FamixTEnumValue' }
 
-{ #category : #'*Famix-Value-Entities-accessing' }
+{ #category : '*Famix-Value-Entities-accessing' }
 FamixTEnumValue >> valueReferences [
 	"Relation named: #valueReferences type: #FamixValueOfEnum opposite: #value"
 
@@ -11,7 +11,7 @@ FamixTEnumValue >> valueReferences [
 	^ self attributeAt: #valueReferences ifAbsentPut: [ FMMultivalueLink on: self opposite: #value: ]
 ]
 
-{ #category : #'*Famix-Value-Entities-accessing' }
+{ #category : '*Famix-Value-Entities-accessing' }
 FamixTEnumValue >> valueReferences: anObject [
 
 	<generated>

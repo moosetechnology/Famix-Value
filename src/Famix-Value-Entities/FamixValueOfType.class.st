@@ -10,26 +10,30 @@ Abstract superclass of all ValueOf_Type_ entities.
 | `attributeInObjects` | `FamixValueOfType` | `value` | `FamixValueOfObjectAttribute` | |
 | `elementInCollections` | `FamixValueOfType` | `value` | `FamixValueOfCollectionElement` | |
 | `keyInDictionaries` | `FamixValueOfType` | `key` | `FamixValueOfDictionaryAssociation` | |
-| `type` | `FamixValueOfType` | `values` | `FamixTType` | |
+| `type` | `FamixValueOfType` | `valueInstances` | `FamixTType` | |
 | `typedEntity` | `FamixValueOfType` | `values` | `FamixTTypedEntity` | |
 | `valueInDictionaries` | `FamixValueOfType` | `value` | `FamixValueOfDictionaryAssociation` | |
+| `variableInClosures` | `FamixValueOfType` | `value` | `FamixValueOfClosureVariable` | |
 
 
 
 "
 Class {
-	#name : #FamixValueOfType,
-	#superclass : #FamixValueEntity,
+	#name : 'FamixValueOfType',
+	#superclass : 'FamixValueEntity',
 	#instVars : [
 		'#attributeInObjects => FMMany type: #FamixValueOfObjectAttribute opposite: #value',
 		'#elementInCollections => FMMany type: #FamixValueOfCollectionElement opposite: #value',
 		'#keyInDictionaries => FMMany type: #FamixValueOfDictionaryAssociation opposite: #key',
-		'#valueInDictionaries => FMMany type: #FamixValueOfDictionaryAssociation opposite: #value'
+		'#valueInDictionaries => FMMany type: #FamixValueOfDictionaryAssociation opposite: #value',
+		'#variableInClosures => FMMany type: #FamixValueOfClosureVariable opposite: #value'
 	],
-	#category : #'Famix-Value-Entities-Entities'
+	#category : 'Famix-Value-Entities-Entities',
+	#package : 'Famix-Value-Entities',
+	#tag : 'Entities'
 }
 
-{ #category : #meta }
+{ #category : 'meta' }
 FamixValueOfType class >> annotation [
 
 	<FMClass: #OfType super: #FamixValueEntity>
@@ -39,59 +43,44 @@ FamixValueOfType class >> annotation [
 	^ self
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 FamixValueOfType class >> isAbstract [
 
 	<generated>
 	^ self == FamixValueOfType
 ]
 
-{ #category : #adding }
+{ #category : 'adding' }
 FamixValueOfType >> addAttributeInObject: anObject [
 	<generated>
 	^ self attributeInObjects add: anObject
 ]
 
-{ #category : #adding }
+{ #category : 'adding' }
 FamixValueOfType >> addElementInCollection: anObject [
 	<generated>
 	^ self elementInCollections add: anObject
 ]
 
-{ #category : #adding }
+{ #category : 'adding' }
 FamixValueOfType >> addKeyInDictionary: anObject [
 	<generated>
 	^ self keyInDictionaries add: anObject
 ]
 
-{ #category : #adding }
+{ #category : 'adding' }
 FamixValueOfType >> addValueInDictionary: anObject [
 	<generated>
 	^ self valueInDictionaries add: anObject
 ]
 
-{ #category : #'ston persistence' }
-FamixValueOfType >> asJsonString [
-	"Currently does not work. Ideas:
-	- Find a way to serialize any object while handling circular dependencies.
-	- Use the json stored in the root value to read it into raw objects and traverse the path to this value."
-
-	self flag: #TODO.
-	^ self asNeoJSONObject asString
+{ #category : 'adding' }
+FamixValueOfType >> addVariableInClosure: anObject [
+	<generated>
+	^ self variableInClosures add: anObject
 ]
 
-{ #category : #'ston persistence' }
-FamixValueOfType >> asNeoJSONObject [
-
-	self flag: #TODO. "see #asJsonString"
-	^ self typedEntity
-		  ifNotNil: [ "at root"
-			  NeoJSONObject fromString: (self cacheAt: #json ifAbsent: '{}') ]
-		  ifNil: [ "how to iterate until root?"
-			  NeoJSONObject fromString: (self cacheAt: #json ifAbsent: '{}') ]
-]
-
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfType >> attributeInObjects [
 	"Relation named: #attributeInObjects type: #FamixValueOfObjectAttribute opposite: #value"
 
@@ -100,14 +89,14 @@ FamixValueOfType >> attributeInObjects [
 	^ attributeInObjects
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfType >> attributeInObjects: anObject [
 
 	<generated>
 	attributeInObjects value: anObject
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfType >> elementInCollections [
 	"Relation named: #elementInCollections type: #FamixValueOfCollectionElement opposite: #value"
 
@@ -116,21 +105,21 @@ FamixValueOfType >> elementInCollections [
 	^ elementInCollections
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfType >> elementInCollections: anObject [
 
 	<generated>
 	elementInCollections value: anObject
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 FamixValueOfType >> isOfType [
 
 	<generated>
 	^ true
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfType >> keyInDictionaries [
 	"Relation named: #keyInDictionaries type: #FamixValueOfDictionaryAssociation opposite: #key"
 
@@ -139,30 +128,30 @@ FamixValueOfType >> keyInDictionaries [
 	^ keyInDictionaries
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfType >> keyInDictionaries: anObject [
 
 	<generated>
 	keyInDictionaries value: anObject
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfType >> type [
-	"Relation named: #type type: #FamixTType opposite: #values"
+	"Relation named: #type type: #FamixTType opposite: #valueInstances"
 
 	<generated>
-	<FMProperty: #type type: #FamixTType opposite: #values>
+	<FMProperty: #type type: #FamixTType opposite: #valueInstances>
 	^ self attributeAt: #type ifAbsent: [ nil ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfType >> type: anObject [
 
 	<generated>
-	self attributeAt: #type put: (FMMultivalueLink on: self update: #values from: self type to: anObject).
+	self attributeAt: #type put: (FMMultivalueLink on: self update: #valueInstances from: self type to: anObject).
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfType >> typedEntity [
 	"Relation named: #typedEntity type: #FamixTTypedEntity opposite: #values"
 
@@ -171,14 +160,14 @@ FamixValueOfType >> typedEntity [
 	^ self attributeAt: #typedEntity ifAbsent: [ nil ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfType >> typedEntity: anObject [
 
 	<generated>
 	self attributeAt: #typedEntity put: (FMMultivalueLink on: self update: #values from: self typedEntity to: anObject).
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfType >> valueInDictionaries [
 	"Relation named: #valueInDictionaries type: #FamixValueOfDictionaryAssociation opposite: #value"
 
@@ -187,9 +176,25 @@ FamixValueOfType >> valueInDictionaries [
 	^ valueInDictionaries
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfType >> valueInDictionaries: anObject [
 
 	<generated>
 	valueInDictionaries value: anObject
+]
+
+{ #category : 'accessing' }
+FamixValueOfType >> variableInClosures [
+	"Relation named: #variableInClosures type: #FamixValueOfClosureVariable opposite: #value"
+
+	<generated>
+	<derived>
+	^ variableInClosures
+]
+
+{ #category : 'accessing' }
+FamixValueOfType >> variableInClosures: anObject [
+
+	<generated>
+	variableInClosures value: anObject
 ]

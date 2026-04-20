@@ -1,7 +1,18 @@
-Extension { #name : #FASTJavaFieldAccess }
+Extension { #name : 'FASTJavaFieldAccess' }
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FASTJavaFieldAccess >> accessedAttributeName [
 
 	^ fieldName
+]
+
+{ #category : '*Famix-Value-Exporter' }
+FASTJavaFieldAccess >> accessedAttributesOf: aFamixJavaClass [
+	"TODO: ensure 'this' is of the given class..."
+
+	self receiver name = 'this' ifFalse: [ ^ Array empty ].
+	aFamixJavaClass attributes
+		detect: [ :attribute | attribute name = self fieldName ]
+		ifFound: [ :attribute | ^ { attribute } ]
+		ifNone: [ Array empty ]
 ]

@@ -1,19 +1,19 @@
-Extension { #name : #FamixTParametricEntity }
+Extension { #name : 'FamixTParametricEntity' }
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixTParametricEntity >> keyType [
 
 	^ self allTypeParameters first
 ]
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixTParametricEntity >> typeNameOn: stream [
 
 	stream nextPutAll: self name.
 	self typeParameterNamesOn: stream
 ]
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixTParametricEntity >> typeParameterNamesOn: stream [
 
 	stream nextPut: $<.
@@ -32,7 +32,7 @@ FamixTParametricEntity >> typeParameterNamesOn: stream [
 	stream nextPut: $>
 ]
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixTParametricEntity >> valueType [
 
 	| typeParameters |

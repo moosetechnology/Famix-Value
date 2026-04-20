@@ -13,15 +13,17 @@ A value of a dictionary type.
 
 "
 Class {
-	#name : #FamixValueOfDictionary,
-	#superclass : #FamixValueOfType,
+	#name : 'FamixValueOfDictionary',
+	#superclass : 'FamixValueOfType',
 	#instVars : [
 		'#value => FMMany type: #FamixValueOfDictionaryAssociation opposite: #dictionary'
 	],
-	#category : #'Famix-Value-Entities-Entities'
+	#category : 'Famix-Value-Entities-Entities',
+	#package : 'Famix-Value-Entities',
+	#tag : 'Entities'
 }
 
-{ #category : #meta }
+{ #category : 'meta' }
 FamixValueOfDictionary class >> annotation [
 
 	<FMClass: #OfDictionary super: #FamixValueOfType>
@@ -30,20 +32,20 @@ FamixValueOfDictionary class >> annotation [
 	^ self
 ]
 
-{ #category : #adding }
+{ #category : 'adding' }
 FamixValueOfDictionary >> addValue: anObject [
 	<generated>
 	^ self value add: anObject
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 FamixValueOfDictionary >> isOfDictionary [
 
 	<generated>
 	^ true
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfDictionary >> value [
 	"Relation named: #value type: #FamixValueOfDictionaryAssociation opposite: #dictionary"
 
@@ -52,7 +54,7 @@ FamixValueOfDictionary >> value [
 	^ value
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfDictionary >> value: anObject [
 
 	<generated>

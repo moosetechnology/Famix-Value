@@ -1,6 +1,6 @@
-Extension { #name : #FamixTTypedEntity }
+Extension { #name : 'FamixTTypedEntity' }
 
-{ #category : #'*Famix-Value-Entities-accessing' }
+{ #category : '*Famix-Value-Entities-accessing' }
 FamixTTypedEntity >> values [
 	"Relation named: #values type: #FamixValueOfType opposite: #typedEntity"
 
@@ -11,7 +11,7 @@ FamixTTypedEntity >> values [
 	^ self attributeAt: #values ifAbsentPut: [ FMMultivalueLink on: self opposite: #typedEntity: ]
 ]
 
-{ #category : #'*Famix-Value-Entities-accessing' }
+{ #category : '*Famix-Value-Entities-accessing' }
 FamixTTypedEntity >> values: anObject [
 
 	<generated>

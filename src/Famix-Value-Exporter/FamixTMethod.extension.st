@@ -1,6 +1,6 @@
-Extension { #name : #FamixTMethod }
+Extension { #name : 'FamixTMethod' }
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixTMethod >> allAccessedAttributes [
 
 	^ self cacheAt: #allAccessedAttributes ifAbsentPut: [
@@ -9,7 +9,7 @@ FamixTMethod >> allAccessedAttributes [
 			  seen: IdentitySet new ]
 ]
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixTMethod >> allAccessedAttributesOn: collection seen: seen [
 
 	(seen includes: self) ifTrue: [ ^ collection ].
@@ -31,7 +31,7 @@ FamixTMethod >> allAccessedAttributesOn: collection seen: seen [
 	^ collection
 ]
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixTMethod >> constructorScore [
 	"Arbitrary score to evaluate the effectiveness of a constructor."
 
@@ -44,7 +44,7 @@ FamixTMethod >> constructorScore [
 		  parameterCount * self allAccessedAttributes size / parameterCount ]
 ]
 
-{ #category : #'*Famix-Value-Exporter' }
+{ #category : '*Famix-Value-Exporter' }
 FamixTMethod >> mapConstructorParametersToAttributes [
 	"Return the list of the attribute set by each of my parameters, e.g. if I were:
 	MyClass(int theFoo, String someBar) { this.foo = theFoo; setBar(someBar); }
@@ -55,8 +55,19 @@ FamixTMethod >> mapConstructorParametersToAttributes [
 		  (parameter fastAccesses flatCollectAsSet: [ :access |
 			   access accessedAttributesOf: parentType ])
 			  ifNotEmpty: [ :attributes |
-				  attributes size = 1
-					  ifTrue: [ attributes at: 1 ]
-					  ifFalse: [ self error: 'Expected only one attribute.' ] ]
-			  ifEmpty: [ nil ] ]
+				  | attribute |
+				  attributes size = 1 ifFalse: [ "TODO The same parameter can be assigned to multiple attributes"
+					  FamixValueExporterError signal: 'Expected only one attribute.' ].
+				  (attribute := attributes anyOne) declaredType
+					  ifNil: [ "TODO should not happen, fix Java parser" nil ]
+					  ifNotNil: [ :attributeType |
+						  (attributeType withSubHierarchy includes:
+							   parameter declaredType)
+							  ifTrue: [ attribute ]
+							  ifFalse: [ "Parameter is used to set the attribute, but not directly because they are of different types.
+								  A common occurence is an array-to-collection transformation:
+								  setValues(String... values) { this.values = Arrays.asList(values); }
+								  However, reality is often more complex, so for now we ignore this parameter-to-attribute mapping (10/24)"
+								  nil ] ] ]
+			  ifEmpty: [ "Parameter is not mapped to an attribute" nil ] ]
 ]

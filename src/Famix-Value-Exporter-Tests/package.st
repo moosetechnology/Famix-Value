@@ -1,1 +1,1 @@
-Package { #name : #'Famix-Value-Exporter-Tests' }
+Package { #name : 'Famix-Value-Exporter-Tests' }

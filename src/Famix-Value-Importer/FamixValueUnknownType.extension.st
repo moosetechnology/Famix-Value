@@ -1,6 +1,6 @@
-Extension { #name : #FamixValueUnknownType }
+Extension { #name : 'FamixValueUnknownType' }
 
-{ #category : #'*Famix-Value-Importer' }
+{ #category : '*Famix-Value-Importer' }
 FamixValueUnknownType >> findAttributeNamed: attributeName [
 
 	Warning signal:

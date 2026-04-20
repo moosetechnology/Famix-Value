@@ -14,16 +14,18 @@ An element belonging to a collection.
 
 "
 Class {
-	#name : #FamixValueOfCollectionElement,
-	#superclass : #FamixValueEntity,
+	#name : 'FamixValueOfCollectionElement',
+	#superclass : 'FamixValueEntity',
 	#instVars : [
 		'#collection => FMOne type: #FamixValueOfCollection opposite: #value',
 		'#value => FMOne type: #FamixValueOfType opposite: #elementInCollections'
 	],
-	#category : #'Famix-Value-Entities-Entities'
+	#category : 'Famix-Value-Entities-Entities',
+	#package : 'Famix-Value-Entities',
+	#tag : 'Entities'
 }
 
-{ #category : #meta }
+{ #category : 'meta' }
 FamixValueOfCollectionElement class >> annotation [
 
 	<FMClass: #OfCollectionElement super: #FamixValueEntity>
@@ -32,7 +34,7 @@ FamixValueOfCollectionElement class >> annotation [
 	^ self
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfCollectionElement >> collection [
 	"Relation named: #collection type: #FamixValueOfCollection opposite: #value"
 
@@ -40,14 +42,14 @@ FamixValueOfCollectionElement >> collection [
 	^ collection
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfCollectionElement >> collection: anObject [
 
 	<generated>
 	collection := anObject
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfCollectionElement >> value [
 	"Relation named: #value type: #FamixValueOfType opposite: #elementInCollections"
 
@@ -55,7 +57,7 @@ FamixValueOfCollectionElement >> value [
 	^ value
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 FamixValueOfCollectionElement >> value: anObject [
 
 	<generated>

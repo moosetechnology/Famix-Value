@@ -1,69 +1,82 @@
+"
+I am used to handle Java type references and imports.
+"
 Class {
-	#name : #FASTJavaBuilder,
-	#superclass : #FASTBuilder,
+	#name : 'FASTJavaBuilder',
+	#superclass : 'FASTBuilder',
 	#instVars : [
-		'imports',
-		'typeNameDictionary',
-		'registeredTypes'
+		'typeNameDictionary'
 	],
-	#category : #'Famix-Value-Exporter'
+	#category : 'Famix-Value-Exporter-Helpers',
+	#package : 'Famix-Value-Exporter',
+	#tag : 'Helpers'
 }
 
-{ #category : #temp }
-FASTJavaBuilder >> fullyQualifiedPackageNameFor: aFamixJavaPackage [
+{ #category : 'processing' }
+FASTJavaBuilder >> canReferType: aFamixType [
+	"Does the code model have the necessary information to import the type?"
 
-	^ aFamixJavaPackage parentPackage
-		  ifNil: [ self model newTypeName name: aFamixJavaPackage name ]
-		  ifNotNil: [ :parentPackage |
-			  self model newQualifiedTypeName
-				  name: aFamixJavaPackage name;
-				  namespace: (self fullyQualifiedPackageNameFor: parentPackage) ]
+	^ aFamixType needsJavaImport not or: [ "Is the type definition in the model?"
+		  aFamixType isStub not or: [ "Is it part of the JDK?"
+			  aFamixType mooseName beginsWithAnyOf:
+				  #( 'java.' 'javax.' 'jdk.' ) ] ]
 ]
 
-{ #category : #temp }
-FASTJavaBuilder >> fullyQualifiedTypeNameFor: aFamixJavaType [
-
-	^ self model newQualifiedTypeName
-		  name: aFamixJavaType baseName;
-		  namespace:
-			  (self fullyQualifiedPackageNameFor: aFamixJavaType typeContainer)
-]
-
-{ #category : #initialization }
+{ #category : 'initialization' }
 FASTJavaBuilder >> initialize [
 
-	self reset
+	typeNameDictionary := Dictionary new
 ]
 
-{ #category : #temp }
+{ #category : 'ast' }
 FASTJavaBuilder >> makeImportDeclaration: aFamixType [
 
 	^ self model newImportDeclaration qualifiedName:
-		  (model newQualifiedName name: aFamixType mooseNameWithDots)
+		  (aFamixType fullyQualifiedNameOn: self model)
 ]
 
-{ #category : #temp }
+{ #category : 'ast' }
 FASTJavaBuilder >> makeImportDeclarations [
+	"Make an import declaration for each type processed by this builder."
 
 	^ typeNameDictionary values collect: [ :type |
 		  self makeImportDeclaration: type ]
 ]
 
-{ #category : #temp }
+{ #category : 'ast' }
+FASTJavaBuilder >> makeImportDeclarations: anEntity [
+	"Make import declarations for all types related to the given entity."
+
+	^ (anEntity allTypes select: [ :type | type needsJavaImport ])
+		  collect: [ :type | self makeImportDeclaration: type ]
+		  as: OrderedCollection
+]
+
+{ #category : 'processing' }
 FASTJavaBuilder >> processType: aFamixType [
+	"Process the given type and its related types, for example if it has concrete type parameters.
+	This lets the builder know how to refer to the type.
+	If the type is in the typeNameDict, it will be imported, so it can be referenced by its unqualified name."
 
 	| type |
+	(self canReferType: aFamixType) ifFalse: [
+		FamixValueExporterError signal:
+			'Cannot import type: ' , aFamixType mooseName ].
+
 	type := aFamixType isParametricEntity
 		        ifTrue: [
 			        aFamixType concreteParameters do: [ :parameter |
 				        self processType: parameter ].
 			        aFamixType genericEntity ]
 		        ifFalse: [ aFamixType ].
-	type needsJavaImport ifTrue: [ self registerType: type ]
+	type needsJavaImport ifTrue: [
+		typeNameDictionary at: type name ifAbsentPut: type ]
 ]
 
-{ #category : #temp }
+{ #category : 'processing' }
 FASTJavaBuilder >> referType: aFamixType [
+	"Process a type and return a FAST expression to reference it.
+	Use its unqualified name when importing the type, otherwise use its fully qualified name."
 
 	| registeredType |
 	self processType: aFamixType.
@@ -78,20 +91,5 @@ FASTJavaBuilder >> referType: aFamixType [
 			   ifTrue: [ "has import"
 			   model newTypeName name: aFamixType baseName ]
 			   ifFalse: [ "no import"
-			   self fullyQualifiedTypeNameFor: aFamixType ])
-]
-
-{ #category : #temp }
-FASTJavaBuilder >> registerType: aFamixType [
-	"If the type is in the typeNameDict, it will be imported."
-
-	registeredTypes add: aFamixType.
-	typeNameDictionary at: aFamixType name ifAbsentPut: aFamixType
-]
-
-{ #category : #initialization }
-FASTJavaBuilder >> reset [
-
-	typeNameDictionary := Dictionary new.
-	registeredTypes := IdentitySet new
+			   aFamixType fullyQualifiedTypeNameOn: self model ])
 ]
