@@ -1,10 +1,11 @@
 Class {
-	#name : #FamixValueInterpreterResolveError,
-	#superclass : #Error,
-	#category : #'Famix-Value-Interpreter'
+	#name : 'FamixValueInterpreterResolveError',
+	#superclass : 'FamixValueInterpreterError',
+	#category : 'Famix-Value-Interpreter',
+	#package : 'Famix-Value-Interpreter'
 }
 
-{ #category : #signalling }
+{ #category : 'signalling' }
 FamixValueInterpreterResolveError class >> signalFor: identifier in: value [
 
 	^ self signal:

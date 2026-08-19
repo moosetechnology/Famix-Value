@@ -1,6 +1,6 @@
-Extension { #name : #FamixValueOfUnknownType }
+Extension { #name : 'FamixValueOfUnknownType' }
 
-{ #category : #'*Famix-Value-Interpreter' }
+{ #category : '*Famix-Value-Interpreter' }
 FamixValueOfUnknownType >> resolve: identifier [
 
 	value ifNil: [
