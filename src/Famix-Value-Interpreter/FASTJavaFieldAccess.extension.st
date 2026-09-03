@@ -7,10 +7,7 @@ FASTJavaFieldAccess >> locationIn: interpreter [
 ]
 
 { #category : '*Famix-Value-Interpreter' }
-FASTJavaFieldAccess >> staticTypeIn: methodInfo with: loader [
+FASTJavaFieldAccess >> staticTypeIn: executable with: loader [
 
-	| receiverType field |
-	receiverType := loader staticTypeOf: self receiver in: methodInfo.
-	field := receiverType fieldNamed: self fieldName.
-	^ field type
+	^ (loader fieldForAccess: self) type
 ]

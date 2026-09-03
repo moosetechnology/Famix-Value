@@ -5,6 +5,12 @@ Class {
 	#package : 'Famix-Value-Interpreter'
 }
 
+{ #category : 'testing' }
+FamixValueInterpreterLocation class >> isAbstract [
+
+	^ self == FamixValueInterpreterLocation
+]
+
 { #category : 'accessing' }
 FamixValueInterpreterLocation >> type [
 

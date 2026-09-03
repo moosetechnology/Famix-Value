@@ -15,6 +15,23 @@ FamixValueJavaArrayTypeInfo >> asDefaultValueOn: interpreter [
 	^ interpreter nullValue
 ]
 
+{ #category : 'testing' }
+FamixValueJavaArrayTypeInfo >> canWidenTo: targetType [
+
+	| sourceElement targetElement |
+	targetType isArrayType ifFalse: [ ^ false ].
+
+	sourceElement := self elementType.
+	targetElement := targetType elementType.
+
+	sourceElement isPrimitiveType ifTrue: [
+		^ sourceElement isSameTypeAs: targetElement ].
+
+	targetElement isPrimitiveType ifTrue: [ ^ false ].
+
+	^ sourceElement canWidenTo: targetElement
+]
+
 { #category : 'accessing' }
 FamixValueJavaArrayTypeInfo >> componentType [
 

@@ -1,7 +1,7 @@
 Extension { #name : 'FASTJavaIdentifier' }
 
 { #category : '*Famix-Value-Interpreter' }
-FASTJavaIdentifier >> staticTypeIn: methodInfo with: loader [
+FASTJavaIdentifier >> staticTypeIn: executable with: loader [
 
-	^ loader staticTypeOfName: self name in: methodInfo
+	^ loader staticTypeOfName: self name in: executable
 ]

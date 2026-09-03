@@ -1,7 +1,7 @@
 Extension { #name : 'FASTJavaBooleanLiteral' }
 
 { #category : '*Famix-Value-Interpreter' }
-FASTJavaBooleanLiteral >> staticTypeIn: methodInfo with: loader [
+FASTJavaBooleanLiteral >> staticTypeIn: executable with: loader [
 
 	^ loader primitiveTypeNamed: 'boolean'
 ]

@@ -4,3 +4,9 @@ Class {
 	#category : 'Famix-Value-Interpreter',
 	#package : 'Famix-Value-Interpreter'
 }
+
+{ #category : 'testing' }
+FamixValueInterpreterControlFlow >> isReturn [
+
+	^ false
+]

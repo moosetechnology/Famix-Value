@@ -7,7 +7,7 @@ FASTJavaVariableExpression >> locationIn: interpreter [
 ]
 
 { #category : '*Famix-Value-Interpreter' }
-FASTJavaVariableExpression >> staticTypeIn: methodInfo with: loader [
+FASTJavaVariableExpression >> staticTypeIn: executable with: loader [
 
-	^ loader staticTypeOfName: self name in: methodInfo
+	^ loader staticTypeOfName: self name in: executable
 ]

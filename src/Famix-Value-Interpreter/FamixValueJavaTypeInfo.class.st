@@ -1,12 +1,18 @@
 Class {
 	#name : 'FamixValueJavaTypeInfo',
-	#superclass : 'Object',
+	#superclass : 'FamixValueJavaInfo',
 	#instVars : [
 		'name'
 	],
 	#category : 'Famix-Value-Interpreter',
 	#package : 'Famix-Value-Interpreter'
 }
+
+{ #category : 'testing' }
+FamixValueJavaTypeInfo >> canWidenTo: targetType [
+
+	^ false
+]
 
 { #category : 'accessing' }
 FamixValueJavaTypeInfo >> isArrayType [
@@ -24,6 +30,12 @@ FamixValueJavaTypeInfo >> isPrimitiveType [
 FamixValueJavaTypeInfo >> isSameTypeAs: anotherType [
 
 	^ self == anotherType
+]
+
+{ #category : 'testing' }
+FamixValueJavaTypeInfo >> isSubtypeOf: anotherType [
+
+	^ self isSameTypeAs: anotherType
 ]
 
 { #category : 'accessing' }

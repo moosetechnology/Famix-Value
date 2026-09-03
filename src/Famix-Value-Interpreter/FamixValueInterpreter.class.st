@@ -25,12 +25,6 @@ FamixValueInterpreter class >> on: aFamixModel [
 			   signalNotFound: false)
 ]
 
-{ #category : 'invoking' }
-FamixValueInterpreter >> bindArguments: arguments toParametersOf: method in: frame [
-
-	self subclassResponsibility
-]
-
 { #category : 'accessing' }
 FamixValueInterpreter >> entityFinder [
 
@@ -47,34 +41,21 @@ FamixValueInterpreter >> entityFinder: anEntityFinder [
 ]
 
 { #category : 'invoking' }
-FamixValueInterpreter >> execute: method [
-	"Assume the method is class-side and takes no arguments."
+FamixValueInterpreter >> execute: executable [
 
-	^ self execute: method on: nil with: {  }
+	^ self execute: executable on: nil with: #(  )
 ]
 
 { #category : 'invoking' }
-FamixValueInterpreter >> execute: method on: receiver with: arguments [
+FamixValueInterpreter >> execute: executable on: receiver with: arguments [
 
-	| frame result |
-	frame := FamixValueInterpreterFrame new
-		         method: method;
-		         receiver: receiver;
-		         yourself.
-
-	self bindArguments: arguments toParametersOf: method in: frame.
-
-	^ self inFrame: frame do: [
-		  result := method statementBlock accept: self.
-
-		  (result isKindOf: FamixValueInterpreterReturn) ifTrue: [
-			  ^ self returnValue: result value from: method ] ]
+	self subclassResponsibility
 ]
 
 { #category : 'invoking' }
-FamixValueInterpreter >> execute: method with: arguments [
+FamixValueInterpreter >> execute: executable with: arguments [
 
-	^ self execute: method on: nil with: arguments
+	^ self execute: executable on: nil with: arguments
 ]
 
 { #category : 'accessing' }
@@ -122,40 +103,8 @@ FamixValueInterpreter >> model: aFamixValueModel [
 	model := aFamixValueModel
 ]
 
-{ #category : 'invoking' }
-FamixValueInterpreter >> returnValue: value from: method [
-
-	^ value
-]
-
 { #category : 'resolving' }
 FamixValueInterpreter >> unsupportedLocationOf: anExpression [
 
 	^ FamixValueInterpreterInvalidLocation signalFor: anExpression
-]
-
-{ #category : 'visiting' }
-FamixValueInterpreter >> visitFASTTExpressionStatement: aFASTTExpressionStatement [
-
-	aFASTTExpressionStatement expression accept: self
-]
-
-{ #category : 'visiting' }
-FamixValueInterpreter >> visitFASTTReturnStatement: aFASTReturnStatement [
-	"Load the return value into the register. If nil, it means the method did not return anything."
-
-	^ FamixValueInterpreterReturn value:
-		  (aFASTReturnStatement expression ifNotNil: [ :expression |
-			   expression accept: self ])
-]
-
-{ #category : 'visiting' }
-FamixValueInterpreter >> visitFASTTStatementBlock: aFASTJavaStatementBlock [
-
-	aFASTJavaStatementBlock statements do: [ :statement |
-		| result |
-		result := statement accept: self.
-		(result isKindOf: FamixValueInterpreterControlFlow) ifTrue: [
-			^ result ] ].
-	^ nil
 ]

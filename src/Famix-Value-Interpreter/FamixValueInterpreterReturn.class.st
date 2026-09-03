@@ -14,6 +14,12 @@ FamixValueInterpreterReturn class >> value: aFamixValue [
 	^ self new value: aFamixValue
 ]
 
+{ #category : 'testing' }
+FamixValueInterpreterReturn >> isReturn [
+
+	^ true
+]
+
 { #category : 'evaluating' }
 FamixValueInterpreterReturn >> value [
 

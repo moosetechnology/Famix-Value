@@ -7,7 +7,7 @@ FASTTExpression >> locationIn: interpreter [
 ]
 
 { #category : '*Famix-Value-Interpreter' }
-FASTTExpression >> staticTypeIn: methodInfo with: loader [
+FASTTExpression >> staticTypeIn: executable with: loader [
 
 	^ loader unsupportedStaticTypeOf: self
 ]

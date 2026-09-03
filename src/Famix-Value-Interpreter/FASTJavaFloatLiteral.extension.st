@@ -1,7 +1,7 @@
 Extension { #name : 'FASTJavaFloatLiteral' }
 
 { #category : '*Famix-Value-Interpreter' }
-FASTJavaFloatLiteral >> staticTypeIn: methodInfo with: loader [
+FASTJavaFloatLiteral >> staticTypeIn: executable with: loader [
 
 	| value |
 	value := self primitiveValue.

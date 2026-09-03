@@ -3,7 +3,8 @@ Class {
 	#superclass : 'FamixValueInterpreter',
 	#instVars : [
 		'nullValue',
-		'classLoader'
+		'classLoader',
+		'runtimeTypes'
 	],
 	#classVars : [
 		'BinaryOperators',
@@ -101,13 +102,11 @@ FamixValueJavaInterpreter >> allocateArrayOf: arrayType dimensions: dimensions [
 FamixValueJavaInterpreter >> allocateObjectOf: classInfo [
 
 	| object |
-	object := self model newOfObject
-		          runtimeType: classInfo;
-		          yourself.
+	object := self model newOfObject runtimeType: classInfo.
 
 	classInfo famixType ifNotNil: [ :famixType | object type: famixType ].
 
-	classInfo fieldsDo: [ :fieldInfo |
+	classInfo instanceFieldsDo: [ :fieldInfo |
 		| objectAttribute |
 		objectAttribute := self model newOfObjectAttribute
 			                   object: object;
@@ -149,16 +148,13 @@ FamixValueJavaInterpreter >> binaryNumericTypeOfType: leftType with: rightType [
 ]
 
 { #category : 'invoking' }
-FamixValueJavaInterpreter >> bindArguments: arguments toParametersOf: method in: frame [
+FamixValueJavaInterpreter >> bindArguments: arguments to: executable in: frame [
 
-	| methodInfo |
-	methodInfo := self classLoader methodInfoForFASTMethod: method.
-
-	1 to: method parameters size do: [ :index |
+	1 to: executable parameterTypes size do: [ :index |
 		| parameter argument parameterType |
-		parameter := method parameters at: index.
+		parameter := executable fastMethod parameters at: index.
 		argument := arguments at: index.
-		parameterType := methodInfo parameterTypes at: index.
+		parameterType := executable parameterTypes at: index.
 
 		frame bind: parameter variable name to: (FamixValueInterpreterLocal
 				 type: parameterType
@@ -196,8 +192,7 @@ FamixValueJavaInterpreter >> canWidenPrimitive: sourceType to: targetType [
 { #category : 'testing' }
 FamixValueJavaInterpreter >> canWidenReference: sourceType to: targetType [
 
-	self flag: #TODO. "JLS 5.1.5 - widening reference conversion."
-	^ false
+	^ sourceType canWidenTo: targetType
 ]
 
 { #category : 'accessing' }
@@ -259,7 +254,8 @@ FamixValueJavaInterpreter >> convertPrimitive: value to: targetType [
 { #category : 'converting' }
 FamixValueJavaInterpreter >> convertReference: value to: targetType [
 
-	self flag: #TODO. "Check Java assignment compatibility / inheritance."
+	(value runtimeType canWidenTo: targetType) ifFalse: [
+		^ self unsupportedConversionOf: value to: targetType ].
 
 	^ value
 ]
@@ -267,13 +263,13 @@ FamixValueJavaInterpreter >> convertReference: value to: targetType [
 { #category : 'resolving' }
 FamixValueJavaInterpreter >> currentCompilationUnit [
 
-	^ self currentMethodInfo compilationUnit
+	^ self frame executable compilationUnit
 ]
 
 { #category : 'resolving' }
-FamixValueJavaInterpreter >> currentMethodInfo [
+FamixValueJavaInterpreter >> currentExecutable [
 
-	^ self classLoader methodInfoForFASTMethod: self frame method
+	^ self frame executable
 ]
 
 { #category : 'declarations' }
@@ -307,6 +303,63 @@ FamixValueJavaInterpreter >> defaultValueOfPrimitiveType: typeInfo [
 ]
 
 { #category : 'invoking' }
+FamixValueJavaInterpreter >> execute: fastMethod on: receiver with: arguments [
+
+	^ self
+		  executeMethod:
+		  (self classLoader executableForFASTMethod: fastMethod)
+		  on: receiver
+		  with: arguments
+]
+
+{ #category : 'invoking' }
+FamixValueJavaInterpreter >> executeBodyOf: constructor [
+
+	| statements startIndex result |
+	statements := constructor fastMethod statementBlock statements.
+
+	startIndex := constructor hasExplicitConstructorInvocation
+		              ifTrue: [ 2 ]
+		              ifFalse: [ 1 ].
+
+	startIndex to: statements size do: [ :index |
+		result := (statements at: index) accept: self.
+
+		(result isKindOf: FamixValueInterpreterControlFlow) ifTrue: [
+			^ result ] ].
+
+	^ result
+]
+
+{ #category : 'invoking' }
+FamixValueJavaInterpreter >> executeConstructor: constructor on: object with: arguments [
+
+	constructor isImplicit ifTrue: [
+		^ self executeImplicitConstructor: constructor on: object ].
+
+	^ self
+		  executeExplicitConstructor: constructor
+		  on: object
+		  with: arguments
+]
+
+{ #category : 'invoking' }
+FamixValueJavaInterpreter >> executeExplicitConstructor: constructor on: object with: arguments [
+
+	| frame |
+	frame := FamixValueInterpreterFrame new
+		         executable: constructor;
+		         receiver: object.
+
+	self bindArguments: arguments to: constructor in: frame.
+
+	^ self inFrame: frame do: [
+		  self prepareConstructionFor: constructor on: object.
+
+		  self executeBodyOf: constructor ]
+]
+
+{ #category : 'invoking' }
 FamixValueJavaInterpreter >> executeFamixMain: famixMethod [
 
 	| arguments |
@@ -322,36 +375,215 @@ FamixValueJavaInterpreter >> executeFamixMain: famixMethod [
 ]
 
 { #category : 'invoking' }
-FamixValueJavaInterpreter >> executeMain: main [
+FamixValueJavaInterpreter >> executeImplicitConstructor: constructor on: object [
 
-	^ self
-		  execute: main
-		  with:
-			  { (self model newOfCollection type:
-				   (FamixValueJavaArrayTypeInfo new
-					    componentType: main parameters first declaredType;
-					    dimensions: 1)) }
+	| frame |
+	frame := FamixValueInterpreterFrame new
+		         executable: constructor;
+		         receiver: object.
+
+	^ self inFrame: frame do: [
+		  self initializeSuperclassOf: constructor declaringType on: object.
+
+		  self
+			  initializeFieldsDeclaredBy: constructor declaringType
+			  on: object ]
 ]
 
-{ #category : 'instance creation' }
+{ #category : 'invoking' }
+FamixValueJavaInterpreter >> executeMain: main [
+
+	| methodInfo arrayType argument |
+	methodInfo := self classLoader executableForFASTMethod: main.
+	arrayType := methodInfo parameterTypes first.
+
+	argument := self model newOfCollection runtimeType: arrayType.
+
+	^ self execute: main with: { argument }
+]
+
+{ #category : 'invoking' }
+FamixValueJavaInterpreter >> executeMethod: executable on: receiver with: arguments [
+
+	| frame result |
+	executable isStatic ifTrue: [
+		self initializeType: executable declaringType ].
+
+	frame := FamixValueInterpreterFrame new
+		         executable: executable;
+		         receiver: receiver.
+
+	self bindArguments: arguments to: executable in: frame.
+
+	result := self
+		          inFrame: frame
+		          do: [ executable fastMethod statementBlock accept: self ].
+
+	(result isKindOf: FamixValueInterpreterReturn) ifTrue: [
+		^ self returnValue: result value from: executable ].
+
+	^ result
+]
+
+{ #category : 'initialization' }
+FamixValueJavaInterpreter >> initialize [
+
+	super initialize.
+	runtimeTypes := IdentityDictionary new
+]
+
+{ #category : 'invoking' }
 FamixValueJavaInterpreter >> initialize: object from: newExpression [
-	"TODO: execute instance initializers and constructor."
+
+	| classInfo arguments argumentTypes constructor |
+	classInfo := object runtimeType.
+
+	arguments := newExpression arguments collect: [ :argument |
+		             argument accept: self ].
+
+	argumentTypes := arguments collect: [ :argument |
+		                 argument runtimeType ].
+
+	constructor := classInfo
+		               constructorApplicableToTypes: argumentTypes
+		               with: self.
+
+	constructor ifNil: [
+		self error:
+			'No applicable constructor for ' , classInfo qualifiedName ].
+
+	self executeConstructor: constructor on: object with: arguments.
 
 	^ object
+]
+
+{ #category : 'invoking' }
+FamixValueJavaInterpreter >> initializeFieldsDeclaredBy: classInfo on: object [
+
+	classInfo fieldsDo: [ :fieldInfo |
+		(fieldInfo isStatic not and: [ fieldInfo initializer isNotNil ])
+			ifTrue: [
+				| frame location value |
+				frame := FamixValueInterpreterFrame new
+					         executable: fieldInfo;
+					         receiver: object.
+
+				value := self
+					         inFrame: frame
+					         do: [ fieldInfo initializer accept: self ].
+
+				location := self locationOfField: fieldInfo on: object.
+				location value: (self convert: value to: fieldInfo type) ] ]
+]
+
+{ #category : 'class initialization' }
+FamixValueJavaInterpreter >> initializeStaticField: fieldInfo in: runtimeType [
+
+	| frame value |
+	frame := FamixValueInterpreterFrame new
+		         executable: fieldInfo;
+		         receiver: nil.
+
+	value := self
+		         inFrame: frame
+		         do: [ fieldInfo initializer accept: self ].
+
+	runtimeType
+		staticValueOf: fieldInfo
+		put: (self convert: value to: fieldInfo type)
+]
+
+{ #category : 'class initialization' }
+FamixValueJavaInterpreter >> initializeStaticFieldsOf: typeInfo in: runtimeType [
+
+	typeInfo fieldsDo: [ :fieldInfo |
+		(fieldInfo isStatic and: [ fieldInfo initializer isNotNil ])
+			ifTrue: [ self initializeStaticField: fieldInfo in: runtimeType ] ]
+]
+
+{ #category : 'invoking' }
+FamixValueJavaInterpreter >> initializeSuperclassOf: classInfo on: object [
+
+	| superclass constructor |
+	superclass := classInfo superclass.
+	superclass ifNil: [ ^ self ].
+
+	constructor := superclass zeroArgumentConstructorWith: self.
+
+	constructor ifNil: [
+		self error:
+			'No applicable zero-argument constructor for superclass '
+			, superclass qualifiedName ].
+
+	self executeConstructor: constructor on: object with: #(  )
+]
+
+{ #category : 'class initialization' }
+FamixValueJavaInterpreter >> initializeSupertypesOf: typeInfo [
+
+	typeInfo isClass ifFalse: [ ^ self ].
+
+	typeInfo superclass ifNotNil: [ :superclass |
+		self initializeType: superclass ].
+
+	typeInfo defaultMethodInitializationDependenciesDo: [ :interface |
+		self initializeType: interface ]
+]
+
+{ #category : 'class initialization' }
+FamixValueJavaInterpreter >> initializeType: typeInfo [
+
+	| runtimeType state |
+	runtimeType := self runtimeTypeFor: typeInfo.
+	state := runtimeType initializationState.
+
+	state = #initialized ifTrue: [ ^ runtimeType ].
+	state = #initializing ifTrue: [ ^ runtimeType ].
+	state = #erroneous ifTrue: [
+		self error:
+			'Type initialization previously failed: ' , typeInfo qualifiedName ].
+
+	runtimeType initializationState: #initializing.
+
+	[
+	self initializeSupertypesOf: typeInfo.
+	self initializeStaticFieldsOf: typeInfo in: runtimeType.
+	runtimeType initializationState: #initialized ]
+		on: Error
+		do: [ :error |
+			runtimeType initializationState: #erroneous.
+			error pass ].
+
+	^ runtimeType
 ]
 
 { #category : 'instance creation' }
 FamixValueJavaInterpreter >> instantiate: newExpression [
 
 	| classInfo object |
-	classInfo := self classLoader
-		             resolveType: newExpression type
-		             in: self currentCompilationUnit.
-	object := self allocateObjectOf: classInfo.
+	classInfo := self resolveType: newExpression type.
 
+	self initializeType: classInfo.
+
+	object := self allocateObjectOf: classInfo.
 	self initialize: object from: newExpression.
 
 	^ object
+]
+
+{ #category : 'invoking' }
+FamixValueJavaInterpreter >> invokeExplicitConstructorFrom: constructor on: object [
+
+	| invocation arguments |
+	invocation := constructor constructorInvocation.
+
+	arguments := invocation arguments collect: [ :argument |
+		             argument accept: self ].
+
+	^ self
+		  executeConstructor: constructor invokedConstructor
+		  on: object
+		  with: arguments
 ]
 
 { #category : 'testing' }
@@ -389,7 +621,7 @@ FamixValueJavaInterpreter >> isType: firstType moreSpecificThan: secondType for:
 
 	"Reference types: ordinary subtyping."
 	(firstType isPrimitiveType not and: [ secondType isPrimitiveType not ])
-		ifTrue: [ ^ self isType: firstType subtypeOf: secondType ].
+		ifTrue: [ ^ firstType isSubtypeOf: secondType ].
 
 	"Primitive overloads: compare applicability from the
 	static argument type."
@@ -403,18 +635,6 @@ FamixValueJavaInterpreter >> isType: firstType moreSpecificThan: secondType for:
 					   compatibleByStrictInvocationWith: secondType) and: [
 					  self canWidenPrimitive: firstType to: secondType ] ] ].
 
-	^ false
-]
-
-{ #category : 'testing' }
-FamixValueJavaInterpreter >> isType: sourceType subtypeOf: targetType [
-
-	(sourceType isSameTypeAs: targetType) ifTrue: [ ^ true ].
-
-	(sourceType isPrimitiveType or: [ targetType isPrimitiveType ])
-		ifTrue: [ ^ false ].
-
-	self flag: #TODO. "JLS 4.10 - reference subtyping."
 	^ false
 ]
 
@@ -438,30 +658,37 @@ FamixValueJavaInterpreter >> locationOfArrayAccess: access [
 ]
 
 { #category : 'resolving' }
-FamixValueJavaInterpreter >> locationOfFieldAccess: expression [
+FamixValueJavaInterpreter >> locationOfField: fieldInfo on: receiver [
 
-	^ self
-		  locationOfFieldNamed: expression fieldName
-		  on: (expression receiver accept: self)
+	| objectAttribute |
+	objectAttribute := receiver value
+		                   detect: [ :each | each runtimeField == fieldInfo ]
+		                   ifNone: [
+			                   FamixValueInterpreterResolveError
+				                   signalFor: fieldInfo name
+				                   in: receiver ].
+
+	^ FamixValueInterpreterFieldLocation new
+		  objectAttribute: objectAttribute;
+		  type: fieldInfo type
+]
+
+{ #category : 'resolving' }
+FamixValueJavaInterpreter >> locationOfFieldAccess: fieldAccess [
+
+	| fieldInfo receiver |
+	fieldInfo := self classLoader fieldForAccess: fieldAccess.
+	receiver := fieldAccess receiver accept: self.
+
+	^ self locationOfField: fieldInfo on: receiver
 ]
 
 { #category : 'resolving' }
 FamixValueJavaInterpreter >> locationOfFieldNamed: name on: receiver [
 
-	| fieldInfo objectAttribute |
-	fieldInfo := receiver runtimeType fieldNamed: name.
-
-	objectAttribute := receiver value
-		                   detect: [ :each | each runtimeField == fieldInfo ]
-		                   ifNone: [
-		                   FamixValueInterpreterResolveError
-			                   signalFor: name
-			                   in: receiver ].
-
-	^ FamixValueInterpreterFieldLocation new
-		  objectAttribute: objectAttribute;
-		  type: fieldInfo type;
-		  yourself
+	^ self
+		  locationOfField: (receiver runtimeType fieldNamed: name)
+		  on: receiver
 ]
 
 { #category : 'resolving' }
@@ -469,6 +696,11 @@ FamixValueJavaInterpreter >> locationOfName: name [
 
 	(self frame hasLocal: name) ifTrue: [
 		^ self frame resolveLocation: name ].
+
+	self currentExecutable declaringType
+		fieldNamed: name
+		ifPresent: [ :field |
+			field isStatic ifTrue: [ ^ self locationOfStaticField: field ] ].
 
 	self frame receiver ifNotNil: [ :receiver |
 		^ self locationOfFieldNamed: name on: receiver ].
@@ -479,10 +711,20 @@ FamixValueJavaInterpreter >> locationOfName: name [
 { #category : 'resolving' }
 FamixValueJavaInterpreter >> locationOfProperty: property [
 
-	| receiver |
-	receiver := property type accept: self.
+	| fieldInfo |
+	fieldInfo := self classLoader fieldForAccess: property.
 
-	^ self locationOfFieldNamed: property fieldName on: receiver
+	fieldInfo isStatic ifTrue: [ ^ self locationOfStaticField: fieldInfo ].
+
+	^ self locationOfField: fieldInfo on: (property type accept: self)
+]
+
+{ #category : 'resolving' }
+FamixValueJavaInterpreter >> locationOfStaticField: fieldInfo [
+
+	^ FamixValueJavaStaticFieldLocation new
+		  runtimeType: (self initializeType: fieldInfo declaringType);
+		  fieldInfo: fieldInfo
 ]
 
 { #category : 'resolving' }
@@ -563,6 +805,21 @@ FamixValueJavaInterpreter >> newPrimitiveOfTypeNamed: typeName [
 		  runtimeType: typeInfo
 ]
 
+{ #category : 'runtime types' }
+FamixValueJavaInterpreter >> newRuntimeTypeFor: typeInfo [
+
+	| runtimeType |
+	runtimeType := FamixValueJavaRuntimeType of: typeInfo.
+
+	typeInfo fieldsDo: [ :fieldInfo |
+		fieldInfo isStatic ifTrue: [
+			runtimeType
+				staticValueOf: fieldInfo
+				put: (fieldInfo type asDefaultValueOn: self) ] ].
+
+	^ runtimeType
+]
+
 { #category : 'instance creation' }
 FamixValueJavaInterpreter >> newShort [
 
@@ -596,6 +853,57 @@ FamixValueJavaInterpreter >> operate: operator with: left with: right [
 		  FamixValueInterpreterUnknownOperator signalFor: operator ]
 ]
 
+{ #category : 'invoking' }
+FamixValueJavaInterpreter >> prepareConstructionFor: constructor on: object [
+
+	| invocation |
+	invocation := constructor constructorInvocation.
+
+	invocation ifNil: [
+		self initializeSuperclassOf: constructor declaringType on: object.
+		^ self
+			  initializeFieldsDeclaredBy: constructor declaringType
+			  on: object ].
+
+	invocation name = 'this' ifTrue: [
+		^ self invokeExplicitConstructorFrom: constructor on: object ].
+
+	"super(...)"
+	self invokeExplicitConstructorFrom: constructor on: object.
+
+	self initializeFieldsDeclaredBy: constructor declaringType on: object
+]
+
+{ #category : 'resolving' }
+FamixValueJavaInterpreter >> receiverForFieldAccess: fieldAccess [
+
+	| receiver |
+	receiver := fieldAccess receiver.
+
+	(receiver isVariableExpression and: [ receiver name = 'super' ])
+		ifTrue: [ ^ self frame receiver ].
+
+	^ receiver accept: self
+]
+
+{ #category : 'resolving' }
+FamixValueJavaInterpreter >> receiverForInvocation: invocation linkedAs: linkedInvocation [
+
+	| syntacticReceiver |
+	syntacticReceiver := invocation receiver.
+
+	syntacticReceiver ifNil: [
+		^ linkedInvocation mode = #static
+			  ifTrue: [ nil ]
+			  ifFalse: [ self frame receiver ] ].
+
+	syntacticReceiver name = 'super' ifTrue: [ ^ self frame receiver ].
+
+	linkedInvocation mode = #static ifTrue: [ ^ nil ].
+
+	^ syntacticReceiver accept: self
+]
+
 { #category : 'hooks' }
 FamixValueJavaInterpreter >> receiverName [
 
@@ -607,18 +915,35 @@ FamixValueJavaInterpreter >> resolveType: fastType [
 
 	^ self classLoader
 		  resolveType: fastType
-		  in: self frameCompilationUnit
+		  in: self currentCompilationUnit
 ]
 
 { #category : 'invoking' }
-FamixValueJavaInterpreter >> returnValue: value from: method [
+FamixValueJavaInterpreter >> returnValue: value from: executable [
 
-	| methodInfo |
-	methodInfo := self classLoader methodInfoForFASTMethod: method.
+	executable returnType ifNil: [ ^ nil ].
 
-	methodInfo returnType ifNil: [ ^ nil ].
+	^ self convert: value to: executable returnType
+]
 
-	^ self convert: value to: methodInfo returnType
+{ #category : 'resolving' }
+FamixValueJavaInterpreter >> runtimeMethodFor: linkedInvocation on: receiver [
+
+	linkedInvocation mode = #virtual ifTrue: [
+		^ receiver runtimeType implementationOf: linkedInvocation method ].
+
+	linkedInvocation mode = #interface ifTrue: [
+		^ receiver runtimeType implementationOf: linkedInvocation method ].
+
+	^ linkedInvocation method
+]
+
+{ #category : 'runtime types' }
+FamixValueJavaInterpreter >> runtimeTypeFor: typeInfo [
+
+	^ runtimeTypes
+		  at: typeInfo
+		  ifAbsentPut: [ self newRuntimeTypeFor: typeInfo ]
 ]
 
 { #category : 'typing' }
@@ -736,6 +1061,12 @@ FamixValueJavaInterpreter >> visitFASTJavaDoubleLiteral: literal [
 	^ self newDouble value: literal primitiveValue asNumber
 ]
 
+{ #category : 'visiting' }
+FamixValueJavaInterpreter >> visitFASTJavaExpressionStatement: aFASTJavaExpressionStatement [
+
+	aFASTJavaExpressionStatement expression accept: self
+]
+
 { #category : 'resolving' }
 FamixValueJavaInterpreter >> visitFASTJavaFieldAccess: expression [
 
@@ -825,13 +1156,17 @@ FamixValueJavaInterpreter >> visitFASTJavaLongLiteral: literal [
 { #category : 'visiting' }
 FamixValueJavaInterpreter >> visitFASTJavaMethodInvocation: invocation [
 
-	| receiver arguments method |
-	receiver := invocation receiver accept: self.
+	| linkedInvocation receiver arguments method |
+	linkedInvocation := self classLoader linkedInvocationFor: invocation.
+
+	receiver := self
+		            receiverForInvocation: invocation
+		            linkedAs: linkedInvocation.
 
 	arguments := invocation arguments collect: [ :argument |
 		             argument accept: self ].
 
-	method := self classLoader methodForInvocation: invocation.
+	method := self runtimeMethodFor: linkedInvocation on: receiver.
 
 	^ self execute: method fastMethod on: receiver with: arguments
 ]
@@ -860,6 +1195,26 @@ FamixValueJavaInterpreter >> visitFASTJavaNewExpression: expression [
 FamixValueJavaInterpreter >> visitFASTJavaNullLiteral: aNullLiteral [
 
 	^ self nullValue
+]
+
+{ #category : 'visiting' }
+FamixValueJavaInterpreter >> visitFASTJavaReturnStatement: aFASTJavaReturnStatement [
+	"Load the return value into the register. If nil, it means the method did not return anything."
+
+	^ FamixValueInterpreterReturn value:
+		  (aFASTJavaReturnStatement expression ifNotNil: [ :expression |
+			   expression accept: self ])
+]
+
+{ #category : 'visiting' }
+FamixValueJavaInterpreter >> visitFASTJavaStatementBlock: aFASTJavaStatementBlock [
+
+	aFASTJavaStatementBlock statements do: [ :statement |
+		| result |
+		result := statement accept: self.
+		(result isKindOf: FamixValueInterpreterControlFlow) ifTrue: [
+			^ result ] ].
+	^ nil
 ]
 
 { #category : 'visiting' }

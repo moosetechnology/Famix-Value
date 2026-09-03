@@ -1,9 +1,10 @@
 Class {
 	#name : 'FamixValueJavaFieldInfo',
-	#superclass : 'Object',
+	#superclass : 'FamixValueJavaMemberInfo',
 	#instVars : [
 		'name',
 		'type',
+		'initializer',
 		'famixAttribute'
 	],
 	#category : 'Famix-Value-Interpreter',
@@ -20,6 +21,42 @@ FamixValueJavaFieldInfo >> famixAttribute [
 FamixValueJavaFieldInfo >> famixAttribute: aFamixAttribute [
 
 	famixAttribute := aFamixAttribute
+]
+
+{ #category : 'accessing' }
+FamixValueJavaFieldInfo >> initializer [
+
+	^ initializer
+]
+
+{ #category : 'accessing' }
+FamixValueJavaFieldInfo >> initializer: anExpression [
+
+	initializer := anExpression
+]
+
+{ #category : 'testing' }
+FamixValueJavaFieldInfo >> isField [
+
+	^ true
+]
+
+{ #category : 'testing' }
+FamixValueJavaFieldInfo >> isFinal [
+
+	^ (modifiers bitAnd: FamixValueJavaModifiers final) ~~ 0
+]
+
+{ #category : 'testing' }
+FamixValueJavaFieldInfo >> isTransient [
+
+	^ (modifiers bitAnd: FamixValueJavaModifiers transient) ~~ 0
+]
+
+{ #category : 'testing' }
+FamixValueJavaFieldInfo >> isVolatile [
+
+	^ (modifiers bitAnd: FamixValueJavaModifiers volatile) ~~ 0
 ]
 
 { #category : 'accessing' }

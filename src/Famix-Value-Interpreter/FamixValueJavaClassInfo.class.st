@@ -1,31 +1,18 @@
 Class {
 	#name : 'FamixValueJavaClassInfo',
-	#superclass : 'FamixValueJavaTypeInfo',
+	#superclass : 'FamixValueJavaDeclaredTypeInfo',
 	#instVars : [
-		'methodsByName',
-		'fieldsByName',
-		'famixType',
-		'fastClass',
-		'loaded',
-		'declaringCompilationUnit'
+		'superclass',
+		'constructors'
 	],
 	#category : 'Famix-Value-Interpreter',
 	#package : 'Famix-Value-Interpreter'
 }
 
 { #category : 'initialization' }
-FamixValueJavaClassInfo >> addField: fieldInfo [
+FamixValueJavaClassInfo >> addConstructor: constructorInfo [
 
-	fieldsByName at: fieldInfo name put: fieldInfo
-]
-
-{ #category : 'adding' }
-FamixValueJavaClassInfo >> addMethod: aMethodInfo [
-
-	methodsByName
-		at: aMethodInfo name
-		ifPresent: [ :methods | methods add: aMethodInfo ]
-		ifAbsentPut: [ OrderedCollection with: aMethodInfo ]
+	constructors add: constructorInfo
 ]
 
 { #category : 'converting' }
@@ -34,179 +21,303 @@ FamixValueJavaClassInfo >> asDefaultValueOn: interpreter [
 	^ interpreter nullValue
 ]
 
-{ #category : 'accessing' }
-FamixValueJavaClassInfo >> declaringCompilationUnit [
+{ #category : 'resolving' }
+FamixValueJavaClassInfo >> classImplementationOf: methodInfo [
 
-	^ declaringCompilationUnit
+	(self methodsNamed: methodInfo name)
+		detect: [ :candidate | candidate hasSameSignatureAs: methodInfo ]
+		ifFound: [ :candidate | ^ candidate ].
+
+	superclass ifNotNil: [
+		^ superclass classImplementationOf: methodInfo ].
+
+	^ nil
+]
+
+{ #category : 'resolving' }
+FamixValueJavaClassInfo >> classMemberMethodsNamed: aName [
+
+	| declared inherited |
+	declared := self methodsNamed: aName.
+
+	superclass ifNil: [ ^ declared copy ].
+
+	inherited := (superclass classMemberMethodsNamed: aName) select: [
+		             :method | method isInheritableBy: self ].
+
+	^ declared , (inherited reject: [ :inheritedMethod |
+		   declared anySatisfy: [ :declaredMethod |
+			   declaredMethod hasSameSignatureAs: inheritedMethod ] ])
+]
+
+{ #category : 'resolving' }
+FamixValueJavaClassInfo >> constructorApplicableToTypes: argumentTypes with: interpreter [
+
+	| potential applicable |
+	potential := constructors select: [ :constructor |
+		             constructor isPotentiallyApplicableToArity:
+			             argumentTypes size ].
+
+	potential ifEmpty: [ ^ nil ].
+
+	applicable := potential select: [ :constructor |
+		              constructor
+			              isApplicableByStrictInvocationToTypes: argumentTypes
+			              with: interpreter ].
+
+	applicable ifNotEmpty: [
+		^ self
+			  mostSpecificAmong: applicable
+			  for: argumentTypes
+			  with: interpreter ].
+
+	applicable := potential select: [ :constructor |
+		              constructor
+			              isApplicableByLooseInvocationToTypes: argumentTypes
+			              with: interpreter ].
+
+	applicable ifNotEmpty: [
+		^ self
+			  mostSpecificAmong: applicable
+			  for: argumentTypes
+			  with: interpreter ].
+
+	applicable := potential select: [ :constructor |
+		              constructor
+			              isApplicableByVariableArityInvocationToTypes:
+			              argumentTypes
+			              with: interpreter ].
+
+	applicable ifNotEmpty: [
+		^ self
+			  mostSpecificAmong: applicable
+			  for: argumentTypes
+			  with: interpreter ].
+
+	^ nil
+]
+
+{ #category : 'initialization' }
+FamixValueJavaClassInfo >> constructors [
+
+	^ constructors
+]
+
+{ #category : 'resolving' }
+FamixValueJavaClassInfo >> defaultImplementationOf: methodInfo [
+
+	| methods defaults |
+	methods := self maximallySpecificInterfaceMethodsMatching: methodInfo.
+
+	defaults := methods select: [ :method | method isDefault ].
+
+	defaults ifEmpty: [ ^ nil ].
+	defaults size = 1 ifTrue: [ ^ defaults first ].
+
+	self error: 'Conflicting default methods'
+]
+
+{ #category : 'enumerating' }
+FamixValueJavaClassInfo >> defaultMethodInitializationDependenciesDo: aBlock [
+
+	| visited |
+	visited := IdentitySet new.
+
+	interfaces do: [ :interface |
+		interface initializationDependenciesDo: aBlock visited: visited ]
 ]
 
 { #category : 'accessing' }
-FamixValueJavaClassInfo >> declaringCompilationUnit: aCompilationUnitInfo [
+FamixValueJavaClassInfo >> directSupertypes [
 
-	declaringCompilationUnit := aCompilationUnitInfo
+	superclass ifNil: [ ^ interfaces ].
+
+	^ { superclass } , interfaces
 ]
 
-{ #category : 'accessing' }
-FamixValueJavaClassInfo >> defineFrom: aFASTJavaClassDeclaration [
+{ #category : 'definition' }
+FamixValueJavaClassInfo >> famixEntityClass [
 
-	fastClass := aFASTJavaClassDeclaration.
-	loaded := true
-]
-
-{ #category : 'accessing' }
-FamixValueJavaClassInfo >> famixType [
-
-	^ famixType
-]
-
-{ #category : 'accessing' }
-FamixValueJavaClassInfo >> famixType: aFamixType [
-
-	famixType := aFamixType
+	^ FamixJavaClass
 ]
 
 { #category : 'accessing' }
 FamixValueJavaClassInfo >> fastClass [
 
-	^ fastClass
+	^ fastDeclaration
 ]
 
-{ #category : 'initialization' }
+{ #category : 'enumerating' }
 FamixValueJavaClassInfo >> fieldNamed: fieldName [
 
-	^ fieldsByName
-		  at: fieldName
+	^ self
+		  fieldNamed: fieldName
 		  ifAbsent: [
 		  FamixValueInterpreterResolveError signalFor: fieldName in: self ]
 ]
 
-{ #category : 'initialization' }
+{ #category : 'enumerating' }
 FamixValueJavaClassInfo >> fieldNamed: fieldName ifAbsent: aBlock [
 
-	^ fieldsByName at: fieldName ifAbsent: aBlock
+	^ fieldsByName at: fieldName ifAbsent: [
+		  superclass
+			  ifNil: [ aBlock value ]
+			  ifNotNil: [ superclass fieldNamed: fieldName ifAbsent: aBlock ] ]
 ]
 
 { #category : 'enumerating' }
-FamixValueJavaClassInfo >> fieldsDo: aBlock [
+FamixValueJavaClassInfo >> fieldNamed: fieldName ifPresent: aBlock [
 
-	fieldsByName valuesDo: aBlock
+	^ self fieldNamed: fieldName ifAbsent: [ nil ] ifPresent: aBlock
+]
+
+{ #category : 'resolving' }
+FamixValueJavaClassInfo >> implementationOf: methodInfo [
+
+	(self isSubtypeOf: methodInfo declaringType) ifFalse: [
+		self error: qualifiedName , ' is not a subtype of '
+			, methodInfo declaringType qualifiedName ].
+
+	(self classImplementationOf: methodInfo) ifNotNil: [ :implementation |
+		^ implementation ].
+
+	(self defaultImplementationOf: methodInfo) ifNotNil: [
+		:implementation | ^ implementation ].
+
+	self error: 'No implementation of ' , methodInfo name , ' found in '
+		, qualifiedName
 ]
 
 { #category : 'initialization' }
 FamixValueJavaClassInfo >> initialize [
 
 	super initialize.
-	methodsByName := Dictionary new.
-	fieldsByName := Dictionary new.
-	loaded := false
+	constructors := OrderedCollection new
+]
+
+{ #category : 'enumerating' }
+FamixValueJavaClassInfo >> instanceFieldsDo: aBlock [
+
+	superclass ifNotNil: [ superclass instanceFieldsDo: aBlock ].
+
+	self fieldsDo: [ :field |
+		field isStatic ifFalse: [ aBlock value: field ] ]
+]
+
+{ #category : 'testing' }
+FamixValueJavaClassInfo >> isClass [
+
+	^ true
+]
+
+{ #category : 'testing' }
+FamixValueJavaClassInfo >> isFinal [
+
+	^ (modifiers bitAnd: FamixValueJavaModifiers final) ~~ 0
+]
+
+{ #category : 'resolving' }
+FamixValueJavaClassInfo >> memberMethodsNamed: aName [
+
+	| classMethods interfaceMethods |
+	classMethods := self classMemberMethodsNamed: aName.
+	interfaceMethods := (self interfaceMethodsNamed: aName) reject: [
+		                    :method |
+		                    method isStatic or: [ method isPrivate ] ].
+
+	interfaceMethods := interfaceMethods reject: [ :interfaceMethod |
+		                    classMethods anySatisfy: [ :classMethod |
+			                    classMethod hasSameSignatureAs: interfaceMethod ] ].
+
+	interfaceMethods := self maximallySpecificInterfaceMethodsAmong:
+		                    interfaceMethods.
+
+	^ classMethods , interfaceMethods
 ]
 
 { #category : 'accessing' }
-FamixValueJavaClassInfo >> loaded [
+FamixValueJavaClassInfo >> superclass [
 
-	^ loaded
-]
-
-{ #category : 'resolving' }
-FamixValueJavaClassInfo >> methodNamed: aName applicableToTypes: argumentTypes with: interpreter [
-
-	| potential applicable |
-	potential := self
-		             potentiallyApplicableMethodsNamed: aName
-		             argumentCount: argumentTypes size.
-	potential ifEmpty: [ ^ nil ].
-
-	applicable := potential select: [ :method |
-		              method
-			              isApplicableByStrictInvocationToTypes: argumentTypes
-			              with: interpreter ].
-	applicable ifNotEmpty: [
-		^ self
-			  mostSpecificAmong: applicable
-			  for: argumentTypes
-			  with: interpreter ].
-
-	applicable := potential select: [ :method |
-		              method
-			              isApplicableByLooseInvocationToTypes: argumentTypes
-			              with: interpreter ].
-	applicable ifNotEmpty: [
-		^ self
-			  mostSpecificAmong: applicable
-			  for: argumentTypes
-			  with: interpreter ].
-
-	applicable := potential select: [ :method |
-		              method
-			              isApplicableByVariableArityInvocationToTypes:
-			              argumentTypes
-			              with: interpreter ].
-	applicable ifNotEmpty: [
-		^ self
-			  mostSpecificAmong: applicable
-			  for: argumentTypes
-			  with: interpreter ].
-	^ nil
+	^ superclass
 ]
 
 { #category : 'accessing' }
-FamixValueJavaClassInfo >> methods [
+FamixValueJavaClassInfo >> superclass: aClassInfo [
 
-	^ methodsByName values flattened
+	superclass := aClassInfo
 ]
 
 { #category : 'resolving' }
-FamixValueJavaClassInfo >> methodsNamed: aName [
+FamixValueJavaClassInfo >> validateConstructorInvocationCycleFrom: constructor [
 
-	^ methodsByName at: aName ifAbsent: [ #(  ) ]
+	| current visited |
+	current := constructor.
+	visited := IdentitySet new.
+
+	[ current invokesThisConstructor ] whileTrue: [
+		(visited includes: current) ifTrue: [
+			self error: 'Recursive constructor invocation in ' , qualifiedName ].
+
+		visited add: current.
+		current := current invokedConstructor ]
 ]
 
 { #category : 'resolving' }
-FamixValueJavaClassInfo >> mostSpecificAmong: methods for: arguments with: interpreter [
+FamixValueJavaClassInfo >> validateConstructorInvocationCycles [
 
-	| maximal |
-	methods size = 1 ifTrue: [ ^ methods first ].
-
-	maximal := methods asIdentitySet.
-
-	1 to: methods size - 1 do: [ :i |
-		i + 1 to: methods size do: [ :j |
-			| first second |
-			first := methods at: i.
-			second := methods at: j.
-
-			((maximal includes: first) and: [ maximal includes: second ])
-				ifTrue: [
-					(first
-						 isStrictlyMoreSpecificThan: second
-						 for: arguments
-						 with: interpreter)
-						ifTrue: [ maximal remove: second ]
-						ifFalse: [
-							(second
-								 isStrictlyMoreSpecificThan: first
-								 for: arguments
-								 with: interpreter) ifTrue: [ maximal remove: first ] ] ] ] ].
-
-	maximal size = 1 ifTrue: [ ^ maximal anyOne ].
-
-	self error: 'Ambiguous method invocation'
+	constructors do: [ :constructor |
+		self validateConstructorInvocationCycleFrom: constructor ]
 ]
 
 { #category : 'resolving' }
-FamixValueJavaClassInfo >> potentiallyApplicableMethodsNamed: aName argumentCount: argumentCount [
+FamixValueJavaClassInfo >> validateDefaultMethodCandidates: methods [
 
-	^ (self methodsNamed: aName) select: [ :method |
-		  method isPotentiallyApplicableToArity: argumentCount ]
+	| representative maximal defaults |
+	methods ifEmpty: [ ^ self ].
+
+	representative := methods first.
+
+	((self classMemberMethodsNamed: representative name) anySatisfy: [
+		 :classMethod | classMethod hasSameSignatureAs: representative ])
+		ifTrue: [ ^ self ].
+
+	maximal := self maximallySpecificInterfaceMethodsAmong: methods.
+
+	defaults := maximal select: [ :method | method isDefault ].
+
+	defaults size > 1 ifTrue: [
+		self error:
+			'Conflicting default methods for ' , qualifiedName , '>>'
+			, representative name ]
 ]
 
-{ #category : 'accessing' }
-FamixValueJavaClassInfo >> qualifiedName [
+{ #category : 'resolving' }
+FamixValueJavaClassInfo >> validateDefaultMethodConflicts [
 
-	| packageName |
-	packageName := declaringCompilationUnit packageName.
+	self interfaceMethodNames do: [ :methodName |
+		self validateDefaultMethodConflictsNamed: methodName ]
+]
 
-	packageName isEmptyOrNil ifTrue: [ ^ name ].
+{ #category : 'resolving' }
+FamixValueJavaClassInfo >> validateDefaultMethodConflictsNamed: aName [
 
-	^ packageName , '.' , name
+	| methods processed |
+	methods := self interfaceMethodsNamed: aName.
+	processed := IdentitySet new.
+
+	methods do: [ :method |
+		(processed includes: method) ifFalse: [
+			| sameSignature |
+			sameSignature := methods select: [ :candidate |
+				                 candidate hasSameSignatureAs: method ].
+
+			processed addAll: sameSignature.
+
+			self validateDefaultMethodCandidates: sameSignature ] ]
+]
+
+{ #category : 'resolving' }
+FamixValueJavaClassInfo >> zeroArgumentConstructorWith: interpreter [
+
+	^ self constructorApplicableToTypes: #(  ) with: interpreter
 ]

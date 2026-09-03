@@ -7,7 +7,7 @@ FASTJavaClassProperty >> locationIn: interpreter [
 ]
 
 { #category : '*Famix-Value-Interpreter' }
-FASTJavaClassProperty >> staticTypeIn: methodInfo with: loader [
+FASTJavaClassProperty >> staticTypeIn: executable with: loader [
 
-	^ loader staticTypeOfName: self fieldName in: methodInfo
+	^ (loader fieldForAccess: self) type
 ]

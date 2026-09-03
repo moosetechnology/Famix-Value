@@ -2,9 +2,9 @@ Class {
 	#name : 'FamixValueInterpreterFrame',
 	#superclass : 'Object',
 	#instVars : [
-		'method',
 		'receiver',
-		'scopes'
+		'scopes',
+		'executable'
 	],
 	#category : 'Famix-Value-Interpreter',
 	#package : 'Famix-Value-Interpreter'
@@ -24,6 +24,18 @@ FamixValueInterpreterFrame >> declare: identifier type: type [
 		  put: (FamixValueInterpreterLocal typed: type)
 ]
 
+{ #category : 'accessing' }
+FamixValueInterpreterFrame >> executable [
+
+	^ executable
+]
+
+{ #category : 'accessing' }
+FamixValueInterpreterFrame >> executable: anExecutableInfo [
+
+	executable := anExecutableInfo
+]
+
 { #category : 'testing' }
 FamixValueInterpreterFrame >> hasLocal: identifier [
 
@@ -36,18 +48,6 @@ FamixValueInterpreterFrame >> initialize [
 	super initialize.
 	scopes := Stack new.
 	self pushScope
-]
-
-{ #category : 'accessing' }
-FamixValueInterpreterFrame >> method [
-
-	^ method
-]
-
-{ #category : 'accessing' }
-FamixValueInterpreterFrame >> method: aFASTMethod [
-
-	method := aFASTMethod
 ]
 
 { #category : 'scope' }

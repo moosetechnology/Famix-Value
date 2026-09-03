@@ -7,7 +7,7 @@ FASTJavaArrayAccess >> locationIn: interpreter [
 ]
 
 { #category : '*Famix-Value-Interpreter' }
-FASTJavaArrayAccess >> staticTypeIn: methodInfo with: loader [
+FASTJavaArrayAccess >> staticTypeIn: executable with: loader [
 
-	^ (loader staticTypeOf: self array in: methodInfo) elementType
+	^ (loader staticTypeOf: self array in: executable) elementType
 ]
