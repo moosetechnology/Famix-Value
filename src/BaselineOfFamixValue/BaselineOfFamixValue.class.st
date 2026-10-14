@@ -24,11 +24,11 @@ BaselineOfFamixValue >> dependencies: spec [
 					'github://moosetechnology/Famix-EntityFinder:main/src' ];
 		baseline: 'FASTJava' with: [
 			spec
-				repository: 'github://moosetechnology/FAST-JAVA:v3/src';
+				repository: 'github://moosetechnology/FAST-JAVA:v4/src';
 				loads: 'tools' ];
 		baseline: 'Carrefour'
 		with: [
-		spec repository: 'github://moosetechnology/Carrefour:v5/src' ]
+		spec repository: 'github://moosetechnology/Carrefour:v6/src' ]
 ]
 
 { #category : 'baselines' }
