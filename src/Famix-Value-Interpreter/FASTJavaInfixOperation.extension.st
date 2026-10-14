@@ -4,10 +4,11 @@ Extension { #name : 'FASTJavaInfixOperation' }
 FASTJavaInfixOperation >> staticTypeIn: executable with: loader [
 
 	| leftType rightType |
-	(#( '&&' '||' '==' '!!=' '<' '<=' '>' '>=' ) includes: self operator)
-		ifTrue: [ ^ loader primitiveTypeNamed: 'boolean' ].
+	(#( '&&' '||' '==' '!=' '<' '<=' '>' '>=' ) includes: self operator) ifTrue: [ ^ loader primitiveTypeNamed: 'boolean' ].
 
 	leftType := loader staticTypeOf: self leftOperand in: executable.
+
+	(#( '<<' '>>' '>>>' ) includes: self operator) ifTrue: [ ^ loader unaryNumericTypeOf: leftType ].
 
 	rightType := loader staticTypeOf: self rightOperand in: executable.
 

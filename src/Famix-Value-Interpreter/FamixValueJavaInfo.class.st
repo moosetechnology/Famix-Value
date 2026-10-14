@@ -48,6 +48,12 @@ FamixValueJavaInfo >> isField [
 ]
 
 { #category : 'testing' }
+FamixValueJavaInfo >> isInitializer [
+
+	^ false
+]
+
+{ #category : 'testing' }
 FamixValueJavaInfo >> isInterface [
 
 	^ false

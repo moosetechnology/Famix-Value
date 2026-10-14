@@ -6,6 +6,18 @@ Class {
 }
 
 { #category : 'testing' }
+FamixValueInterpreterControlFlow >> isBreak [
+
+	^ false
+]
+
+{ #category : 'testing' }
+FamixValueInterpreterControlFlow >> isContinue [
+
+	^ false
+]
+
+{ #category : 'testing' }
 FamixValueInterpreterControlFlow >> isReturn [
 
 	^ false

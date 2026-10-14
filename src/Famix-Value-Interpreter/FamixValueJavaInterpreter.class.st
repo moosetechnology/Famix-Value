@@ -99,6 +99,21 @@ FamixValueJavaInterpreter >> allocateArrayOf: arrayType dimensions: dimensions [
 ]
 
 { #category : 'instance creation' }
+FamixValueJavaInterpreter >> allocateArrayOf: arrayType initializedBy: initializer [
+
+	| array elementType |
+	array := self model newOfCollection runtimeType: arrayType.
+	elementType := arrayType elementType.
+
+	array value: (initializer initializers collect: [ :expression |
+			 FamixValueOfCollectionElement new value: ((expression isKindOf: FASTJavaArrayInitializer)
+					  ifTrue: [ self allocateArrayOf: elementType initializedBy: expression ]
+					  ifFalse: [ self convertAssignment: (expression accept: self) from: expression to: elementType ]) ]).
+
+	^ array
+]
+
+{ #category : 'instance creation' }
 FamixValueJavaInterpreter >> allocateObjectOf: classInfo [
 
 	| object |
@@ -195,6 +210,34 @@ FamixValueJavaInterpreter >> canWidenReference: sourceType to: targetType [
 	^ sourceType canWidenTo: targetType
 ]
 
+{ #category : 'converting' }
+FamixValueJavaInterpreter >> castPrimitive: value to: targetType [
+
+	| sourceType sourceName targetName |
+	sourceType := value runtimeType.
+	sourceName := sourceType name.
+	targetName := targetType name.
+	(sourceType isSameTypeAs: targetType) ifTrue: [ ^ value ].
+
+	(sourceName = 'boolean' or: [ targetName = 'boolean' ]) ifTrue: [ ^ self unsupportedConversionOf: value to: targetType ].
+
+	(self canWidenPrimitive: sourceType to: targetType) ifTrue: [ ^ self convertPrimitive: value to: targetType ].
+
+	((#( 'float' 'double' ) includes: sourceName) and: [ #( 'byte' 'short' 'char' 'int' 'long' ) includes: targetName ]) ifTrue: [
+		^ self floatingValue: value value narrowedToIntegralType: targetType ].
+
+	^ self narrowPrimitiveValue: value value from: sourceType to: targetType
+]
+
+{ #category : 'converting' }
+FamixValueJavaInterpreter >> castReference: value to: targetType [
+
+	(value runtimeType isSameTypeAs: targetType) ifTrue: [ ^ value ].
+	(value runtimeType isSubtypeOf: targetType) ifTrue: [ ^ value ].
+
+	^ self unsupportedConversionOf: value to: targetType
+]
+
 { #category : 'accessing' }
 FamixValueJavaInterpreter >> classLoader [
 
@@ -211,7 +254,54 @@ FamixValueJavaInterpreter >> classLoader: aClassLoader [
 { #category : 'assignments' }
 FamixValueJavaInterpreter >> compoundAssignment: operator location: location right: rhs [
 
-	self error: 'Compound assignment conversion not implemented yet'
+	| left baseOperator promotedType result |
+	left := location value.
+	baseOperator := operator allButLast.
+
+	location type name = 'boolean' ifTrue: [
+		(#( '&' '|' '^' ) includes: baseOperator) ifFalse: [ self error: 'Invalid boolean compound assignment operator: ' , operator ].
+		result := baseOperator = '&'
+			          ifTrue: [ left value & rhs value ]
+			          ifFalse: [
+				          baseOperator = '|'
+					          ifTrue: [ left value | rhs value ]
+					          ifFalse: [ left value ~= rhs value ] ].
+		^ self newBoolean value: result ].
+
+	(#( '<<' '>>' '>>>' ) includes: baseOperator) ifTrue: [
+		result := self javaShiftOperation: baseOperator left: left right: rhs.
+		^ self narrowCompoundAssignmentValue: result value from: result runtimeType to: location type ].
+
+	promotedType := self binaryNumericTypeOf: left with: rhs.
+	result := self
+		          javaNumericOperation: baseOperator
+		          left: left
+		          right: rhs
+		          type: promotedType.
+	^ self narrowCompoundAssignmentValue: result value from: promotedType to: location type
+]
+
+{ #category : 'converting' }
+FamixValueJavaInterpreter >> conditionalNumericTypeOf: firstExpression type: firstType and: secondExpression type: secondType [
+
+	| intType |
+	intType := self classLoader primitiveTypeNamed: 'int'.
+
+	((firstType name = 'byte' and: [ secondType name = 'short' ]) or: [ firstType name = 'short' and: [ secondType name = 'byte' ] ])
+		ifTrue: [ ^ self classLoader primitiveTypeNamed: 'short' ].
+
+	((firstType isSameTypeAs: intType) and: [
+		 (#( 'byte' 'short' 'char' ) includes: secondType name) and: [
+			 (self isIntegerConstantExpression: firstExpression) and: [
+				 self integerValue: (self integerConstantValueOf: firstExpression) isRepresentableIn: secondType ] ] ]) ifTrue: [
+		^ secondType ].
+
+	((secondType isSameTypeAs: intType) and: [
+		 (#( 'byte' 'short' 'char' ) includes: firstType name) and: [
+			 (self isIntegerConstantExpression: secondExpression) and: [
+				 self integerValue: (self integerConstantValueOf: secondExpression) isRepresentableIn: firstType ] ] ]) ifTrue: [ ^ firstType ].
+
+	^ self binaryNumericTypeOfType: firstType with: secondType
 ]
 
 { #category : 'converting' }
@@ -231,6 +321,22 @@ FamixValueJavaInterpreter >> convert: value to: targetType [
 ]
 
 { #category : 'converting' }
+FamixValueJavaInterpreter >> convertAssignment: value from: expression to: targetType [
+
+	| sourceType targetName integerValue |
+	[ ^ self convert: value to: targetType ]
+		on: Error
+		do: [ :error |
+			sourceType := value runtimeType.
+			targetName := targetType name.
+			(sourceType name = 'int' and: [ #( 'byte' 'short' 'char' ) includes: targetName ]) ifFalse: [ error pass ].
+			(self isIntegerConstantExpression: expression) ifFalse: [ error pass ].
+			integerValue := self numericOperandValue: value value.
+			(self integerValue: integerValue isRepresentableIn: targetType) ifFalse: [ error pass ].
+			^ self narrowPrimitiveValue: integerValue from: sourceType to: targetType ]
+]
+
+{ #category : 'converting' }
 FamixValueJavaInterpreter >> convertNullTo: targetType [
 
 	targetType isPrimitiveType ifTrue: [
@@ -243,12 +349,14 @@ FamixValueJavaInterpreter >> convertNullTo: targetType [
 { #category : 'converting' }
 FamixValueJavaInterpreter >> convertPrimitive: value to: targetType [
 
+	| primitiveValue |
 	(self canWidenPrimitive: value runtimeType to: targetType) ifFalse: [
-		self error:
-			'Invalid primitive conversion from ' , value runtimeType name
-			, ' to ' , targetType name ].
+		self error: 'Invalid primitive conversion from ' , value runtimeType name , ' to ' , targetType name ].
 
-	^ self newPrimitiveOfType: targetType value: value value
+	primitiveValue := value value.
+	(value runtimeType name = 'char' and: [ targetType name ~= 'char' ]) ifTrue: [ primitiveValue := primitiveValue asInteger ].
+
+	^ self newPrimitiveOfType: targetType value: primitiveValue
 ]
 
 { #category : 'converting' }
@@ -275,13 +383,14 @@ FamixValueJavaInterpreter >> currentExecutable [
 { #category : 'declarations' }
 FamixValueJavaInterpreter >> declareVariable: declarator ofType: type [
 
-	| location |
+	| location value |
 	self frame declare: declarator variable name type: type.
 
 	location := self frame resolveLocation: declarator variable name.
 
 	declarator expression ifNotNil: [ :initializer |
-		location value: (self convert: (initializer accept: self) to: type) ]
+		value := initializer accept: self.
+		location value: (self convertAssignment: value from: initializer to: type) ]
 ]
 
 { #category : 'instance creation' }
@@ -391,6 +500,18 @@ FamixValueJavaInterpreter >> executeImplicitConstructor: constructor on: object 
 ]
 
 { #category : 'invoking' }
+FamixValueJavaInterpreter >> executeInitializer: initializerInfo on: receiver [
+
+	| frame |
+	frame := FamixValueInterpreterFrame new
+		         executable: initializerInfo;
+		         receiver: receiver.
+	^ self inFrame: frame do: [
+		  self executeStatementsOf:
+			  initializerInfo fastInitializer statementBlock ]
+]
+
+{ #category : 'invoking' }
 FamixValueJavaInterpreter >> executeMain: main [
 
 	| methodInfo arrayType argument |
@@ -408,21 +529,59 @@ FamixValueJavaInterpreter >> executeMethod: executable on: receiver with: argume
 	| frame result |
 	executable isStatic ifTrue: [
 		self initializeType: executable declaringType ].
-
 	frame := FamixValueInterpreterFrame new
 		         executable: executable;
 		         receiver: receiver.
-
 	self bindArguments: arguments to: executable in: frame.
-
 	result := self
 		          inFrame: frame
-		          do: [ executable fastMethod statementBlock accept: self ].
-
+		          do: [
+		          self executeStatementsOf:
+			          executable fastMethod statementBlock ].
 	(result isKindOf: FamixValueInterpreterReturn) ifTrue: [
 		^ self returnValue: result value from: executable ].
-
 	^ result
+]
+
+{ #category : 'invoking' }
+FamixValueJavaInterpreter >> executeStatementsOf: aFASTJavaStatementBlock [
+
+	| result |
+	aFASTJavaStatementBlock statements do: [ :statement |
+		result := statement accept: self.
+		(result isKindOf: FamixValueInterpreterControlFlow) ifTrue: [
+			^ result ] ].
+	^ nil
+]
+
+{ #category : 'converting' }
+FamixValueJavaInterpreter >> floatingValue: value narrowedToIntegralType: targetType [
+
+	| targetName minimum maximum integerValue intermediateType |
+	targetName := targetType name.
+	targetName = 'long'
+		ifTrue: [
+			minimum := -9223372036854775808.
+			maximum := 9223372036854775807.
+			intermediateType := targetType ]
+		ifFalse: [
+			minimum := -2147483648.
+			maximum := 2147483647.
+			intermediateType := self classLoader primitiveTypeNamed: 'int' ].
+
+	integerValue := value isNaN
+		                ifTrue: [ 0 ]
+		                ifFalse: [
+			                value <= minimum
+				                ifTrue: [ minimum ]
+				                ifFalse: [
+					                value >= maximum
+						                ifTrue: [ maximum ]
+						                ifFalse: [ value truncated ] ] ].
+
+	(targetType isSameTypeAs: intermediateType) ifTrue: [ ^ self newPrimitiveOfType: targetType value: integerValue ].
+
+	^ self narrowPrimitiveValue: integerValue from: intermediateType to: targetType
 ]
 
 { #category : 'initialization' }
@@ -458,22 +617,29 @@ FamixValueJavaInterpreter >> initialize: object from: newExpression [
 ]
 
 { #category : 'invoking' }
+FamixValueJavaInterpreter >> initializeField: fieldInfo on: object [
+
+	| frame location value |
+	frame := FamixValueInterpreterFrame new
+		         executable: fieldInfo;
+		         receiver: object.
+	value := self
+		         inFrame: frame
+		         do: [ fieldInfo initializer accept: self ].
+	location := self locationOfField: fieldInfo on: object.
+	location value: (self convert: value to: fieldInfo type)
+]
+
+{ #category : 'invoking' }
 FamixValueJavaInterpreter >> initializeFieldsDeclaredBy: classInfo on: object [
 
-	classInfo fieldsDo: [ :fieldInfo |
-		(fieldInfo isStatic not and: [ fieldInfo initializer isNotNil ])
-			ifTrue: [
-				| frame location value |
-				frame := FamixValueInterpreterFrame new
-					         executable: fieldInfo;
-					         receiver: object.
-
-				value := self
-					         inFrame: frame
-					         do: [ fieldInfo initializer accept: self ].
-
-				location := self locationOfField: fieldInfo on: object.
-				location value: (self convert: value to: fieldInfo type) ] ]
+	classInfo initializationMembersDo: [ :member |
+		member isStatic ifFalse: [
+			member isField
+				ifTrue: [
+					member initializer ifNotNil: [
+						self initializeField: member on: object ] ]
+				ifFalse: [ self executeInitializer: member on: object ] ] ]
 ]
 
 { #category : 'class initialization' }
@@ -496,9 +662,13 @@ FamixValueJavaInterpreter >> initializeStaticField: fieldInfo in: runtimeType [
 { #category : 'class initialization' }
 FamixValueJavaInterpreter >> initializeStaticFieldsOf: typeInfo in: runtimeType [
 
-	typeInfo fieldsDo: [ :fieldInfo |
-		(fieldInfo isStatic and: [ fieldInfo initializer isNotNil ])
-			ifTrue: [ self initializeStaticField: fieldInfo in: runtimeType ] ]
+	typeInfo initializationMembersDo: [ :member |
+		member isStatic ifTrue: [
+			member isField
+				ifTrue: [
+					member initializer ifNotNil: [
+						self initializeStaticField: member in: runtimeType ] ]
+				ifFalse: [ self executeInitializer: member on: nil ] ] ]
 ]
 
 { #category : 'invoking' }
@@ -571,6 +741,44 @@ FamixValueJavaInterpreter >> instantiate: newExpression [
 	^ object
 ]
 
+{ #category : 'converting' }
+FamixValueJavaInterpreter >> integerConstantValueOf: expression [
+
+	| operand left right operator |
+	(expression isKindOf: FASTJavaIntegerLiteral) ifTrue: [ ^ expression primitiveValue asInteger ].
+	(expression isKindOf: FASTJavaCharacterLiteral) ifTrue: [ ^ expression primitiveValue first asInteger ].
+	(expression isKindOf: FASTJavaUnaryExpression) ifTrue: [
+		operand := self integerConstantValueOf: expression expression.
+		expression operator = '+' ifTrue: [ ^ operand ].
+		expression operator = '-' ifTrue: [ ^ operand negated ].
+		expression operator = '~' ifTrue: [ ^ operand bitInvert ] ].
+	(expression isKindOf: FASTJavaInfixOperation) ifTrue: [
+		left := self integerConstantValueOf: expression leftOperand.
+		right := self integerConstantValueOf: expression rightOperand.
+		operator := expression operator.
+		operator = '+' ifTrue: [ ^ left + right ].
+		operator = '-' ifTrue: [ ^ left - right ].
+		operator = '*' ifTrue: [ ^ left * right ].
+		operator = '/' ifTrue: [ ^ left quo: right ].
+		operator = '%' ifTrue: [ ^ left rem: right ].
+		operator = '<<' ifTrue: [ ^ left bitShift: (right bitAnd: 31) ].
+		operator = '>>' ifTrue: [ ^ left bitShift: (right bitAnd: 31) negated ].
+		operator = '>>>' ifTrue: [ ^ (left bitAnd: 16rFFFFFFFF) bitShift: (right bitAnd: 31) negated ].
+		operator = '&' ifTrue: [ ^ left bitAnd: right ].
+		operator = '|' ifTrue: [ ^ left bitOr: right ].
+		operator = '^' ifTrue: [ ^ left bitXor: right ] ].
+	self error: 'Not an integer constant expression'
+]
+
+{ #category : 'converting' }
+FamixValueJavaInterpreter >> integerValue: value isRepresentableIn: targetType [
+
+	targetType name = 'byte' ifTrue: [ ^ value between: -128 and: 127 ].
+	targetType name = 'short' ifTrue: [ ^ value between: -32768 and: 32767 ].
+	targetType name = 'char' ifTrue: [ ^ value between: 0 and: 65535 ].
+	^ false
+]
+
 { #category : 'invoking' }
 FamixValueJavaInterpreter >> invokeExplicitConstructorFrom: constructor on: object [
 
@@ -584,6 +792,20 @@ FamixValueJavaInterpreter >> invokeExplicitConstructorFrom: constructor on: obje
 		  executeConstructor: constructor invokedConstructor
 		  on: object
 		  with: arguments
+]
+
+{ #category : 'converting' }
+FamixValueJavaInterpreter >> isIntegerConstantExpression: expression [
+
+	(expression isKindOf: FASTJavaIntegerLiteral) ifTrue: [ ^ true ].
+	(expression isKindOf: FASTJavaCharacterLiteral) ifTrue: [ ^ true ].
+	(expression isKindOf: FASTJavaUnaryExpression) ifTrue: [
+		^ (#( '+' '-' '~' ) includes: expression operator) and: [ self isIntegerConstantExpression: expression expression ] ].
+	(expression isKindOf: FASTJavaInfixOperation) ifTrue: [
+		^ (#( '*' '/' '%' '+' '-' '<<' '>>' '>>>' '&' '^' '|' ) includes: expression operator) and: [
+			  (self isIntegerConstantExpression: expression leftOperand) and: [ self isIntegerConstantExpression: expression rightOperand ] ] ].
+
+	^ false
 ]
 
 { #category : 'testing' }
@@ -636,6 +858,51 @@ FamixValueJavaInterpreter >> isType: firstType moreSpecificThan: secondType for:
 					  self canWidenPrimitive: firstType to: secondType ] ] ].
 
 	^ false
+]
+
+{ #category : 'operations' }
+FamixValueJavaInterpreter >> javaNumericOperation: operator left: left right: right type: type [
+
+	| leftValue rightValue value |
+	leftValue := self numericOperandValue: left value.
+	rightValue := self numericOperandValue: right value.
+
+	(operator = '/' and: [ #( 'int' 'long' ) includes: type name ]) ifTrue: [
+		value := leftValue quo: rightValue.
+		^ self narrowPrimitiveValue: value from: type to: type ].
+
+	(operator = '%' and: [ #( 'int' 'long' ) includes: type name ]) ifTrue: [
+		value := leftValue rem: rightValue.
+		^ self narrowPrimitiveValue: value from: type to: type ].
+
+	value := self operate: operator with: left with: right.
+	^ self narrowPrimitiveValue: value from: type to: type
+]
+
+{ #category : 'operations' }
+FamixValueJavaInterpreter >> javaShiftOperation: operator left: left right: right [
+
+	| type leftValue distance width mask unsigned value |
+	type := self unaryNumericTypeOf: left.
+	leftValue := self numericOperandValue: left value.
+	distance := (self numericOperandValue: right value) asInteger.
+	width := type name = 'long'
+		         ifTrue: [ 64 ]
+		         ifFalse: [ 32 ].
+	distance := distance bitAnd: width - 1.
+
+	operator = '<<' ifTrue: [
+		value := leftValue bitShift: distance.
+		^ self narrowPrimitiveValue: value from: type to: type ].
+
+	operator = '>>' ifTrue: [
+		value := leftValue bitShift: 0 - distance.
+		^ self narrowPrimitiveValue: value from: type to: type ].
+
+	mask := (1 bitShift: width) - 1.
+	unsigned := leftValue bitAnd: mask.
+	value := unsigned bitShift: 0 - distance.
+	^ self narrowPrimitiveValue: value from: type to: type
 ]
 
 { #category : 'resolving' }
@@ -743,6 +1010,57 @@ FamixValueJavaInterpreter >> model: aFamixValueJavaModel [
 	nullValue := nil
 ]
 
+{ #category : 'converting' }
+FamixValueJavaInterpreter >> narrowCompoundAssignmentValue: value from: sourceType to: targetType [
+
+	((#( 'float' 'double' ) includes: sourceType name) and: [ #( 'byte' 'short' 'char' 'int' 'long' ) includes: targetType name ])
+		ifTrue: [ ^ self floatingValue: value narrowedToIntegralType: targetType ].
+
+	^ self narrowPrimitiveValue: value from: sourceType to: targetType
+]
+
+{ #category : 'converting' }
+FamixValueJavaInterpreter >> narrowPrimitiveValue: value from: sourceType to: targetType [
+
+	| targetName integerValue narrowed |
+	targetName := targetType name.
+	integerValue := self numericOperandValue: value.
+
+	narrowed := targetName = 'byte'
+		            ifTrue: [
+			            integerValue := integerValue asInteger bitAnd: 16rFF.
+			            integerValue >= 16r80
+				            ifTrue: [ integerValue - 16r100 ]
+				            ifFalse: [ integerValue ] ]
+		            ifFalse: [
+			            targetName = 'short'
+				            ifTrue: [
+					            integerValue := integerValue asInteger bitAnd: 16rFFFF.
+					            integerValue >= 16r8000
+						            ifTrue: [ integerValue - 16r10000 ]
+						            ifFalse: [ integerValue ] ]
+				            ifFalse: [
+					            targetName = 'char'
+						            ifTrue: [ Character value: (integerValue asInteger bitAnd: 16rFFFF) ]
+						            ifFalse: [
+							            targetName = 'int'
+								            ifTrue: [
+									            integerValue := integerValue asInteger bitAnd: 16rFFFFFFFF.
+									            integerValue >= 16r80000000
+										            ifTrue: [ integerValue - 16r100000000 ]
+										            ifFalse: [ integerValue ] ]
+								            ifFalse: [
+									            targetName = 'long'
+										            ifTrue: [
+											            integerValue := integerValue asInteger bitAnd: 16rFFFFFFFFFFFFFFFF.
+											            integerValue >= 16r8000000000000000
+												            ifTrue: [ integerValue - 16r10000000000000000 ]
+												            ifFalse: [ integerValue ] ]
+										            ifFalse: [ value ] ] ] ] ].
+
+	^ self newPrimitiveOfType: targetType value: narrowed
+]
+
 { #category : 'instance creation' }
 FamixValueJavaInterpreter >> newBoolean [
 
@@ -833,13 +1151,20 @@ FamixValueJavaInterpreter >> nullValue [
 ]
 
 { #category : 'operations' }
+FamixValueJavaInterpreter >> numericOperandValue: value [
+
+	^ value isCharacter
+		  ifTrue: [ value asInteger ]
+		  ifFalse: [ value ]
+]
+
+{ #category : 'operations' }
 FamixValueJavaInterpreter >> operate: operator with: value [
 
 	^ UnaryOperators
 		  at: operator
-		  ifPresent: [ :operation | operation value: value value ]
-		  ifAbsent: [
-		  FamixValueInterpreterUnknownOperator signalFor: operator ]
+		  ifPresent: [ :operation | operation value: (self numericOperandValue: value value) ]
+		  ifAbsent: [ FamixValueInterpreterUnknownOperator signalFor: operator ]
 ]
 
 { #category : 'operations' }
@@ -848,9 +1173,8 @@ FamixValueJavaInterpreter >> operate: operator with: left with: right [
 	^ BinaryOperators
 		  at: operator
 		  ifPresent: [ :operation |
-		  operation value: left value value: right value ]
-		  ifAbsent: [
-		  FamixValueInterpreterUnknownOperator signalFor: operator ]
+		  operation value: (self numericOperandValue: left value) value: (self numericOperandValue: right value) ]
+		  ifAbsent: [ FamixValueInterpreterUnknownOperator signalFor: operator ]
 ]
 
 { #category : 'invoking' }
@@ -1026,12 +1350,8 @@ FamixValueJavaInterpreter >> visitFASTJavaAssignmentExpression: assignment [
 	rhs := assignment expression accept: self.
 
 	newValue := assignment operator = '='
-		            ifTrue: [ self convert: rhs to: location type ]
-		            ifFalse: [
-			            self
-				            compoundAssignment: assignment operator
-				            location: location
-				            right: rhs ].
+		            ifTrue: [ self convertAssignment: rhs from: assignment expression to: location type ]
+		            ifFalse: [ self compoundAssignment: assignment operator location: location right: rhs ].
 
 	location value: newValue.
 	^ newValue
@@ -1044,6 +1364,28 @@ FamixValueJavaInterpreter >> visitFASTJavaBooleanLiteral: literal [
 ]
 
 { #category : 'visiting' }
+FamixValueJavaInterpreter >> visitFASTJavaBreakStatement: aFASTJavaBreakStatement [
+
+	^ FamixValueInterpreterBreak new
+]
+
+{ #category : 'visiting' }
+FamixValueJavaInterpreter >> visitFASTJavaCastExpression: expression [
+
+	| value targetType |
+	value := expression expression accept: self.
+	targetType := self resolveType: expression type.
+
+	value == self nullValue ifTrue: [ ^ self convertNullTo: targetType ].
+
+	(value isOfPrimitiveType and: [ targetType isPrimitiveType ]) ifTrue: [ ^ self castPrimitive: value to: targetType ].
+
+	(value isOfObject and: [ targetType isPrimitiveType not ]) ifTrue: [ ^ self castReference: value to: targetType ].
+
+	^ self unsupportedConversionOf: value to: targetType
+]
+
+{ #category : 'visiting' }
 FamixValueJavaInterpreter >> visitFASTJavaCharacterLiteral: literal [
 
 	^ self newCharacter value: literal primitiveValue first
@@ -1053,6 +1395,35 @@ FamixValueJavaInterpreter >> visitFASTJavaCharacterLiteral: literal [
 FamixValueJavaInterpreter >> visitFASTJavaClassProperty: property [
 
 	^ (self locationOfProperty: property) value
+]
+
+{ #category : 'visiting' }
+FamixValueJavaInterpreter >> visitFASTJavaConditionalExpression: expression [
+
+	(expression condition accept: self) value ifTrue: [ ^ expression thenPart accept: self ].
+
+	^ expression elsePart accept: self
+]
+
+{ #category : 'visiting' }
+FamixValueJavaInterpreter >> visitFASTJavaContinueStatement: aFASTJavaContinueStatement [
+
+	^ FamixValueInterpreterContinue new
+]
+
+{ #category : 'visiting' }
+FamixValueJavaInterpreter >> visitFASTJavaDoWhileStatement: aFASTJavaDoWhileStatement [
+
+	| continue |
+	continue := true.
+	[ continue ] whileTrue: [
+		| result |
+		result := aFASTJavaDoWhileStatement body accept: self.
+		(result isKindOf: FamixValueInterpreterControlFlow) ifTrue: [
+			result isReturn ifTrue: [ ^ result ].
+			result isBreak ifTrue: [ ^ nil ] ].
+		continue := (aFASTJavaDoWhileStatement condition accept: self) value ].
+	^ nil
 ]
 
 { #category : 'visiting' }
@@ -1089,17 +1460,39 @@ FamixValueJavaInterpreter >> visitFASTJavaFloatLiteral: literal [
 ]
 
 { #category : 'visiting' }
+FamixValueJavaInterpreter >> visitFASTJavaForEachStatement: statement [
+
+	| collection variableType variableName |
+	collection := statement list accept: self.
+	variableType := self resolveType: statement type.
+	variableName := statement fieldname name.
+
+	^ self inScopeDo: [
+		  | location |
+		  self frame declare: variableName type: variableType.
+		  location := self frame resolveLocation: variableName.
+		  collection value do: [ :element |
+			  | result |
+			  location value: (self convert: element value to: variableType).
+			  result := statement body accept: self.
+			  (result isKindOf: FamixValueInterpreterControlFlow) ifTrue: [
+				  result isReturn ifTrue: [ ^ result ].
+				  result isBreak ifTrue: [ ^ nil ] ] ].
+		  nil ]
+]
+
+{ #category : 'visiting' }
 FamixValueJavaInterpreter >> visitFASTJavaForStatement: aFASTJavaForStatement [
 
 	^ self inScopeDo: [
-		  aFASTJavaForStatement initializer accept: self.
-		  [ (aFASTJavaForStatement condition accept: self) value ]
-			  whileTrue: [
-				  | result |
-				  result := aFASTJavaForStatement body accept: self.
-				  (result isKindOf: FamixValueInterpreterControlFlow) ifTrue: [
-					  ^ result ].
-				  aFASTJavaForStatement incrementor accept: self ].
+		  aFASTJavaForStatement initializer ifNotNil: [ :initializer | initializer accept: self ].
+		  [ aFASTJavaForStatement condition ifNil: [ true ] ifNotNil: [ :condition | (condition accept: self) value ] ] whileTrue: [
+			  | result |
+			  result := aFASTJavaForStatement body accept: self.
+			  (result isKindOf: FamixValueInterpreterControlFlow) ifTrue: [
+				  result isReturn ifTrue: [ ^ result ].
+				  result isBreak ifTrue: [ ^ nil ] ].
+			  aFASTJavaForStatement incrementor ifNotNil: [ :incrementor | incrementor accept: self ] ].
 		  nil ]
 ]
 
@@ -1182,6 +1575,8 @@ FamixValueJavaInterpreter >> visitFASTJavaNewArray: newArray [
 		             dimensions: newArray arguments size;
 		             yourself.
 
+	newArray initializer ifNotNil: [ :initializer | ^ self allocateArrayOf: arrayType initializedBy: initializer ].
+
 	^ self allocateArrayOf: arrayType dimensions: newArray arguments
 ]
 
@@ -1209,31 +1604,30 @@ FamixValueJavaInterpreter >> visitFASTJavaReturnStatement: aFASTJavaReturnStatem
 { #category : 'visiting' }
 FamixValueJavaInterpreter >> visitFASTJavaStatementBlock: aFASTJavaStatementBlock [
 
-	aFASTJavaStatementBlock statements do: [ :statement |
-		| result |
-		result := statement accept: self.
-		(result isKindOf: FamixValueInterpreterControlFlow) ifTrue: [
-			^ result ] ].
-	^ nil
+	^ self inScopeDo: [
+		  self executeStatementsOf: aFASTJavaStatementBlock ]
+]
+
+{ #category : 'visiting' }
+FamixValueJavaInterpreter >> visitFASTJavaThis: aFASTJavaThis [
+
+	^ self frame receiver
 ]
 
 { #category : 'visiting' }
 FamixValueJavaInterpreter >> visitFASTJavaUnaryExpression: expression [
 
-	| operand |
-	(#( '++' '--' ) includes: expression operator) ifTrue: [
-		^ self visitIncrementOrDecrement: expression ].
+	| operand type result |
+	(#( '++' '--' ) includes: expression operator) ifTrue: [ ^ self visitIncrementOrDecrement: expression ].
 
 	expression operator = '!' ifTrue: [
-		^ self newBoolean value: (self
-				   operate: expression operator
-				   with: (expression expression accept: self)) ].
+		^ self newBoolean value: (self operate: expression operator with: (expression expression accept: self)) ].
 
 	operand := expression expression accept: self.
+	type := self unaryNumericTypeOf: operand.
+	result := self operate: expression operator with: operand.
 
-	^ self
-		  newPrimitiveOfType: (self unaryNumericTypeOf: operand)
-		  value: (self operate: expression operator with: operand)
+	^ self narrowPrimitiveValue: result from: type to: type
 ]
 
 { #category : 'visiting' }
@@ -1257,26 +1651,25 @@ FamixValueJavaInterpreter >> visitFASTJavaVariableExpression: expression [
 { #category : 'visiting' }
 FamixValueJavaInterpreter >> visitFASTJavaWhileStatement: aFASTJavaWhileStatement [
 
-	[ (aFASTJavaWhileStatement condition accept: self) value ]
-		whileTrue: [
-			| result |
-			result := aFASTJavaWhileStatement body accept: self.
-			(result isKindOf: FamixValueInterpreterControlFlow) ifTrue: [
-				^ result ] ].
+	[ (aFASTJavaWhileStatement condition accept: self) value ] whileTrue: [
+		| result |
+		result := aFASTJavaWhileStatement body accept: self.
+		(result isKindOf: FamixValueInterpreterControlFlow) ifTrue: [
+			result isReturn ifTrue: [ ^ result ].
+			result isBreak ifTrue: [ ^ nil ] ] ].
 	^ nil
 ]
 
 { #category : 'visiting - helpers' }
 FamixValueJavaInterpreter >> visitIncrementOrDecrement: expression [
 
-	| location oldValue newValue |
+	| location oldValue promotedType result newValue |
 	location := self locationOf: expression expression.
 	oldValue := location value.
-
-	newValue := self
-		            newPrimitiveOfType: oldValue runtimeType
-		            value:
-		            (self operate: expression operator with: oldValue).
+	promotedType := self unaryNumericTypeOf: oldValue.
+	result := self operate: expression operator with: oldValue.
+	result := self narrowPrimitiveValue: result from: promotedType to: promotedType.
+	newValue := self narrowPrimitiveValue: result value from: promotedType to: location type.
 
 	location value: newValue.
 
@@ -1288,15 +1681,20 @@ FamixValueJavaInterpreter >> visitIncrementOrDecrement: expression [
 { #category : 'visiting - helpers' }
 FamixValueJavaInterpreter >> visitNumericOperation: expression [
 
-	| left right type value |
+	| left right type |
 	left := expression leftOperand accept: self.
 	right := expression rightOperand accept: self.
 
+	(#( '<<' '>>' '>>>' ) includes: expression operator) ifTrue: [
+		^ self javaShiftOperation: expression operator left: left right: right ].
+
 	type := self binaryNumericTypeOf: left with: right.
 
-	value := self operate: expression operator with: left with: right.
-
-	^ self newPrimitiveOfType: type value: value
+	^ self
+		  javaNumericOperation: expression operator
+		  left: left
+		  right: right
+		  type: type
 ]
 
 { #category : 'visiting - helpers' }

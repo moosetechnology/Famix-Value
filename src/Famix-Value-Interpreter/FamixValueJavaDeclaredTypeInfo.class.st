@@ -190,6 +190,21 @@ FamixValueJavaDeclaredTypeInfo >> fieldsDo: aBlock [
 	fieldsByName valuesDo: aBlock
 ]
 
+{ #category : 'enumerating' }
+FamixValueJavaDeclaredTypeInfo >> initializationMembersDo: aBlock [
+
+	fastDeclaration declarations do: [ :declaration |
+		declaration isVarDeclStatement
+			ifTrue: [
+				declaration declarators do: [ :declarator |
+					self fieldNamed: declarator variable name ifPresent: aBlock ] ]
+			ifFalse: [
+				(declaration isKindOf: FASTJavaInitializer) ifTrue: [
+					aBlock value: (FamixValueJavaInitializerInfo new
+							 declaringType: self;
+							 fastInitializer: declaration) ] ] ]
+]
+
 { #category : 'initialization' }
 FamixValueJavaDeclaredTypeInfo >> initialize [
 

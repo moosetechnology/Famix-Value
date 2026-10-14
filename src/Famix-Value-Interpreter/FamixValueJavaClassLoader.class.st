@@ -565,9 +565,16 @@ FamixValueJavaClassLoader >> linkReferencesOf: executable [
 { #category : 'linking' }
 FamixValueJavaClassLoader >> linkReferencesOfFieldsIn: typeInfo [
 
-	typeInfo fieldsDo: [ :fieldInfo |
-		fieldInfo initializer ifNotNil: [ :initializer |
-			self linkReferencesIn: initializer in: fieldInfo ] ]
+	typeInfo initializationMembersDo: [ :member |
+		member isField
+			ifTrue: [
+				member initializer ifNotNil: [ :initializer |
+					self linkReferencesIn: initializer in: member ] ]
+			ifFalse: [
+				member isInitializer ifTrue: [
+					self
+						linkReferencesIn: member fastInitializer statementBlock
+						in: member ] ] ]
 ]
 
 { #category : 'resolving' }

@@ -284,6 +284,26 @@ FamixValueJavaInterpreterTest >> testArrayElementsAreIndependentLocations [
 ]
 
 { #category : 'tests' }
+FamixValueJavaInterpreterTest >> testArrayInitializer [
+
+	| method result |
+	method := self parseMethod:
+		          'static int test() { int[] values = new int[] { 2, 3, 5 }; return values[0] + values[1] + values[2]; }'.
+	result := interpreter execute: method.
+	self assert: result value equals: 10
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testArrayInitializerUsesAssignmentConversion [
+
+	| method result |
+	method := self parseMethod:
+		          'static int test() { byte[] values = new byte[] { 1, 2, 127 }; return values[0] + values[1] + values[2]; }'.
+	result := interpreter execute: method.
+	self assert: result value equals: 130
+]
+
+{ #category : 'tests' }
 FamixValueJavaInterpreterTest >> testAssignmentChangesVariable [
 
 	| method result |
@@ -296,6 +316,58 @@ FamixValueJavaInterpreterTest >> testAssignmentChangesVariable [
 	result := interpreter execute: method.
 
 	self assert: result value equals: 42
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testAssignmentConversionNarrowsIntegerConstantExpressions [
+
+	| method result |
+	method := self parseMethod:
+		          'static int test() { byte a = 1 + 2; byte b = 1 << 3; byte c = ~0; byte d = (120 / 2) + 7; return a + b + c + d; }'.
+	result := interpreter execute: method.
+	self assert: result value equals: 77
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testAssignmentConversionNarrowsRepresentableIntegerConstants [
+
+	| method result |
+	method := self parseMethod: 'static int test() { byte b = 127; b = -128; short s = 32767; char c = 65535; return b + s + c; }'.
+	result := interpreter execute: method.
+	self assert: result value equals: 98174
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testAssignmentConversionNarrowsUnsignedShiftConstantExpression [
+
+	| method result |
+	method := self parseMethod: 'static int test() { byte value = 256 >>> 2; return value; }'.
+	result := interpreter execute: method.
+	self assert: result value equals: 64
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testAssignmentConversionRejectsNonConstantIntegerExpression [
+
+	| method |
+	method := self parseMethod: 'static int test() { int i = 1; byte b = i + 1; return b; }'.
+	self should: [ interpreter execute: method ] raise: Error
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testAssignmentConversionRejectsNonConstantIntegerVariable [
+
+	| method |
+	method := self parseMethod: 'static int test() { int i = 1; byte b = i; return b; }'.
+	self should: [ interpreter execute: method ] raise: Error
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testAssignmentConversionRejectsOutOfRangeIntegerConstant [
+
+	| method |
+	method := self parseMethod: 'static int test() { byte b = 128; return b; }'.
+	self should: [ interpreter execute: method ] raise: Error
 ]
 
 { #category : 'tests' }
@@ -331,6 +403,23 @@ FamixValueJavaInterpreterTest >> testAssignmentWidensIntToLong [
 ]
 
 { #category : 'tests' }
+FamixValueJavaInterpreterTest >> testBooleanCompoundAssignments [
+
+	| method result |
+	method := self parseMethod: 'static boolean test() {
+		boolean b = true;
+		b &= false;
+		b |= true;
+		b ^= true;
+		return b;
+	}'.
+
+	result := interpreter execute: method.
+
+	self deny: result value
+]
+
+{ #category : 'tests' }
 FamixValueJavaInterpreterTest >> testBooleanOperationHasBooleanType [
 
 	| method result |
@@ -342,6 +431,90 @@ FamixValueJavaInterpreterTest >> testBooleanOperationHasBooleanType [
 
 	self assert: result value.
 	self assert: result type name equals: 'boolean'
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testBreakAffectsNearestLoop [
+
+	| method result |
+	method := self parseMethod: 'static int test() {
+		int count = 0;
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
+				if (j == 1) break;
+				count++;
+			}
+		}
+		return count;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: 3
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testBreakInWhileLoop [
+
+	| method result |
+	method := self parseMethod: 'static int test() {
+		int i = 0;
+		while (i < 10) {
+			i++;
+			if (i == 4) break;
+		}
+		return i;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: 4
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testByteIncrementWrapsAndPreservesType [
+
+	| method result |
+	method := self parseMethod: 'static int test() { byte b = 127; b++; return b; }'.
+	result := interpreter execute: method.
+	self assert: result value equals: -128
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testCastStaticTypeParticipatesInNumericPromotion [
+
+	| method result |
+	method := self parseMethod: 'static long test() {
+		return (byte) 1 + 2L;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: 3.
+	self assert: result runtimeType name equals: 'long'
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testCharacterParticipatesInNumericAddition [
+
+	| method result |
+	method := self parseMethod: 'static int test() {
+		return ''a'' + 1;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: 98.
+	self assert: result type name equals: 'int'
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testCharacterWideningProducesNumericValue [
+
+	| method result |
+	method := self parseMethod: 'static int test() { char c = ''A''; int i = c; return i; }'.
+	result := interpreter execute: method.
+	self assert: result value equals: 65
 ]
 
 { #category : 'tests' }
@@ -621,6 +794,205 @@ FamixValueJavaInterpreterTest >> testCompilationUnitWithoutPackageHasEmptyPackag
 ]
 
 { #category : 'tests' }
+FamixValueJavaInterpreterTest >> testCompoundAssignmentFloatingToByteSaturatesThenNarrows [
+
+	| method result |
+	method := self parseMethod: 'static int test() { byte b = 1; b += 1.0e30; return b; }'.
+	result := interpreter execute: method.
+	self assert: result value equals: -1
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testCompoundAssignmentFloatingToIntSaturates [
+
+	| method result |
+	method := self parseMethod: 'static int test() { int i = 1; i += 1.0e30; return i; }'.
+	result := interpreter execute: method.
+	self assert: result value equals: 2147483647
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testCompoundAssignmentNarrowsLongToInt [
+
+	| method result |
+	method := self parseMethod: 'static int test() {
+		int x = 1;
+		x += 2L;
+		return x;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: 3.
+	self assert: result type name equals: 'int'
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testCompoundAssignmentNarrowsOverflowingLongToInt [
+
+	| method result |
+	method := self parseMethod: 'static int test() {
+		int i = 2147483647;
+		i += 1L;
+		return i;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: -2147483648.
+	self assert: result type name equals: 'int'
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testCompoundAssignmentNarrowsToByte [
+
+	| method result |
+	method := self parseMethod: 'static int test() {
+		byte b;
+		b = (byte) 1;
+		b += 1;
+		return b;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: 2
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testCompoundAssignmentNarrowsToChar [
+
+	| method result |
+	method := self parseMethod: 'static boolean test() {
+		char c = ''a'';
+		c += 1;
+		return c == ''b'';
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testCompoundAssignmentUsesJavaDivision [
+
+	| method result |
+	method := self parseMethod: 'static int test() {
+		int x = -7;
+		x /= 3;
+		return x;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: -2
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testCompoundAssignmentUsesMaskedShift [
+
+	| method result |
+	method := self parseMethod: 'static int test() {
+		int x = -1;
+		x >>>= 1;
+		return x;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: 2147483647
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testConditionalExpressionByteAndIntConstantUsesByteType [
+
+	| class method result |
+	class := self parseClass:
+		         'class Test { static int pick(byte x) { return 1; } static int pick(int x) { return 2; } static int test() { return pick(true ? (byte) 1 : 2); } }'.
+	method := class declarations detect: [ :each | each name = 'test' ].
+	result := interpreter execute: method.
+	self assert: result value equals: 1
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testConditionalExpressionByteAndShortUsesShortType [
+
+	| unit class method result |
+	unit := self parseCompilationUnit:
+		        'class Test { static int pick(short x) { return 1; } static int pick(int x) { return 2; } static int test() { byte b = 1; short s = 2; return pick(true ? b : s); } }'.
+	self expandFamixModelFrom: unit.
+	interpreter classLoader addCompilationUnit: unit.
+	interpreter classLoader link.
+	class := unit classDeclarations detect: [ :each | each name = 'Test' ].
+	method := class declarations detect: [ :each | each name = 'test' ].
+	result := interpreter execute: method.
+	self assert: result value equals: 1
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testConditionalExpressionConvertsSelectedNumericBranchToExpressionType [
+
+	| method result |
+	method := self parseMethod: 'static long test() { return true ? 1 : 2L; }'.
+	result := interpreter execute: method.
+	self assert: result value equals: 1.
+	self assert: result type name equals: 'long'
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testConditionalExpressionEvaluatesElseBranch [
+
+	| method result |
+	method := self parseMethod: 'static int test() { int i = 0; int value = false ? 10 : ++i; return i * 10 + value; }'.
+	result := interpreter execute: method.
+	self assert: result value equals: 11
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testConditionalExpressionEvaluatesOnlySelectedBranch [
+
+	| method result |
+	method := self parseMethod: 'static int test() { int i = 0; int value = true ? ++i : ++i; return i * 10 + value; }'.
+	result := interpreter execute: method.
+	self assert: result value equals: 11
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testConditionalExpressionNullAndReferenceUsesReferenceType [
+
+	| unit class method result |
+	unit := self parseCompilationUnit:
+		        'class A { } class B { } class Test { static int pick(A x) { return 1; } static int pick(B x) { return 2; } static int test() { return pick(true ? null : new A()); } }'.
+	self expandFamixModelFrom: unit.
+	interpreter classLoader addCompilationUnit: unit.
+	interpreter classLoader link.
+	class := unit classDeclarations detect: [ :each | each name = 'Test' ].
+	method := class declarations detect: [ :each | each name = 'test' ].
+	result := interpreter execute: method.
+	self assert: result value equals: 1
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testConditionalExpressionStaticTypeParticipatesInMethodResolution [
+
+	| unit class method result |
+	unit := self parseCompilationUnit: '
+class Test {
+	static int pick(int x) { return 1; }
+	static int pick(long x) { return 2; }
+	static int test() { return pick(true ? 1 : 2); }
+}'.
+	self expandFamixModelFrom: unit.
+	interpreter classLoader addCompilationUnit: unit.
+	interpreter classLoader link.
+	class := unit classDeclarations detect: [ :each | each name = 'Test' ].
+	method := class declarations detect: [ :each | each name = 'test' ].
+	result := interpreter execute: method.
+	self assert: result value equals: 1
+]
+
+{ #category : 'tests' }
 FamixValueJavaInterpreterTest >> testConstructorInitializesObject [
 
 	| unit class method result |
@@ -654,6 +1026,81 @@ class Test {
 ]
 
 { #category : 'tests' }
+FamixValueJavaInterpreterTest >> testContinueInDoWhileEvaluatesCondition [
+
+	| method result |
+	method := self parseMethod: 'static int test() {
+		int i = 0;
+		int count = 0;
+		do {
+			i++;
+			if (i < 3) continue;
+			count++;
+		} while (i < 4);
+		return count;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: 2
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testContinueInForLoopExecutesIncrementor [
+
+	| method result |
+	method := self parseMethod: 'static int test() {
+		int count = 0;
+		for (int i = 0; i < 5; i++) {
+			if (i < 3) continue;
+			count++;
+		}
+		return count;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: 2
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testContinueInWhileLoop [
+
+	| method result |
+	method := self parseMethod: 'static int test() {
+		int i = 0;
+		int sum = 0;
+		while (i < 5) {
+			i++;
+			if (i == 3) continue;
+			sum = sum + i;
+		}
+		return sum;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: 12
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testDoWhileExecutesBodyBeforeCondition [
+
+	| method result |
+	method := self parseMethod: 'static int test() {
+		int i = 0;
+		do {
+			i++;
+		} while (false);
+		return i;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: 1
+]
+
+{ #category : 'tests' }
 FamixValueJavaInterpreterTest >> testDoubleArithmeticProducesDouble [
 
 	| method result |
@@ -665,6 +1112,54 @@ FamixValueJavaInterpreterTest >> testDoubleArithmeticProducesDouble [
 
 	self assert: result value equals: 3.5.
 	self assert: result type name equals: 'double'
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testEnhancedForContinueAndBreak [
+
+	| method result |
+	method := self parseMethod:
+		          'static int test() { int[] values = new int[5]; values[0] = 1; values[1] = 2; values[2] = 3; values[3] = 4; values[4] = 5; int sum = 0; for (int value : values) { if (value == 2) continue; if (value == 4) break; sum += value; } return sum; }'.
+	result := interpreter execute: method.
+	self assert: result value equals: 4
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testEnhancedForOverArray [
+
+	| method result |
+	method := self parseMethod:
+		          'static int test() { int[] values = new int[3]; values[0] = 2; values[1] = 3; values[2] = 5; int sum = 0; for (int value : values) { sum += value; } return sum; }'.
+	result := interpreter execute: method.
+	self assert: result value equals: 10
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testEnhancedForOverArrayInitializer [
+
+	| method result |
+	method := self parseMethod:
+		          'static int test() { int sum = 0; for (int value : new int[] { 2, 3, 5 }) { sum += value; } return sum; }'.
+	result := interpreter execute: method.
+	self assert: result value equals: 10
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testEnhancedForPropagatesReturn [
+
+	| method result |
+	method := self parseMethod:
+		          'static int test() { int[] values = new int[3]; values[0] = 1; values[1] = 7; values[2] = 9; for (int value : values) { if (value == 7) return value; } return 0; }'.
+	result := interpreter execute: method.
+	self assert: result value equals: 7
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testEnhancedForVariableDoesNotLeak [
+
+	| method |
+	method := self parseMethod: 'static int test() { int[] values = new int[1]; for (int value : values) { } return value; }'.
+	self should: [ interpreter execute: method ] raise: Error
 ]
 
 { #category : 'tests' }
@@ -777,6 +1272,26 @@ class Test {
 	result := interpreter execute: method.
 
 	self assert: result value equals: 22
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testExplicitConstructorRunsInstanceInitializerBlockOnce [
+
+	| class object method result |
+	class := self parseClass: 'class Test {
+		int x;
+		{ x = x + 1; }
+		Test() { this(42); }
+		Test(int ignored) { }
+		static Test create() { return new Test(); }
+		int test() { return x; }
+	}'.
+	object := interpreter execute: (class declarations detect: [ :each |
+			           each isMethodEntity and: [ each name = 'create' ] ]).
+	method := class declarations detect: [ :each |
+		          each isMethodEntity and: [ each name = 'test' ] ].
+	result := interpreter execute: method on: object with: #(  ).
+	self assert: result value equals: 1
 ]
 
 { #category : 'tests' }
@@ -898,6 +1413,80 @@ FamixValueJavaInterpreterTest >> testFloatLiteralIsFloat [
 
 	self assert: result value equals: 2.5.
 	self assert: result type name equals: 'float'
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testFloatingCastToByteUsesIntThenNarrows [
+
+	| method result |
+	method := self parseMethod: 'static int test() {
+		return (byte) 130.9;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: -126
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testFloatingCastToIntSaturates [
+
+	| method result |
+	method := self parseMethod: 'static int test() {
+		return (int) 1.0e30;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: 2147483647
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testFloatingCastToIntTruncatesTowardZero [
+
+	| method result |
+	method := self parseMethod: 'static int test() {
+		return (int) -7.9;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: -7
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testForLoopMayOmitAllExpressions [
+
+	| method result |
+	method := self parseMethod: 'static int test() {
+		int i = 0;
+		for (;;) {
+			i++;
+			if (i == 3) break;
+		}
+		return i;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: 3
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testForLoopMayOmitInitializerAndIncrementor [
+
+	| method result |
+	method := self parseMethod: 'static int test() {
+		int i = 0;
+		for (; i < 3;) {
+			i++;
+		}
+		return i;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: 3
 ]
 
 { #category : 'tests' }
@@ -1078,6 +1667,44 @@ class Test {
 ]
 
 { #category : 'tests' }
+FamixValueJavaInterpreterTest >> testInstanceInitializerBlockRuns [
+
+	| class object method result |
+	class := self parseClass: 'class Test {
+		int x = 1;
+		{ x = 2; }
+		static Test create() { return new Test(); }
+		int test() { return x; }
+	}'.
+	object := interpreter execute: (class declarations detect: [ :each |
+			           each isMethodEntity and: [ each name = 'create' ] ]).
+	method := class declarations detect: [ :each |
+		          each isMethodEntity and: [ each name = 'test' ] ].
+	result := interpreter execute: method on: object with: #(  ).
+	self assert: result value equals: 2
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testInstanceInitializersRunInDeclarationOrder [
+
+	| class object method result |
+	class := self parseClass: 'class Test {
+		int x = 1;
+		{ x = x + 1; }
+		int y = x + 1;
+		{ y = y + 1; }
+		static Test create() { return new Test(); }
+		int test() { return y; }
+	}'.
+	object := interpreter execute: (class declarations detect: [ :each |
+			           each isMethodEntity and: [ each name = 'create' ] ]).
+	method := class declarations detect: [ :each |
+		          each isMethodEntity and: [ each name = 'test' ] ].
+	result := interpreter execute: method on: object with: #(  ).
+	self assert: result value equals: 4
+]
+
+{ #category : 'tests' }
 FamixValueJavaInterpreterTest >> testInstanceMethodInvocation [
 
 	| class method result |
@@ -1125,6 +1752,32 @@ FamixValueJavaInterpreterTest >> testInstanceMethodInvocationWithArguments [
 ]
 
 { #category : 'tests' }
+FamixValueJavaInterpreterTest >> testIntegerAdditionWraps [
+
+	| method result |
+	method := self parseMethod: 'static int test() {
+		return 2147483647 + 1;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: -2147483648
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testIntegerDivisionTruncatesTowardZero [
+
+	| method result |
+	method := self parseMethod: 'static int test() {
+		return -7 / 3;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: -2
+]
+
+{ #category : 'tests' }
 FamixValueJavaInterpreterTest >> testIntegerLiteralHasIntegerType [
 
 	| method result |
@@ -1150,6 +1803,32 @@ FamixValueJavaInterpreterTest >> testIntegerLiteralIsInt [
 
 	self assert: result value equals: 2.
 	self assert: result type name equals: 'int'
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testIntegerRemainderHasDividendSign [
+
+	| method result |
+	method := self parseMethod: 'static int test() {
+		return -7 % 3;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: -1
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testIntegerShiftDistanceIsMasked [
+
+	| method result |
+	method := self parseMethod: 'static int test() {
+		return 1 << 32;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: 1
 ]
 
 { #category : 'tests' }
@@ -1274,6 +1953,31 @@ interface I {
 	self assert: methodInfo isStatic.
 	self deny: methodInfo isAbstract.
 	self deny: methodInfo isDefault
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testInvalidReferenceDowncastFailsAtRuntime [
+
+	| unit class method |
+	unit := self parseCompilationUnit: '
+class Parent {}
+class Child extends Parent {}
+class Test {
+	static int test() {
+		Parent value = new Parent();
+		Child child = (Child) value;
+		return 1;
+	}
+}'.
+
+	self expandFamixModelFrom: unit.
+	interpreter classLoader addCompilationUnit: unit.
+	interpreter classLoader link.
+
+	class := unit classDeclarations detect: [ :each | each name = 'Test' ].
+	method := class declarations detect: [ :each | each name = 'test' ].
+
+	self should: [ interpreter execute: method ] raise: Error
 ]
 
 { #category : 'tests' }
@@ -1567,6 +2271,19 @@ FamixValueJavaInterpreterTest >> testLongLiteralIsLong [
 
 	self assert: result value equals: 2.
 	self assert: result type name equals: 'long'
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testLongShiftDistanceIsMasked [
+
+	| method result |
+	method := self parseMethod: 'static long test() {
+		return 1L << 64;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: 1
 ]
 
 { #category : 'tests' }
@@ -1971,6 +2688,36 @@ FamixValueJavaInterpreterTest >> testMultidimensionalPrimitiveArray [
 ]
 
 { #category : 'tests' }
+FamixValueJavaInterpreterTest >> testNestedArrayInitializer [
+
+	| method result |
+	method := self parseMethod:
+		          'static int test() { int[][] values = new int[][] { { 1, 2 }, { 3, 4 } }; return values[0][1] + values[1][0]; }'.
+	result := interpreter execute: method.
+	self assert: result value equals: 5
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testNestedBlockLocalDoesNotShadowFieldAfterBlock [
+
+	| class object method result |
+	class := self parseClass: 'class Test {
+		int x = 7;
+		static Test create() { return new Test(); }
+		int test() {
+			{ int x = 42; }
+			return x;
+		}
+	}'.
+	object := interpreter execute:
+		          (class declarations detect: [ :each |
+			           each name = 'create' ]).
+	method := class declarations detect: [ :each | each name = 'test' ].
+	result := interpreter execute: method on: object with: #(  ).
+	self assert: result value equals: 7
+]
+
+{ #category : 'tests' }
 FamixValueJavaInterpreterTest >> testNewObjectHasDefaultFieldValues [
 
 	| class method result |
@@ -2011,10 +2758,9 @@ FamixValueJavaInterpreterTest >> testNotEquals [
 FamixValueJavaInterpreterTest >> testNullIsUnique [
 
 	| method result |
-	self skip. "TODO"
 	method := self parseMethod: 'static boolean test() {
-		Object a = null;
-		Object b = null;
+		int[] a = null;
+		int[] b = null;
 		return a == b;
 	}'.
 
@@ -2032,6 +2778,31 @@ FamixValueJavaInterpreterTest >> testNullLiteralReturnsUniqueNull [
 	result := literal accept: interpreter.
 
 	self assert: result identicalTo: interpreter nullValue
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testNullReferenceCastPreservesNull [
+
+	| unit class method result |
+	unit := self parseCompilationUnit: '
+class Parent {}
+class Child extends Parent {}
+class Test {
+	static boolean test() {
+		Parent value = null;
+		return (Child) value == null;
+	}
+}'.
+
+	self expandFamixModelFrom: unit.
+	interpreter classLoader addCompilationUnit: unit.
+	interpreter classLoader link.
+
+	class := unit classDeclarations detect: [ :each | each name = 'Test' ].
+	method := class declarations detect: [ :each | each name = 'test' ].
+	result := interpreter execute: method.
+
+	self assert: result value
 ]
 
 { #category : 'tests' }
@@ -2167,11 +2938,10 @@ FamixValueJavaInterpreterTest >> testPrimitiveAssignmentDoesNotAlias [
 	self assert: result value equals: 1
 ]
 
-{ #category : 'accessing' }
+{ #category : 'tests' }
 FamixValueJavaInterpreterTest >> testPrimitiveFieldsHaveJavaDefaultValues [
 
-	| class |
-	self skip. "TODO"
+	| class create object getters expectedValues expectedTypes |
 	class := self parseClass: 'class Defaults {
 		boolean z;
 		byte b;
@@ -2182,22 +2952,37 @@ FamixValueJavaInterpreterTest >> testPrimitiveFieldsHaveJavaDefaultValues [
 		float f;
 		double d;
 
-		int testBoolean() {
-			return this.z ? 1 : 0;
-		}
+		static Defaults create() { return new Defaults(); }
+		boolean getBoolean() { return z; }
+		byte getByte() { return b; }
+		short getShort() { return s; }
+		int getInt() { return i; }
+		long getLong() { return l; }
+		char getChar() { return c; }
+		float getFloat() { return f; }
+		double getDouble() { return d; }
+	}'.
 
-		int testByte() {
-			return this.b;
-		}
+	create := class declarations detect: [ :each | each isMethodEntity and: [ each name = 'create' ] ].
+	object := interpreter execute: create.
+	getters := #( 'getBoolean' 'getByte' 'getShort' 'getInt' 'getLong' 'getChar' 'getFloat' 'getDouble' ).
+	expectedValues := {
+		                  false.
+		                  0.
+		                  0.
+		                  0.
+		                  0.
+		                  Character null.
+		                  0.0.
+		                  0.0 }.
+	expectedTypes := #( 'boolean' 'byte' 'short' 'int' 'long' 'char' 'float' 'double' ).
 
-		int testShort() {
-			return this.s;
-		}
-
-		int testInt() {
-			return this.i;
-		}
-	}'
+	getters withIndexDo: [ :getterName :index |
+		| method result |
+		method := class declarations detect: [ :each | each isMethodEntity and: [ each name = getterName ] ].
+		result := interpreter execute: method on: object with: #(  ).
+		self assert: result value equals: (expectedValues at: index).
+		self assert: result type name equals: (expectedTypes at: index) ]
 ]
 
 { #category : 'tests' }
@@ -2214,6 +2999,19 @@ FamixValueJavaInterpreterTest >> testPrimitiveIncrementDoesNotAlias [
 	result := interpreter execute: method.
 
 	self assert: result value equals: 1
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testPrimitiveNarrowingCast [
+
+	| method result |
+	method := self parseMethod: 'static int test() {
+		return (byte) 130;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: -126
 ]
 
 { #category : 'tests' }
@@ -2343,6 +3141,33 @@ class A {
 	interpreter classLoader addCompilationUnit: unit.
 
 	self should: [ interpreter classLoader link ] raise: Error
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testReferenceDowncastUsesRuntimeType [
+
+	| unit class method result |
+	unit := self parseCompilationUnit: '
+class Parent {}
+class Child extends Parent {
+	int value = 42;
+}
+class Test {
+	static int test() {
+		Parent value = new Child();
+		return ((Child) value).value;
+	}
+}'.
+
+	self expandFamixModelFrom: unit.
+	interpreter classLoader addCompilationUnit: unit.
+	interpreter classLoader link.
+
+	class := unit classDeclarations detect: [ :each | each name = 'Test' ].
+	method := class declarations detect: [ :each | each name = 'test' ].
+	result := interpreter execute: method.
+
+	self assert: result value equals: 42
 ]
 
 { #category : 'tests' }
@@ -2660,6 +3485,15 @@ FamixValueJavaInterpreterTest >> testReturnWidensIntegerToLong [
 ]
 
 { #category : 'tests' }
+FamixValueJavaInterpreterTest >> testSimpleAssignmentNarrowsRepresentableIntegerConstant [
+
+	| method result |
+	method := self parseMethod: 'static int test() { byte b = 0; b = 42; return b; }'.
+	result := interpreter execute: method.
+	self assert: result value equals: 42
+]
+
+{ #category : 'tests' }
 FamixValueJavaInterpreterTest >> testSourceLoadedInterfaceIsInterfaceInfo [
 
 	| source unit type |
@@ -2803,6 +3637,54 @@ class Test {
 	result := interpreter execute: method.
 
 	self assert: result value equals: 0
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testStaticInitializerBlockRuns [
+
+	| class method result |
+	class := self parseClass: 'class Test {
+		static int x = 1;
+		static { x = 2; }
+		static int test() { return x; }
+	}'.
+	method := class declarations detect: [ :each |
+		          each isMethodEntity and: [ each name = 'test' ] ].
+	result := interpreter execute: method.
+	self assert: result value equals: 2
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testStaticInitializerBlockSeesDefaultValueOfLaterField [
+
+	| class method result |
+	class := self parseClass: 'class Test {
+		static int x;
+		static { x = y; }
+		static int y = 42;
+		static int test() { return x; }
+	}'.
+	method := class declarations detect: [ :each |
+		          each isMethodEntity and: [ each name = 'test' ] ].
+	result := interpreter execute: method.
+	self assert: result value equals: 0
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testStaticInitializersRunInDeclarationOrder [
+
+	| class method result |
+	class := self parseClass: 'class Test {
+		static int x = 1;
+		static { x = x + 1; }
+		static int y = x + 1;
+		static { y = y + 1; }
+		static int test() { return y; }
+	}'.
+	method := class declarations detect: [ :each |
+		          each isMethodEntity and: [ each name = 'test' ] ].
+	result := interpreter execute: method.
+	self assert: result value equals: 4
 ]
 
 { #category : 'tests' }
@@ -3235,6 +4117,41 @@ class Test {
 ]
 
 { #category : 'tests' }
+FamixValueJavaInterpreterTest >> testThisFieldAccess [
+
+	| class create object method result |
+	class := self parseClass: 'class ThisTest {
+		int value = 42;
+		static ThisTest create() { return new ThisTest(); }
+		int get() { return this.value; }
+	}'.
+	create := class declarations detect: [ :each | each isMethodEntity and: [ each name = 'create' ] ].
+	object := interpreter execute: create.
+	method := class declarations detect: [ :each | each isMethodEntity and: [ each name = 'get' ] ].
+
+	result := interpreter execute: method on: object with: #(  ).
+
+	self assert: result value equals: 42
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testThisReturnsReceiver [
+
+	| class create object method result |
+	class := self parseClass: 'class ThisTest {
+		static ThisTest create() { return new ThisTest(); }
+		boolean same(ThisTest other) { return this == other; }
+	}'.
+	create := class declarations detect: [ :each | each isMethodEntity and: [ each name = 'create' ] ].
+	object := interpreter execute: create.
+	method := class declarations detect: [ :each | each isMethodEntity and: [ each name = 'same' ] ].
+
+	result := interpreter execute: method on: object with: { object }.
+
+	self assert: result value
+]
+
+{ #category : 'tests' }
 FamixValueJavaInterpreterTest >> testUnallocatedArrayDimensionIsNull [
 
 	| method result |
@@ -3262,6 +4179,15 @@ FamixValueJavaInterpreterTest >> testUnaryAndBinaryMinus [
 	result := interpreter execute: method.
 
 	self assert: result value equals: 5
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testUnaryIntegerNegationWraps [
+
+	| method result |
+	method := self parseMethod: 'static int test() { int i = -2147483647 - 1; return -i; }'.
+	result := interpreter execute: method.
+	self assert: result value equals: -2147483648
 ]
 
 { #category : 'tests' }
@@ -3361,6 +4287,19 @@ class A implements I, J {}'.
 			interpreter classLoader addCompilationUnit: unit.
 			interpreter classLoader link ]
 		raise: Error
+]
+
+{ #category : 'tests' }
+FamixValueJavaInterpreterTest >> testUnsignedRightShift [
+
+	| method result |
+	method := self parseMethod: 'static int test() {
+		return -1 >>> 1;
+	}'.
+
+	result := interpreter execute: method.
+
+	self assert: result value equals: 2147483647
 ]
 
 { #category : 'tests' }
